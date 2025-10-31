@@ -21,4 +21,5 @@ Future<void> init() async {
   sl.registerLazySingleton<OtpCubit>(() => OtpCubit(sl()));
   sl.registerLazySingleton<RegisterCubit>(() => RegisterCubit(sl()));
   sl.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataImpl(sl(), sl()));
+
 }
