@@ -15,7 +15,7 @@ class EditLang extends StatelessWidget {
       elevation: 1.5,
       color: Col.white,
       offset: const Offset(0, 30),
-      child: Padd(ver: 10, hor: 16, child: Row(children: [const Icon(Icons.language)])),
+      child: Svvg.asset('language'),
       onSelected: (item) {
         MyApp.setLocale(context, Locale(item));
       },

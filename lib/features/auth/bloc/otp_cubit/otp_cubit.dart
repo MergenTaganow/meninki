@@ -39,15 +39,21 @@ class OtpCubit extends Cubit<OtpState> {
   checkOtp({required int otp, required String phoneNumber}) async {
     var failOrNot = await ds.checkOtp(phoneNumber: phoneNumber, otp: otp);
 
-    failOrNot.fold((l) => emit.call(OtpFailed(l)), (r) {
-      retryTimer?.cancel();
-      retryTimer = null;
+    failOrNot.fold(
+      (l) {
+        emit.call(OtpFailed(l));
+        emit(OtpSend(retrySeconds));
+      },
+      (r) {
+        retryTimer?.cancel();
+        retryTimer = null;
 
-      if (r.temporaryToken != null) {
-        emit.call(OtpSuccess(r.temporaryToken!));
-      } else {
-        sl<AuthBloc>().add(SetUser(r));
-      }
-    });
+        if (r.temporaryToken != null) {
+          emit.call(OtpSuccess(r.temporaryToken!));
+        } else {
+          sl<AuthBloc>().add(SetUser(r));
+        }
+      },
+    );
   }
 }

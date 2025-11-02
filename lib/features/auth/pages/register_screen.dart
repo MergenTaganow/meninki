@@ -4,6 +4,8 @@ import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'package:meninki/features/auth/bloc/register_cubit/register_cubit.dart';
 
+import '../../../core/colors.dart';
+
 class RegisterScreen extends StatefulWidget {
   final String temporaryToken;
 
@@ -18,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController surnameController = TextEditingController();
   TextEditingController usernameController = TextEditingController();
   bool usernameError = false;
-  String error = '';
+  String? error;
 
   @override
   Widget build(BuildContext context) {
@@ -36,84 +38,100 @@ class _RegisterScreenState extends State<RegisterScreen> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          title: Text("Расскажи о себе"),
-          backgroundColor: Color(0xFFF4EFEB),
+          title: Text(
+            "Расскажи о себе",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+
+          backgroundColor: Colors.white,
           automaticallyImplyLeading: false,
         ),
         body: Padd(
-          pad: 40,
+          pad: 30,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TitleAndTextField(
-                  title: "Введи свое имя",
-                  controller: nameController,
-                  hint: 'Ваше имя',
+                Text(
+                  "Достаточно только имени. Фотографию и подробные данные о себе вы сможете добавить позже.",
+                  style: TextStyle(color: Color(0xFF969696)),
                 ),
+                Box(h: 20),
+                TitleAndTextField(title: "Имя", controller: nameController, hint: 'Введи свое имя'),
                 TitleAndTextField(
-                  title: "Введи свою фамилию",
+                  title: "Фамилия",
                   controller: surnameController,
-                  hint: 'Ваше фамилия',
+                  hint: 'Введи свою фамилию',
                 ),
-                Text('Придумай юзернейм', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text('Юзернейм', style: TextStyle(fontWeight: FontWeight.w500)),
                 Box(h: 6),
                 TexField(
                   ctx: context,
                   cont: usernameController,
-                  filCol: Color(0xFFF4EFEB),
-                  border: usernameError,
-                  borderColor: usernameError ? Color(0xFFB71764) : null,
-                  borderRadius: 10,
+                  border: true,
+                  borderRadius: 14,
+                  textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  hintCol: Color(0xFFAFA8B4),
+                  borderColor: usernameError ? Color(0xFFB71764) : Col.primary,
                   preTex: "@  ",
                   hint: 'юзернейм',
-                  hintCol: Color(0xFFAFA8B4),
                 ),
-                if (usernameError)
-                  Padd(
-                    top: 4,
-                    child: Text(error, style: TextStyle(color: Color(0xFFB71764), fontSize: 12)),
+                Padd(
+                  top: 4,
+                  child: Text(
+                    error ?? "Только латинские буквы и цифры",
+                    style: TextStyle(
+                      color: error != null ? Color(0xFFB71764) : Color(0xFF969696),
+                      fontSize: 12,
+                    ),
                   ),
+                ),
+                Box(h: 20),
+                BlocBuilder<RegisterCubit, RegisterState>(
+                  builder: (context, state) {
+                    return SizedBox(
+                      height: 45,
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Col.primary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        onPressed: () {
+                          if (state is! RegisterLoading) {
+                            context.read<RegisterCubit>().register({
+                              'first_name': nameController.text,
+                              "last_name": surnameController.text,
+                              "token": widget.temporaryToken,
+                              "username": usernameController.text,
+                              "lang": "tk",
+                              "fcm_token": "fcm_token1",
+                            });
+                          }
+                        },
+                        child:
+                            state is RegisterLoading
+                                ? Padd(
+                                  pad: 4,
+                                  child: CircularProgressIndicator(color: Colors.white),
+                                )
+                                : Text(
+                                  "Готово",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
         ),
-        floatingActionButton: BlocBuilder<RegisterCubit, RegisterState>(
-          builder: (context, state) {
-            return Container(
-              height: 45,
-              width: double.infinity,
-              margin: EdgeInsets.symmetric(horizontal: 40),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF7A4267),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                ),
-                onPressed: () {
-                  if (state is! RegisterLoading) {
-                    context.read<RegisterCubit>().register({
-                      'first_name': nameController.text,
-                      "last_name": surnameController.text,
-                      "token": widget.temporaryToken,
-                      "username": usernameController.text,
-                      "lang": "tk",
-                      "fcm_token": "fcm_token1",
-                    });
-                  }
-                },
-                child:
-                    state is RegisterLoading
-                        ? Padd(pad: 4, child: CircularProgressIndicator(color: Colors.white))
-                        : Text(
-                          "Завершить",
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-                        ),
-              ),
-            );
-          },
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }
@@ -141,8 +159,10 @@ class TitleAndTextField extends StatelessWidget {
         TexField(
           ctx: context,
           cont: controller,
-          filCol: Color(0xFFF4EFEB),
-          borderRadius: 10,
+          border: true,
+          borderColor: Col.primary,
+          borderRadius: 14,
+          textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           hint: hint,
           hintCol: Color(0xFFAFA8B4),
         ),

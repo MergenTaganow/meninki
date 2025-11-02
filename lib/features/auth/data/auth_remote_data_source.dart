@@ -92,10 +92,7 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
         return Left(Failure(statusCode: response.statusCode, message: response.data.toString()));
       }
     } catch (e) {
-      if (e is DioException) {
-        Left(Failure(statusCode: e.response?.statusCode, message: e.response?.data?['payload']));
-      }
-      return const Left(Failure());
+      return Left(handleError(e));
     }
   }
 
@@ -112,11 +109,7 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
         return Left(Failure(statusCode: response.statusCode, message: response.data.toString()));
       }
     } catch (e) {
-      print(e);
-      if (e is DioException) {
-        Left(Failure(statusCode: e.response?.statusCode, message: e.response?.data?['payload']));
-      }
-      return const Left(Failure());
+      return Left(handleError(e));
     }
   }
 
@@ -136,13 +129,7 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
       }
       return Right(user);
     } catch (e) {
-      print(e);
-      if (e is DioException) {
-        return Left(
-          Failure(statusCode: e.response?.statusCode, message: e.response?.data?['payload']),
-        );
-      }
-      return const Left(Failure());
+      return Left(handleError(e));
     }
   }
 

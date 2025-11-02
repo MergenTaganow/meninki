@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Col {
-  static const primary = Color(0xFFFF7A3C);
+  static const primary = Color(0xFF7A4267);
 
   static const primDark = Color(0xFF002453);
   static const primYellow = Color(0xFFFFA500);

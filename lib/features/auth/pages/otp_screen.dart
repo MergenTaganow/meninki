@@ -6,6 +6,7 @@ import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/auth/bloc/otp_cubit/otp_cubit.dart';
 import 'package:pinput/pinput.dart';
 
+import '../../../core/colors.dart';
 import '../../global/widgets/custom_snack_bar.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -17,6 +18,8 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
+  TextEditingController otpController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<OtpCubit, OtpState>(
@@ -33,38 +36,95 @@ class _OtpScreenState extends State<OtpScreen> {
         }
       },
       child: Scaffold(
+        backgroundColor: Colors.white,
         resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: Text("Авторизация", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+        ),
         body: Padd(
-          pad: 40,
+          pad: 30,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Box(h: MediaQuery.of(context).size.height * 0.15),
-              Text(
-                "Введите код, отправленный на номер \n ${widget.phoneNumber}",
-                style: TextStyle(fontWeight: FontWeight.w500),
+              Box(h: MediaQuery.of(context).size.height * 0.1),
+              RichText(
+                text: TextSpan(
+                  text: "Введите код, отправленный на номер ",
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                  children: [
+                    TextSpan(
+                      text: widget.phoneNumber,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Box(h: 20),
-              Pinput(
-                length: 4,
-                showCursor: true,
-                defaultPinTheme: PinTheme(
-                  width: 40,
-                  height: 50,
-                  textStyle: TextStyle(fontSize: 20, color: Colors.black),
-                  decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(width: 2, color: Colors.grey)),
-                  ),
-                ),
-                onCompleted: (value) {
-                  var otp = int.parse(value);
-                  context.read<OtpCubit>().checkOtp(
-                    otp: otp,
-                    phoneNumber: widget.phoneNumber.replaceAll("+993 ", ''),
+              TexField(
+                ctx: context,
+                cont: otpController,
+                border: true,
+                borderColor: Col.primary,
+                borderRadius: 14,
+                keyboard: TextInputType.number,
+                textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                maxLen: 4,
+                textAlign: TextAlign.center,
+              ),
+              Box(h: 10),
+              BlocBuilder<OtpCubit, OtpState>(
+                builder: (context, state) {
+                  return SizedBox(
+                    height: 45,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Col.primary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () {
+                        if (otpController.text.length == 4) {
+                          var otp = int.parse(otpController.text);
+                          context.read<OtpCubit>().checkOtp(
+                            otp: otp,
+                            phoneNumber: widget.phoneNumber.replaceAll("+993 ", ''),
+                          );
+                        }
+                      },
+                      child: Text(
+                        "Отправить СМС-код",
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                      ),
+                    ),
                   );
                 },
               ),
-              Box(h: 14),
+
+              // Pinput(
+              //   length: 4,
+              //   showCursor: true,
+              //   defaultPinTheme: PinTheme(
+              //     width: 40,
+              //     height: 50,
+              //     textStyle: TextStyle(fontSize: 20, color: Colors.black),
+              //     decoration: BoxDecoration(
+              //       border: Border(bottom: BorderSide(width: 2, color: Colors.grey)),
+              //     ),
+              //   ),
+              //   onCompleted: (value) {
+              //     var otp = int.parse(value);
+              //     context.read<OtpCubit>().checkOtp(
+              //       otp: otp,
+              //       phoneNumber: widget.phoneNumber.replaceAll("+993 ", ''),
+              //     );
+              //   },
+              // ),
+              Box(h: 40),
               BlocBuilder<OtpCubit, OtpState>(
                 builder: (context, state) {
                   if (state is OtpSend) {
@@ -80,29 +140,12 @@ class _OtpScreenState extends State<OtpScreen> {
                             widget.phoneNumber.replaceAll("+993 ", ''),
                           );
                         },
-                        child: Text(
-                          "Отправить смс еще раз",
-                          style: TextStyle(color: Color(0xFF005FF0)),
-                        ),
+                        child: Text("Отправить смс еще раз", style: TextStyle(color: Col.primary)),
                       );
                     }
                   }
                   return Container();
                 },
-              ),
-              Spacer(),
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  text: "Продолжая, вы принимаете условия конфиденциальности и ",
-                  style: TextStyle(fontWeight: FontWeight.w500, color: Color(0xFFAFA8B4)),
-                  children: [
-                    TextSpan(
-                      text: "пользовательское соглашение",
-                      style: TextStyle(color: Color(0xFF3B353F), fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),

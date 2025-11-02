@@ -67,14 +67,19 @@ class TexField extends TextFormField {
     int? customMaxLen,
     TextCapitalization? textCapitalization,
     List<TextInputFormatter>? inpFormatters,
+    TextStyle? textStyle,
+    TextAlign? textAlign,
   }) : super(
          controller: cont,
-         style: Theme.of(ctx!).textTheme.bodyMedium!.copyWith(
-           color: textColor ?? Colors.black,
-           fontSize: 16,
-           letterSpacing: letSpace,
-         ),
+         style:
+             textStyle ??
+             Theme.of(ctx!).textTheme.bodyMedium!.copyWith(
+               color: textColor ?? Colors.black,
+               fontSize: 16,
+               letterSpacing: letSpace,
+             ),
          validator: validate,
+         textAlign: textAlign ?? TextAlign.start,
          textInputAction:
              inputAction ?? (maxLine == 1 ? TextInputAction.next : TextInputAction.newline),
          keyboardType: keyboard ?? (maxLine == 1 ? null : TextInputType.multiline),
@@ -130,7 +135,7 @@ class TexField extends TextFormField {
            hintText: hint,
            floatingLabelBehavior:
                !showHint ? FloatingLabelBehavior.auto : FloatingLabelBehavior.always,
-           hintStyle: Theme.of(ctx).textTheme.bodyMedium!.copyWith(
+           hintStyle: Theme.of(ctx!).textTheme.bodyMedium!.copyWith(
              color: hintCol ?? Col.borderColor,
              fontSize: hintFontSize,
              fontWeight: FontWeight.normal,

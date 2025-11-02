@@ -7,16 +7,22 @@ class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Svvg.asset("main_logo"),
-            const Box(h: 20),
-            Svvg.asset("timixhr"),
-            const Box(h: 30),
-          ],
-        ),
+      body: Stack(
+        children: [
+          Image.asset("assets/images/splashscreen.png"),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Svvg.asset("meninki_big_transparent"),
+              Text(
+                "Высокотехнологичная онлайн торговая платформа",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+            ],
+          ),
+          Align(alignment: Alignment.bottomCenter, child: Svvg.asset("meninki_letter")),
+        ],
       ),
     );
   }
