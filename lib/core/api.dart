@@ -3,16 +3,17 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import '../features/auth/data/employee_local_data_source.dart';
 import 'failure.dart';
 
-String baseUrl = 'https://meninki.kamilussat.com/api/v1/';
+String baseUrl = 'https://meninki.kamilussat.com';
 
 initBaseUrl() {
   if (kDebugMode) {
-    baseUrl = 'https://meninki.kamilussat.com/api/v1/';
+    baseUrl = 'https://meninki.kamilussat.com';
   }
   if (kReleaseMode) {
-    baseUrl = 'https://meninki.kamilussat.com/api/v1/';
+    baseUrl = 'https://meninki.kamilussat.com';
   }
   //   baseUrl = 'http://119.235.112.154:4444/api';
   //  baseUrl = 'http://172.20.14.17:8066/api';
@@ -20,16 +21,16 @@ initBaseUrl() {
 }
 
 class Api {
-  // final EmployeeLocalDataSource emplDs;
+  final EmployeeLocalDataSource emplDs;
 
-  Api();
+  Api(this.emplDs);
 
   Dio dio = Dio(
     BaseOptions(
       receiveTimeout: const Duration(minutes: 5),
       connectTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(minutes: 5),
-      baseUrl: baseUrl,
+      baseUrl: "$baseUrl/api/v1/",
     ),
   );
 
@@ -39,10 +40,10 @@ class Api {
         onRequest: (options, handler) async {
           print(options.path);
           // Add access token for non-authentication requests
-          // if (emplDs.user?.token != null) {
-          //Todo adding token
-          //   options.headers['Authorization'] = "Bearer ${emplDs.user?.token}";
-          // }
+          final token = emplDs.user?.token;
+          if (token != null) {
+            options.headers['Authorization'] = "Bearer ${token.access.token}";
+          }
 
           return handler.next(options);
         },
