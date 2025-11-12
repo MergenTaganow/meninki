@@ -69,6 +69,7 @@ class TexField extends TextFormField {
     List<TextInputFormatter>? inpFormatters,
     TextStyle? textStyle,
     TextAlign? textAlign,
+    BorderRadius? borderRadiusType,
   }) : super(
          controller: cont,
          style:
@@ -152,22 +153,22 @@ class TexField extends TextFormField {
                color: border ? borderColor ?? Col.borderColor : Col.transparent,
                width: 1,
              ),
-             borderRadius: BorderRadius.circular(borderRadius ?? 2),
+             borderRadius: borderRadiusType ?? BorderRadius.circular(borderRadius ?? 2),
            ),
            errorBorder: OutlineInputBorder(
              borderSide: const BorderSide(color: Colors.redAccent, width: .5),
-             borderRadius: BorderRadius.circular(borderRadius ?? 2),
+             borderRadius: borderRadiusType ?? BorderRadius.circular(borderRadius ?? 2),
            ),
            focusedErrorBorder: OutlineInputBorder(
              borderSide: const BorderSide(color: Colors.red, width: .5),
-             borderRadius: BorderRadius.circular(borderRadius ?? 2),
+             borderRadius: borderRadiusType ?? BorderRadius.circular(borderRadius ?? 2),
            ),
            enabledBorder: OutlineInputBorder(
              borderSide: BorderSide(
                color: border ? borderColor ?? Col.borderColor : Col.transparent,
                width: 1,
              ),
-             borderRadius: BorderRadius.circular(borderRadius ?? 2),
+             borderRadius: borderRadiusType ?? BorderRadius.circular(borderRadius ?? 2),
            ),
            errorMaxLines: 2,
            focusedBorder: OutlineInputBorder(
@@ -175,7 +176,7 @@ class TexField extends TextFormField {
                color: border ? borderColor ?? Col.primBlue : Col.transparent,
                width: 1,
              ),
-             borderRadius: BorderRadius.circular(borderRadius ?? 2),
+             borderRadius: borderRadiusType ?? BorderRadius.circular(borderRadius ?? 2),
            ),
          ),
          inputFormatters:

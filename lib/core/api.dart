@@ -1,24 +1,11 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-
 import '../features/auth/data/employee_local_data_source.dart';
+import '../features/auth/models/user.dart';
 import 'failure.dart';
 
 String baseUrl = 'https://meninki.kamilussat.com';
-
-initBaseUrl() {
-  if (kDebugMode) {
-    baseUrl = 'https://meninki.kamilussat.com';
-  }
-  if (kReleaseMode) {
-    baseUrl = 'https://meninki.kamilussat.com';
-  }
-  //   baseUrl = 'http://119.235.112.154:4444/api';
-  //  baseUrl = 'http://172.20.14.17:8066/api';
-  //  baseUrl = 'http://172.20.17.52:8066/api';
-}
 
 class Api {
   final EmployeeLocalDataSource emplDs;
@@ -30,7 +17,7 @@ class Api {
       receiveTimeout: const Duration(minutes: 5),
       connectTimeout: const Duration(seconds: 10),
       sendTimeout: const Duration(minutes: 5),
-      baseUrl: "$baseUrl/api/v1/",
+      baseUrl: "$baseUrl/api/",
     ),
   );
 
@@ -40,34 +27,93 @@ class Api {
         onRequest: (options, handler) async {
           print(options.path);
           // Add access token for non-authentication requests
-          final token = emplDs.user?.token;
-          if (token != null) {
-            options.headers['Authorization'] = "Bearer ${token.access.token}";
+          if (!options.path.contains("change-token")) {
+            final token = emplDs.user?.token;
+            if (token != null) {
+              options.headers['Authorization'] = "Bearer ${token.access.token}";
+            }
           }
-
           return handler.next(options);
         },
         onError: (e, handler) async {
           print((e.response?.statusCode).toString());
           print(e.response?.data.toString());
-          if (e.response?.statusCode == 401 || e.response?.statusCode == 498) {
-            return handler.reject(DioException(requestOptions: e.requestOptions, error: e));
-          }
-          // Check if the error is network-related (offline)
-          if (e.type == DioExceptionType.connectionTimeout ||
-              e.type == DioExceptionType.receiveTimeout ||
-              e.type == DioExceptionType.sendTimeout ||
-              e.type == DioExceptionType.connectionError) {
-            log('Network error: User is likely offline.');
-            // Optionally show a message to the user or handle it gracefully
-            // Avoid logging out the user for network issues
+          if (e.response?.statusCode == 401) {
+            String? token = await _refreshToken(emplDs.user?.token?.refresh);
+
+            if (token != null) {
+              e.requestOptions.headers['Authorization'] = "Bearer $token";
+              dynamic newData = e.requestOptions.data;
+
+              // Handle FormData (file upload)
+              if (newData is FormData) {
+                final oldFormData = newData;
+                final rebuilt = FormData();
+
+                // Copy normal fields
+                rebuilt.fields.addAll(oldFormData.fields);
+
+                // Rebuild files using stored filepath in headers
+                for (final entry in oldFormData.files) {
+                  final oldFile = entry.value;
+                  final headers = oldFile.headers;
+                  final filePaths = headers?['filepath'] as List<dynamic>?;
+
+                  if (filePaths != null && filePaths.isNotEmpty) {
+                    final path = filePaths.first.toString();
+                    rebuilt.files.add(
+                      MapEntry(
+                        entry.key,
+                        await MultipartFile.fromFile(
+                          path,
+                          filename: oldFile.filename,
+                          contentType: oldFile.contentType,
+                        ),
+                      ),
+                    );
+                  } else {
+                    print('⚠️ Cannot rebuild file, filepath header missing.');
+                  }
+                }
+
+                newData = rebuilt;
+              }
+
+              final resp = await dio.request(
+                e.requestOptions.path,
+                data: newData,
+                queryParameters: e.requestOptions.queryParameters,
+                options: Options(method: e.requestOptions.method),
+              );
+              handler.resolve(resp);
+              return;
+            }
+
             return handler.reject(e);
-          } else {
-            return handler.reject(e);
           }
+          return handler.reject(e);
         },
       ),
     );
+  }
+
+  Future<String?> _refreshToken(String? refreshToken) async {
+    try {
+      final response = await dio.post(
+        'v1/authentications/change-token',
+        data: {'token': refreshToken},
+      );
+
+      final User user = User.fromJson(response.data['payload']);
+      user.token?.refresh = refreshToken;
+      // save user to local data source
+      emplDs.saveUser(u: user);
+
+      return emplDs.user?.token?.access.token;
+    } catch (e) {
+      if (e is DioException && e.response?.statusCode == 409) {}
+      return null;
+    }
   }
 }
 

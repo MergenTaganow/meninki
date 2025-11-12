@@ -32,6 +32,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
 
     // Wait until ready
     await controller.initialize();
+    await controller.setVolume(0);
 
     sl<ReelPlayingQueueCubit>().addReady({reel.id: controller});
 

@@ -45,7 +45,7 @@ class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
       return;
     }
 
-    await controller.play();
+    // await controller.play();
     emit(ReelPlaying(controllers, currentPlayingId: currentPlayingId));
 
     // Listen for when this short ends

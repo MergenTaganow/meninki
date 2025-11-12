@@ -59,5 +59,33 @@ class User {
     };
   }
 
+  User copyWith({
+    Token? token,
+    int? id,
+    DateTime? created_at,
+    String? phonenumber,
+    String? username,
+    String? first_name,
+    String? last_name,
+    String? status,
+    String? role,
+    bool? is_super_user,
+    String? temporaryToken,
+  }) {
+    return User(
+      token: token ?? this.token,
+      id: id ?? this.id,
+      created_at: created_at ?? this.created_at,
+      phonenumber: phonenumber ?? this.phonenumber,
+      username: username ?? this.username,
+      first_name: first_name ?? this.first_name,
+      last_name: last_name ?? this.last_name,
+      status: status ?? this.status,
+      role: role ?? this.role,
+      is_super_user: is_super_user ?? this.is_super_user,
+      temporaryToken: temporaryToken ?? this.temporaryToken,
+    );
+  }
+
   String toJson() => jsonEncode(toMap());
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:meninki/features/home/model/profile.dart';
 import '../../../core/api.dart';
 import '../../../core/failure.dart';
 import '../../../core/success.dart';
@@ -19,6 +20,7 @@ abstract class AuthRemoteDataSource {
   Future<Either<Failure, Success>> sendOtp({required String phoneNumber});
   Future<Either<Failure, User>> checkOtp({required String phoneNumber, required int otp});
   Future<Either<Failure, User>> register(Map<String, dynamic> data);
+  Future<Either<Failure, Profile>> getMyProfile();
 }
 
 class AuthRemoteDataImpl extends AuthRemoteDataSource {
@@ -100,7 +102,7 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
   Future<Either<Failure, Success>> sendOtp({required String phoneNumber}) async {
     try {
       var response = await api.dio.post(
-        'authentications/send-otp',
+        'v1/authentications/send-otp',
         data: {'phonenumber': phoneNumber},
       );
       if (response.statusCode == 201) {
@@ -117,7 +119,7 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
   Future<Either<Failure, User>> checkOtp({required String phoneNumber, required int otp}) async {
     try {
       var response = await api.dio.post(
-        'authentications/validate-otp',
+        'v1/authentications/validate-otp',
         data: {'phonenumber': phoneNumber, "otp": otp},
       );
       print(response.data);
@@ -136,10 +138,22 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
   @override
   Future<Either<Failure, User>> register(Map<String, dynamic> data) async {
     try {
-      var response = await api.dio.post('authentications/registration', data: data);
+      var response = await api.dio.post('v1/authentications/registration', data: data);
 
       User user = User.fromJson(response.data['payload']);
       return Right(user);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Profile>> getMyProfile() async {
+    try {
+      var response = await api.dio.get('v1/profiles');
+
+      Profile profile = Profile.fromJson(response.data['payload']);
+      return Right(profile);
     } catch (e) {
       return Left(handleError(e));
     }
