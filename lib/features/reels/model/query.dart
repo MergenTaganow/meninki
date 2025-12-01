@@ -46,6 +46,7 @@ class Query {
   String? approachType;
   String? type;
   bool? ignoreEmpty;
+  int? parameter_id;
   Query({
     this.keyword,
     this.isActive,
@@ -89,6 +90,7 @@ class Query {
     this.ignoreEmpty,
     this.educationLevelUuids,
     this.executorUuids,
+    this.parameter_id,
   });
 
   Query copyWith({
@@ -100,6 +102,7 @@ class Query {
     int? offset,
     int? yearIn,
     int? yearOut,
+    int? parameter_id,
     String? companyUuids,
     List<String?>? companyUuids2,
     List<String?>? departmentUuids,
@@ -178,6 +181,7 @@ class Query {
       hasApplied: hasApplied ?? this.hasApplied,
       hasEffect: hasEffect ?? this.hasEffect,
       executorUuids: executorUuids ?? this.executorUuids,
+      parameter_id: parameter_id ?? this.parameter_id,
     );
   }
 
@@ -224,6 +228,7 @@ class Query {
       if (ignoreEmpty != null) 'ignoreEmpty': ignoreEmpty,
       if (hasApplied != null) 'hasApplied': hasApplied,
       if (hasEffect != null) 'hasEffect': hasEffect,
+      if (parameter_id != null) 'parameter_id': parameter_id,
       if (educationLevelUuids?.isNotEmpty ?? false) 'levelUuids': educationLevelUuids,
     };
   }
@@ -266,6 +271,7 @@ class Query {
       skipMinus: map['skipMinus'],
       ignoreEmpty: map['ignoreEmpty'] != null ? map['ignoreEmpty'] as bool : null,
       type: map['type'],
+      parameter_id: map['parameter_id'],
     );
   }
 

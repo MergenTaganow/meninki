@@ -11,6 +11,8 @@ class Reel {
   bool is_verified;
   int user_id;
   DateTime? created_at;
+  num? comment_count;
+  num? repost_count;
   MeninkiFile file;
 
   Reel({
@@ -24,6 +26,8 @@ class Reel {
     required this.is_verified,
     required this.user_id,
     this.created_at,
+    this.comment_count,
+    this.repost_count,
     required this.file,
   });
 
@@ -38,6 +42,8 @@ class Reel {
       is_active: json["is_active"],
       is_verified: json["is_verified"],
       user_id: json["user_id"],
+      comment_count: json["comment_count"],
+      repost_count: json["repost_count"],
       created_at: DateTime.tryParse(json["created_at"]),
       file: MeninkiFile.fromJson(json["file"]),
     );

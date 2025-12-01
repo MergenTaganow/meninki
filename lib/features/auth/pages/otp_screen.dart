@@ -4,7 +4,6 @@ import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/auth/bloc/otp_cubit/otp_cubit.dart';
-import 'package:pinput/pinput.dart';
 
 import '../../../core/colors.dart';
 import '../../global/widgets/custom_snack_bar.dart';

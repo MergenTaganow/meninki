@@ -1,10 +1,14 @@
+import 'package:better_player/better_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
-import 'package:video_player/video_player.dart';
+import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../../../core/api.dart';
 import '../../../core/helpers.dart';
 import '../blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
 import '../model/reels.dart';
@@ -33,7 +37,7 @@ class ReelCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   child: VisibilityDetector(
                     onVisibilityChanged: (VisibilityInfo info) {
-                      if (controller?.value.isPlaying ?? false) {
+                      if (controller?.isPlaying() ?? false) {
                         final visiblePercent = info.visibleFraction * 100;
                         if (visiblePercent < 15) {
                           context.read<ReelPlayingQueueCubit>().playNext();
@@ -46,19 +50,21 @@ class ReelCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         color:
-                            (controller?.value.isInitialized ?? false)
+                            (controller?.isVideoInitialized() ?? false)
                                 ? Colors.black
                                 : Colors.grey.withOpacity(0.5),
                       ),
-                      child:
-                          (controller?.value.isInitialized ?? false)
-                              ? Center(
-                                child: AspectRatio(
-                                  aspectRatio: controller!.value.aspectRatio,
-                                  child: VideoPlayer(controller),
+                      child: Center(
+                        child:
+                            (controller != null &&
+                                    (controller.isVideoInitialized() ?? false) &&
+                                    (controller.isPlaying() ?? false))
+                                ? BetterPlayer(controller: controller)
+                                : MeninkiNetworkImage(
+                                  file: reel.file,
+                                  networkImageType: NetworkImageType.small,
                                 ),
-                              )
-                              : Center(child: CircularProgressIndicator()),
+                      ),
                     ),
                   ),
                 ),

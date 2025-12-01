@@ -4,6 +4,6 @@ part of 'reels_controllers_bloc.dart';
 sealed class ReelsControllersState {}
 
 final class ReelsControllersLoading extends ReelsControllersState {
-  final Map<int, VideoPlayerController> controllersMap;
+  final Map<int, BetterPlayerController> controllersMap;
   ReelsControllersLoading(this.controllersMap);
 }

@@ -7,7 +7,6 @@ import 'core/go.dart';
 import 'core/routes.dart';
 import 'features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'features/auth/pages/splash_screen.dart';
-import 'features/home/pages/home_page.dart';
 
 String version = '';
 
@@ -46,7 +45,13 @@ class _MyAppState extends State<MyApp> {
         }
       },
       child: MaterialApp(
-        // theme: AppTheme.off(context),
+        theme: Theme.of(context).copyWith(
+          scaffoldBackgroundColor: Color(0xFFFBFBFB),
+          appBarTheme: AppBarTheme.of(context).copyWith(
+            backgroundColor: Color(0xFFFBFBFB),
+            titleTextStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,color: Colors.black),
+          ),
+        ),
         navigatorKey: Routes.mainNavKey,
         onGenerateRoute: Routes.onGenerateRoute,
         // supportedLocales: AppLocalizations.supportedLocales,

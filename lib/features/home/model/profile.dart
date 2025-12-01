@@ -1,4 +1,5 @@
-import 'package:meninki/features/home/model/market.dart';
+
+import '../../store/models/market.dart';
 
 class Profile {
   int id;
@@ -30,7 +31,10 @@ class Profile {
       last_name: json["last_name"],
       following_count: (json["following_count"]),
       followers_coun: (json["followers_coun"]),
-      // markets: (json["markets"] ?? []),
+      markets:
+          json["markets"] != null
+              ? (json["markets"] as List).map((e) => Market.fromJson(e)).toList()
+              : null,
     );
   }
 }

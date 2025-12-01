@@ -1,17 +1,17 @@
+import 'package:better_player/better_player.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:video_player/video_player.dart';
 
 part 'reel_playing_queue_state.dart';
 
 class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
-  Map<int, VideoPlayerController> controllers = {};
+  Map<int, BetterPlayerController> controllers = {};
   List<int> readyQueue = [];
   int? currentPlayingId;
   int currentIndex = -1;
   ReelPlayingQueueCubit() : super(ReelPlaying({}));
 
-  void addReady(Map<int, VideoPlayerController> item) {
+  void addReady(Map<int, BetterPlayerController> item) {
     controllers.addAll(item);
     readyQueue.addAll(item.keys);
 
@@ -30,7 +30,9 @@ class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
     if (currentPlayingId != null) {
       final prev = controllers[currentPlayingId];
       await prev?.pause();
-      await prev?.seekTo(Duration.zero);
+      if (prev?.isVideoInitialized() ?? false) {
+        await prev?.seekTo(Duration.zero);
+      }
     }
 
     // Move to next (loop back to start)
@@ -45,15 +47,17 @@ class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
       return;
     }
 
-    // await controller.play();
+    await controller.play();
     emit(ReelPlaying(controllers, currentPlayingId: currentPlayingId));
 
     // Listen for when this short ends
-    controller.removeListener(() {});
-    controller.addListener(() async {
-      final value = controller.value;
-      if (value.isInitialized && !value.isPlaying && value.position >= value.duration) {
-        controller.removeListener(() {});
+    controller.removeEventsListener((_) {});
+    controller.addEventsListener((event) async {
+      if (event.betterPlayerEventType == BetterPlayerEventType.initialized) {
+        controller.setOverriddenAspectRatio(controller.videoPlayerController!.value.aspectRatio);
+      }
+      if (event.betterPlayerEventType == BetterPlayerEventType.finished) {
+        controller.removeEventsListener((event) {});
         playNext();
       }
     });
@@ -63,7 +67,7 @@ class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
   @override
   Future<void> close() async {
     for (final c in controllers.values) {
-      await c.dispose();
+      c.dispose(forceDispose: true);
     }
     return super.close();
   }

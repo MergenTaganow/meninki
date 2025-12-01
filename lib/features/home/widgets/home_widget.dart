@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-
+import 'package:meninki/features/global/widgets/meninki_network_image.dart';
+import 'package:meninki/features/store/bloc/get_stores_bloc/get_stores_bloc.dart';
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
 import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
@@ -50,6 +51,67 @@ class _HomeWidgetState extends State<HomeWidget> with SingleTickerProviderStateM
         child: Column(
           children: [
             customTabBar(),
+            Box(h: 20),
+            BlocBuilder<GetStoresBloc, GetStoresState>(
+              builder: (context, state) {
+                if (state is GetStoresSuccess && state.stores.isNotEmpty) {
+                  return SizedBox(
+                    height: 130,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (context, index) {
+                        var store = state.stores[index];
+                        return Container(
+                          height: 130,
+                          width: 90,
+                          decoration: BoxDecoration(
+                            color: Colors.grey,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Stack(
+                            children: [
+                              // image
+                              if (store.cover_image != null)
+                                MeninkiNetworkImage(
+                                  file: store.cover_image!,
+                                  networkImageType: NetworkImageType.small,
+                                ),
+
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Text(
+                                  store.name,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 12, color: Colors.white),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.topRight,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(40),
+                                    color: Colors.white,
+                                  ),
+                                  margin: EdgeInsets.only(right: 6, top: 6),
+                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  child: Text(
+                                    "13",
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 10),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      separatorBuilder: (context, index) => Box(w: 8),
+                      itemCount: state.stores.length,
+                    ),
+                  );
+                }
+                return Container();
+              },
+            ),
             Box(h: 20),
             Expanded(
               child: BlocBuilder<GetReelsBloc, GetReelsState>(
@@ -135,7 +197,7 @@ class _HomeWidgetState extends State<HomeWidget> with SingleTickerProviderStateM
 
   Container customTabBar() {
     return Container(
-      decoration: BoxDecoration(color: Color(0xFFF0ECE1), borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(color: Color(0xFFF3F3F3), borderRadius: BorderRadius.circular(24)),
       padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -147,7 +209,7 @@ class _HomeWidgetState extends State<HomeWidget> with SingleTickerProviderStateM
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: isSelected ? Color(0xFF3B353F) : Colors.transparent,
+                  color: isSelected ? Color(0xFF0A0A0A) : Colors.transparent,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(

@@ -1,7 +1,7 @@
 class MeninkiFile {
   int id;
   String name;
-  num size;
+  num? size;
   String? blurhash;
   String? mimetype;
   List<String>? video_chunks;
@@ -15,7 +15,7 @@ class MeninkiFile {
   MeninkiFile({
     required this.id,
     required this.name,
-    required this.size,
+    this.size,
     this.blurhash,
     this.mimetype,
     this.video_chunks,

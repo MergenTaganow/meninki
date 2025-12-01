@@ -1,15 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:meninki/core/failure.dart';
-import 'package:meninki/core/go.dart';
-import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'package:meninki/features/auth/data/auth_remote_data_source.dart';
 import 'package:meta/meta.dart';
-
 import '../../../../core/injector.dart';
-import '../../models/user.dart';
 
 part 'otp_state.dart';
 

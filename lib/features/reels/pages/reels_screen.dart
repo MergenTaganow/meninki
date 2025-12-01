@@ -1,13 +1,14 @@
+import 'package:better_player/better_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/helpers.dart';
+import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
-import 'package:meninki/features/reels/blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
+import 'package:meninki/features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
 import 'package:meninki/features/reels/model/reels.dart';
-import 'package:preload_page_view/preload_page_view.dart';
-import 'package:video_player/video_player.dart';
-
 import '../../../core/api.dart';
 import '../widgets/users_profile.dart';
 
@@ -20,7 +21,8 @@ class ReelPage extends StatefulWidget {
 }
 
 class _ReelPageState extends State<ReelPage> {
-  late PreloadPageController controller;
+  // late PreloadPageController controller;
+  late PageController controller;
 
   @override
   void initState() {
@@ -29,7 +31,8 @@ class _ReelPageState extends State<ReelPage> {
     print("position-____$position");
     print("position-____$position");
     print("position-____$position");
-    controller = PreloadPageController(initialPage: position);
+    // controller = PreloadPageController(initialPage: position);
+    controller = PageController(initialPage: position);
     context.read<CurrentReelCubit>().set(widget.reel);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {});
@@ -49,10 +52,40 @@ class _ReelPageState extends State<ReelPage> {
       body: BlocBuilder<GetReelsBloc, GetReelsState>(
         builder: (context, state) {
           if (state is GetReelSuccess) {
-            return PreloadPageView.builder(
+            // var urls =
+            //     state.reels.map((e) => "$baseUrl/public/${e.file.video_master_playlist}").toList();
+            // ListView.builder(
+            //   itemCount: urls.length,
+            //   itemBuilder: (context, index) {
+            //     return SizedBox(
+            //       height: MediaQuery.of(context).size.height,
+            //       child: BetterPlayerListVideoPlayer(
+            //         BetterPlayerDataSource(
+            //           BetterPlayerDataSourceType.network,
+            //           urls[index],
+            //           videoFormat: BetterPlayerVideoFormat.hls,
+            //           bufferingConfiguration: BetterPlayerBufferingConfiguration(
+            //             minBufferMs: 500, // lower → faster start
+            //             maxBufferMs: 3000, // enough for stability
+            //             bufferForPlaybackMs: 300, // super fast start
+            //             bufferForPlaybackAfterRebufferMs: 1000,
+            //           ),
+            //         ),
+            //         configuration: BetterPlayerConfiguration(
+            //           autoPlay: true,
+            //           looping: true,
+            //           fit: BoxFit.contain,
+            //           controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
+            //           placeholder: Center(child: CircularProgressIndicator()),
+            //         ),
+            //       ),
+            //     );
+            //   },
+            // );
+            return PageView.builder(
               controller: controller,
               scrollDirection: Axis.vertical,
-              preloadPagesCount: 3,
+              // preloadPagesCount: 3,
               itemCount: state.reels.length,
               onPageChanged: (index) {
                 context.read<CurrentReelCubit>().set(state.reels[index]);
@@ -78,21 +111,49 @@ class ReelWidget extends StatefulWidget {
 }
 
 class _ReelWidgetState extends State<ReelWidget> {
-  late VideoPlayerController controller;
+  late BetterPlayerController controller;
 
   @override
   void initState() {
-    controller =
-        VideoPlayerController.networkUrl(
-            Uri.parse("$baseUrl/public/${widget.reel.file.original_file}/playlist.m3u8"),
-          )
-          ..setLooping(true)
-          ..initialize().then((_) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              setState(() {});
-            });
-          });
+    final dataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      "$baseUrl/public/${widget.reel.file.video_master_playlist}",
+      useAsmsAudioTracks: false,
+      useAsmsSubtitles: false,
+      useAsmsTracks: false,
+      videoFormat: BetterPlayerVideoFormat.hls,
+      bufferingConfiguration: BetterPlayerBufferingConfiguration(
+        minBufferMs: 2000, // lower → faster start
+        maxBufferMs: 10000, // enough for stability
+        bufferForPlaybackMs: 300, // super fast start
+        bufferForPlaybackAfterRebufferMs: 1000,
+      ),
+      cacheConfiguration: BetterPlayerCacheConfiguration(
+        useCache: true,
+        maxCacheSize: 500 * 1024 * 1024, // 50 MB
+        maxCacheFileSize: 50 * 1024 * 1024, // 10 MB per file
+      ),
+    );
 
+    final betterPlayerConfiguration = BetterPlayerConfiguration(
+      looping: true,
+      allowedScreenSleep: false,
+      controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
+    );
+
+    controller = BetterPlayerController(
+      betterPlayerConfiguration,
+      betterPlayerDataSource: dataSource,
+    );
+    controller.addEventsListener((event) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (event.betterPlayerEventType == BetterPlayerEventType.initialized) {
+          controller.setOverriddenAspectRatio(controller.videoPlayerController!.value.aspectRatio);
+          setState(() {});
+        }
+        setState(() {});
+      });
+    });
     super.initState();
   }
 
@@ -108,12 +169,12 @@ class _ReelWidgetState extends State<ReelWidget> {
       builder: (context, state) {
         if (state is CurrentReelSuccess &&
             state.reel?.id == widget.reel.id &&
-            controller.value.isInitialized &&
-            (!controller.value.isPlaying)) {
+            (controller.isVideoInitialized() ?? false) &&
+            !(controller.isPlaying() ?? true)) {
           controller.play();
         }
         if (state is CurrentReelSuccess &&
-            controller.value.isPlaying &&
+            (controller.isPlaying() ?? false) &&
             state.reel?.id != widget.reel.id) {
           controller.pause();
         }
@@ -129,17 +190,12 @@ class _ReelWidgetState extends State<ReelWidget> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        controller.value.isInitialized
-                            ? AspectRatio(
-                              aspectRatio: controller.value.aspectRatio,
-                              child: VideoPlayer(controller),
-                            )
-                            : Center(
-                              child: SizedBox(
-                                height: 30,
-                                width: 30,
-                                child: CircularProgressIndicator(),
-                              ),
+                        (controller.isVideoInitialized() ?? false) &&
+                                (controller.isPlaying() ?? false)
+                            ? BetterPlayer(controller: controller)
+                            : MeninkiNetworkImage(
+                              file: widget.reel.file,
+                              networkImageType: NetworkImageType.large,
                             ),
                         Align(
                           alignment: Alignment.bottomLeft,
@@ -201,9 +257,24 @@ class _ReelWidgetState extends State<ReelWidget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   UsersProfile(),
-                  iconCount(icon: "liked", count: "12K"), //'notLiked'
-                  iconCount(icon: "comment", count: "12K"),
-                  iconCount(icon: "repost", count: "12K"),
+                  BlocBuilder<LikedReelsCubit, LikedReelsState>(
+                    builder: (context, state) {
+                      if (state is LikedReelsSuccess) {
+                        return GestureDetector(
+                          onTap: () {
+                            context.read<LikedReelsCubit>().likeTapped(widget.reel.id);
+                          },
+                          child: iconCount(
+                            icon: state.reelIds.contains(widget.reel.id) ? "liked" : 'notLiked',
+                            count: (widget.reel.user_favorite_count ?? 0).toString(),
+                          ),
+                        );
+                      }
+                      return Container();
+                    },
+                  ),
+                  iconCount(icon: "comment", count: (widget.reel.comment_count ?? 0).toString()),
+                  iconCount(icon: "repost", count: (widget.reel.repost_count ?? 0).toString()),
                 ],
               ),
             ),

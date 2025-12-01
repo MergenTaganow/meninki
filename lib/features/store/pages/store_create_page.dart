@@ -8,10 +8,11 @@ import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 import 'package:meninki/features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
-import 'package:meninki/features/reels/blocs/file_upl_bloc/file_upl_bloc.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'package:meninki/features/store/widgets/ColorPicker.dart';
+
+import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 
 class StoreCreatePage extends StatefulWidget {
   const StoreCreatePage({super.key});
@@ -55,6 +56,31 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
   Color selectedColor = Colors.white;
 
   @override
+  void deactivate() {
+    context.read<FileUplCoverImageBloc>().add(Clear());
+    super.deactivate();
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descriptionTMController.dispose();
+    descriptionRuController.dispose();
+    descriptionENController.dispose();
+    addressTMController.dispose();
+    addressRuController.dispose();
+    addressENController.dispose();
+    usernameController.dispose();
+    numberController.dispose();
+    email.dispose();
+    webpage.dispose();
+    telegram.dispose();
+    instagram.dispose();
+    tictok.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
@@ -74,16 +100,16 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
             }
           },
         ),
-        BlocListener<FileUplBloc, FileUplState>(
+        BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
           listener: (context, state) {
-            if (state is FileUploadFailure) {
+            if (state is FileUploadCoverImageFailure) {
               CustomSnackBar.showSnackBar(
                 context: context,
                 title: state.failure.message ?? "smthWentWrong",
                 isError: true,
               );
             }
-            if (state is FileUploadSuccess) {
+            if (state is FileUploadCoverImageSuccess) {
               coverImage = state.file;
               CustomSnackBar.showSnackBar(context: context, title: "Success", isError: false);
             }
@@ -103,13 +129,13 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BlocBuilder<FileUplBloc, FileUplState>(
+                BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
                   builder: (context, state) {
                     return Row(
                       children: [
                         InkWell(
                           onTap: () async {
-                            if (state is! FileUploading) {
+                            if (state is! FileUploadingCoverImage) {
                               FilePickerResult? result = await FilePicker.platform.pickFiles(
                                 type: FileType.image,
                                 lockParentWindow: true,
@@ -117,7 +143,7 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
 
                               if (result != null) {
                                 File file = File(result.files.single.path!);
-                                context.read<FileUplBloc>().add(UploadFile(file));
+                                context.read<FileUplCoverImageBloc>().add(UploadFile(file));
                               }
                             }
                           },
@@ -131,26 +157,24 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                                 color: Colors.white,
                                 border: Border.all(color: Color(0xFFF3F3F3), width: 1),
                               ),
-                              child:
-                                  state is FileUploadSuccess
-                                      ? Image.network(
-                                        '$baseUrl/public/${state.file.resizedFiles?.small}',
-                                        fit: BoxFit.cover,
-                                      )
-                                      : Center(
-                                        child:
-                                            state is FileUploading
-                                                ? SizedBox(
-                                                  height: 25,
-                                                  width: 25,
-                                                  child: CircularProgressIndicator(
-                                                    value:
-                                                        state.progress == 0 ? null : state.progress,
-                                                    color: Colors.blue,
-                                                  ),
-                                                )
-                                                : Icon(Icons.camera_alt_outlined),
-                                      ),
+                              child: Center(
+                                child:
+                                    (state is FileUploadingCoverImage)
+                                        ? SizedBox(
+                                          height: 25,
+                                          width: 25,
+                                          child: CircularProgressIndicator(
+                                            value: state.progress,
+                                            color: Colors.blue,
+                                          ),
+                                        )
+                                        : (coverImage != null)
+                                        ? Image.network(
+                                          '$baseUrl/public/${coverImage?.resizedFiles?.small}',
+                                          fit: BoxFit.cover,
+                                        )
+                                        : Icon(Icons.camera_alt_outlined),
+                              ),
                             ),
                           ),
                         ),

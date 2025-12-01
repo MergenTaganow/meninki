@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/colors.dart';
-import '../../../core/go.dart';
 import '../../../core/helpers.dart';
-import '../../../core/routes.dart';
 import '../../../my_app.dart';
-import '../bloc/aut_bloc/auth_bloc.dart';
 
 class MainDrawer extends StatelessWidget {
   const MainDrawer({super.key});
@@ -13,7 +9,6 @@ class MainDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // AppLocalizations lg = AppLocalizations.of(context)!;
-    var user = (context.read<AuthBloc>().state as AuthSuccess).user;
     return SafeArea(
       top: false,
       child: Container(

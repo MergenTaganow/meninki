@@ -1,13 +1,18 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_map/flutter_map.dart';
 //
-// class LatLng {
-//   final double latitude;
-//   final double longitude;
-//
-//   LatLng(this.latitude, this.longitude);
-// }
-//
+class LatLng {
+  final double? latitude;
+  final double? longitude;
+
+  LatLng({this.latitude, this.longitude});
+
+  factory LatLng.fromJson(Map<String, dynamic> json) {
+    return LatLng(latitude: (json["latitude"]), longitude: (json["longitude"]));
+  }
+  //
+}
+
 // /// Opens a map screen and lets the user pick a location.
 // /// Returns LatLng of selected point, or null if canceled.
 // Future<LatLng?> selectLocation(BuildContext context) async {

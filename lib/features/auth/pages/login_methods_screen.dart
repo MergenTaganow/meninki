@@ -182,27 +182,21 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
     );
   }
 
-  SizedBox signWithButton({required bool withGoogle}) {
-    return SizedBox(
+  Widget signWithButton({required bool withGoogle}) {
+    return Container(
       height: 45,
       width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFFF4EFEB),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-        ),
-        onPressed: () {},
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              withGoogle ? "Войти с Google" : "Войти с Apple ID",
-              style: TextStyle(color: Color(0xFF3B353F), fontWeight: FontWeight.w500),
-            ),
-            Svvg.asset(withGoogle ? 'google' : 'apple'),
-          ],
-        ),
+      decoration: BoxDecoration(color: Color(0xFFF4EFEB), borderRadius: BorderRadius.circular(50)),
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            withGoogle ? "Войти с Google" : "Войти с Apple ID",
+            style: TextStyle(color: Color(0xFF3B353F), fontWeight: FontWeight.w500),
+          ),
+          Svvg.asset(withGoogle ? 'google' : 'apple'),
+        ],
       ),
     );
   }

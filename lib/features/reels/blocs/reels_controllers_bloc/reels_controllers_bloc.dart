@@ -1,8 +1,8 @@
+import 'package:better_player/better_player.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meninki/features/reels/blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import 'package:meta/meta.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../../../core/api.dart';
 import '../../../../core/injector.dart';
@@ -11,7 +11,7 @@ part 'reels_controllers_event.dart';
 part 'reels_controllers_state.dart';
 
 class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersState> {
-  Map<int, VideoPlayerController> controllersMap = {};
+  Map<int, BetterPlayerController> controllersMap = {};
   ReelsControllersBloc() : super(ReelsControllersLoading({})) {
     on<ReelsControllersEvent>((event, emit) {
       if (event is NewReels) {
@@ -24,14 +24,39 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
     });
   }
   Future<void> _initController(Reel reel) async {
-    final controller = VideoPlayerController.networkUrl(
-      Uri.parse("$baseUrl/public/${reel.file.original_file}/${reel.file.video_chunks?.first}"),
+    final dataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      "$baseUrl/public/${reel.file.video_chunks?.first}",
+      useAsmsAudioTracks: false,
+      useAsmsSubtitles: false,
+      useAsmsTracks: false,
+      bufferingConfiguration: BetterPlayerBufferingConfiguration(
+        minBufferMs: 2000, // lower → faster start
+        maxBufferMs: 10000, // enough for stability
+        bufferForPlaybackMs: 300, // super fast start
+        bufferForPlaybackAfterRebufferMs: 1000,
+      ),
+      cacheConfiguration: BetterPlayerCacheConfiguration(
+        useCache: true,
+        maxCacheSize: 500 * 1024 * 1024, // 50 MB
+        maxCacheFileSize: 50 * 1024 * 1024, // 10 MB per file
+      ),
+    );
+
+    final betterPlayerConfiguration = BetterPlayerConfiguration(
+      looping: false,
+      allowedScreenSleep: false,
+      controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
+    );
+
+    final controller = BetterPlayerController(
+      betterPlayerConfiguration,
+      betterPlayerDataSource: dataSource,
     );
     // Save immediately
     controllersMap[reel.id] = controller;
 
     // Wait until ready
-    await controller.initialize();
     await controller.setVolume(0);
 
     sl<ReelPlayingQueueCubit>().addReady({reel.id: controller});
@@ -42,7 +67,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
   @override
   Future<void> close() async {
     for (final c in controllersMap.values) {
-      await c.dispose();
+      c.dispose(forceDispose: true);
     }
     return super.close();
   }
