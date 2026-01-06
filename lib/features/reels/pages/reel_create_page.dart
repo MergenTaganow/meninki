@@ -15,13 +15,16 @@ import 'package:meninki/features/reels/model/reels.dart';
 
 import '../../../core/api.dart';
 import '../../../core/colors.dart';
+import '../../../core/go.dart';
 import '../../../core/injector.dart';
 import '../../global/widgets/meninki_network_image.dart';
+import '../blocs/get_reels_bloc/get_reels_bloc.dart';
 
 class ReelCreatePage extends StatefulWidget {
   final Product product;
+  final Map<String, dynamic>? laterCreateReel;
 
-  const ReelCreatePage(this.product, {super.key});
+  const ReelCreatePage({required this.product, this.laterCreateReel, super.key});
 
   @override
   State<ReelCreatePage> createState() => _ReelCreatePageState();
@@ -34,8 +37,16 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
   BetterPlayerController? controller;
 
   @override
+  void initState() {
+    if (widget.laterCreateReel != null) {
+      title.text = widget.laterCreateReel!['title'];
+      description.text = widget.laterCreateReel!['description'];
+    }
+    super.initState();
+  }
+
+  @override
   void deactivate() {
-    context.read<FileUplCoverImageBloc>().add(Clear());
     super.deactivate();
   }
 
@@ -48,7 +59,7 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    var me = sl<EmployeeLocalDataSource>().user;
+    var fileState = sl<FileUplCoverImageBloc>().state;
     return MultiBlocListener(
       listeners: [
         BlocListener<ReelCreateCubit, ReelCreateState>(
@@ -61,11 +72,8 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
               );
             }
             if (state is ReelCreateSuccess) {
-              CustomSnackBar.showSnackBar(
-                context: context,
-                title: "successfully created",
-                isError: false,
-              );
+              context.read<GetReelsBloc>().add(GetReel());
+              CustomSnackBar.showSnackBar(context: context, title: "Успешно", isError: false);
               Navigator.popUntil(context, (route) => route.isFirst);
             }
           },
@@ -89,17 +97,24 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
           builder: (context, state) {
             return GestureDetector(
               onTap: () {
+                var map = {
+                  'title': title.text.trim(),
+                  'description': description.text.trim(),
+                  if (file != null) 'file_id': file?.id,
+                  'product_id': widget.product.id,
+                  "link": "string",
+                  "type": "product",
+                  "is_active": true,
+                  "market_id": 1,
+                  "tags": ["string"],
+                };
+                if (file == null && fileState is FileUploadingCoverImage) {
+                  context.read<ReelCreateCubit>().setReel(map);
+                  Go.pop();
+                  return;
+                }
                 if (state is! ReelCreateLoading) {
-                  context.read<ReelCreateCubit>().createReel({
-                    'title': title.text.trim(),
-                    'description': description.text.trim(),
-                    'file_id': file?.id,
-                    "link": "string",
-                    "type": "product",
-                    "is_active": true,
-                    "market_id": 1,
-                    "tags": ["string"],
-                  });
+                  context.read<ReelCreateCubit>().createReel(map);
                 }
               },
               child: Container(
@@ -136,7 +151,7 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.product.name,
+                        widget.product.name.tk ?? "",
                         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                       ),
                       Box(h: 10),
@@ -302,6 +317,7 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                     );
                   },
                 ),
+                Box(h: 120),
               ],
             ),
           ),

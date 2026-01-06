@@ -187,7 +187,7 @@ class Query {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      if (keyword != null) 'search': keyword,
+      if (keyword?.isNotEmpty ?? false) 'search': keyword,
       if (isActive != null) 'isActive': isActive,
       if (isBlocked != null) 'isBlocked': isBlocked,
       if (history != null) 'history': history,

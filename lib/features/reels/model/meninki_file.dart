@@ -5,7 +5,7 @@ class MeninkiFile {
   String? blurhash;
   String? mimetype;
   List<String>? video_chunks;
-  String original_file;
+  String? original_file;
   int? user_id;
   String? search_column;
   String? video_master_playlist;
@@ -19,7 +19,7 @@ class MeninkiFile {
     this.blurhash,
     this.mimetype,
     this.video_chunks,
-    required this.original_file,
+     this.original_file,
     this.user_id,
     this.search_column,
     this.video_master_playlist,

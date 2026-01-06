@@ -24,7 +24,7 @@ class LikedReelsCubit extends Cubit<LikedReelsState> {
     } else {
       likedReels.removeAt(index);
     }
-    await ds.likeReel(reelId);
     emit.call(LikedReelsSuccess(likedReels));
+    await ds.likeReel(reelId);
   }
 }

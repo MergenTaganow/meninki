@@ -18,6 +18,7 @@ import '../features/product/bloc/compositions_send_cubit/compositions_send_cubit
 import '../features/product/bloc/get_attributes_bloc/get_product_attributes_bloc.dart';
 import '../features/product/bloc/get_parameters_bloc/get_product_parameters_bloc.dart';
 import '../features/product/bloc/get_product_by_id/get_product_by_id_cubit.dart';
+import '../features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../features/product/bloc/product_create_cubit/product_create_cubit.dart';
 import '../features/product/data/product_remote_data_source.dart';
 import '../features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
@@ -29,6 +30,7 @@ import '../features/reels/blocs/reel_playin_queue_cubit/reel_playing_queue_cubit
 import '../features/reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import '../features/reels/data/reels_remote_data_source.dart';
 import '../features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
+import '../features/store/bloc/get_store_products/get_store_products_bloc.dart';
 import '../features/store/bloc/get_stores_bloc/get_stores_bloc.dart';
 import '../features/store/data/store_remote_data_source.dart';
 import 'api.dart';
@@ -54,7 +56,7 @@ Future<void> init() async {
   sl.registerLazySingleton<ReelPlayingQueueCubit>(() => ReelPlayingQueueCubit());
   sl.registerLazySingleton<ReelsControllersBloc>(() => ReelsControllersBloc());
   sl.registerLazySingleton<CurrentReelCubit>(() => CurrentReelCubit());
-  sl.registerLazySingleton<LikedReelsCubit>(() => LikedReelsCubit(sl()));
+  sl.registerLazySingleton<LikedReelsCubit>(() => LikedReelsCubit(sl())..init());
   sl.registerLazySingleton<ReelCreateCubit>(() => ReelCreateCubit(sl()));
 
   //store
@@ -68,6 +70,7 @@ Future<void> init() async {
   sl.registerLazySingleton<FileUplBloc>(() => FileUplBloc(sl()));
 
   //product
+  sl.registerLazySingleton<GetProductsBloc>(() => GetProductsBloc(sl()));
   sl.registerLazySingleton<GetCategoriesCubit>(() => GetCategoriesCubit(sl()));
   sl.registerLazySingleton<GetBrandsBloc>(() => GetBrandsBloc(sl()));
   sl.registerLazySingleton<CategorySelectingCubit>(() => CategorySelectingCubit());
@@ -79,4 +82,5 @@ Future<void> init() async {
   sl.registerLazySingleton<CompositionsCreatCubit>(() => CompositionsCreatCubit());
   sl.registerLazySingleton<GetProductAttributesBloc>(() => GetProductAttributesBloc(sl()));
   sl.registerLazySingleton<CompositionsSendCubit>(() => CompositionsSendCubit(sl()));
+  sl.registerLazySingleton<GetStoreProductsBloc>(() => GetStoreProductsBloc(sl()));
 }

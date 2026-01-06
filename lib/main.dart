@@ -15,6 +15,7 @@ import 'features/product/bloc/compositions_send_cubit/compositions_send_cubit.da
 import 'features/product/bloc/get_attributes_bloc/get_product_attributes_bloc.dart';
 import 'features/product/bloc/get_parameters_bloc/get_product_parameters_bloc.dart';
 import 'features/product/bloc/get_product_by_id/get_product_by_id_cubit.dart';
+import 'features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import 'features/product/bloc/product_create_cubit/product_create_cubit.dart';
 import 'features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 import 'features/reels/blocs/file_upl_bloc/file_upl_bloc.dart';
@@ -24,6 +25,7 @@ import 'features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
 import 'features/reels/blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
 import 'features/reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import 'features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
+import 'features/store/bloc/get_store_products/get_store_products_bloc.dart';
 import 'features/store/bloc/get_stores_bloc/get_stores_bloc.dart';
 import 'features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'my_app.dart';
@@ -61,6 +63,8 @@ void main() async {
         BlocProvider<GetProductAttributesBloc>(create: (context) => sl<GetProductAttributesBloc>()),
         BlocProvider<CompositionsSendCubit>(create: (context) => sl<CompositionsSendCubit>()),
         BlocProvider<ReelCreateCubit>(create: (context) => sl<ReelCreateCubit>()),
+        BlocProvider<GetProductsBloc>(create: (context) => sl<GetProductsBloc>()),
+        BlocProvider<GetStoreProductsBloc>(create: (context) => sl<GetStoreProductsBloc>()),
       ],
       child: const MyApp(),
     ),

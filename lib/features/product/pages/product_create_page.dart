@@ -1,10 +1,7 @@
 import 'dart:io';
-
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/failure.dart';
 import 'package:meninki/core/go.dart';
@@ -15,7 +12,6 @@ import 'package:meninki/features/categories/models/brand.dart';
 import 'package:meninki/features/categories/models/category.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
-import 'package:meninki/features/product/bloc/get_product_by_id/get_product_by_id_cubit.dart';
 import 'package:meninki/features/product/bloc/product_create_cubit/product_create_cubit.dart';
 import 'package:meninki/features/reels/blocs/file_upl_bloc/file_upl_bloc.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
@@ -35,6 +31,7 @@ class ProductCreatePage extends StatefulWidget {
 }
 
 class _ProductCreatePageState extends State<ProductCreatePage> {
+  final ScrollController scrollController = ScrollController();
   final TextEditingController nameTMController = TextEditingController();
 
   final TextEditingController nameRuController = TextEditingController();
@@ -82,8 +79,6 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
 
   @override
   void initState() {
-    //Todo remove later
-    context.read<GetProductByIdCubit>().getProduct(1);
     super.initState();
   }
 
@@ -91,15 +86,6 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        //Todo remove later
-        BlocListener<GetProductByIdCubit, GetProductByIdState>(
-          listener: (context, state) {
-            if (state is GetProductByIdSuccess) {
-              createdProduct = state.product;
-              setState(() {});
-            }
-          },
-        ),
         BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
           listener: (context, state) {
             if (state is FileUploadCoverImageSuccess) {
@@ -110,13 +96,10 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
         BlocListener<ProductCreateCubit, ProductCreateState>(
           listener: (context, state) {
             if (state is ProductCreateSuccess) {
-              CustomSnackBar.showSnackBar(
-                context: context,
-                title: "createdSuccessfully",
-                isError: false,
-              );
+              CustomSnackBar.showSnackBar(context: context, title: "Успешно", isError: false);
               createdProduct = state.product;
               setState(() {});
+              scrollController.animateTo(0, duration: Duration(seconds: 1), curve: Curves.easeInOut);
               // Go.popGo(Routes.productDetailPage, argument: {'productId': state.product.id});
             }
             if (state is ProductCreateFailed) {
@@ -164,52 +147,56 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
       child: Scaffold(
         appBar: AppBar(title: Text("Новый товар")),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: BlocBuilder<ProductCreateCubit, ProductCreateState>(
-          builder: (context, state) {
-            return GestureDetector(
-              onTap: () {
-                if (state is! ProductCreateLoading) {
-                  context.read<ProductCreateCubit>().createProduct({
-                    "name": {
-                      "tk": nameTMController.text.trim(),
-                      "en": nameENController.text.trim(),
-                      "ru": nameRuController.text.trim(),
-                    },
-                    "description": {
-                      "tk": descriptionTMController.text.trim(),
-                      "en": descriptionENController.text.trim(),
-                      "ru": descriptionRuController.text.trim(),
-                    },
-                    "is_active": true,
-                    "cover_image_id": coverImage?.id,
-                    "market_id": widget.storeId,
-                    "price": priceController.text,
-                    "brand_id": selectedBrand?.id,
-                    if (previousPriceController.text.isNotEmpty)
-                      "discount": previousPriceController.text,
-                    "category_ids": selectedSubCategories.map((e) => e.id).toList(),
-                    "file_ids": productPhotos.map((e) => e.id).toList(),
-                  });
-                }
-              },
-              child: Container(
-                height: 45,
-                decoration: BoxDecoration(
-                  color: Col.primary,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                margin: EdgeInsets.symmetric(horizontal: 14),
-                child: Center(
-                  child:
-                      state is ProductCreateLoading
-                          ? CircularProgressIndicator()
-                          : Text("Опубликовать", style: TextStyle(color: Colors.white)),
-                ),
-              ),
-            );
-          },
-        ),
+        floatingActionButton:
+            createdProduct == null
+                ? BlocBuilder<ProductCreateCubit, ProductCreateState>(
+                  builder: (context, state) {
+                    return GestureDetector(
+                      onTap: () {
+                        if (state is! ProductCreateLoading) {
+                          context.read<ProductCreateCubit>().createProduct({
+                            "name": {
+                              "tk": nameTMController.text.trim(),
+                              "en": nameENController.text.trim(),
+                              "ru": nameRuController.text.trim(),
+                            },
+                            "description": {
+                              "tk": descriptionTMController.text.trim(),
+                              "en": descriptionENController.text.trim(),
+                              "ru": descriptionRuController.text.trim(),
+                            },
+                            "is_active": true,
+                            "cover_image_id": coverImage?.id,
+                            "market_id": widget.storeId,
+                            "price": priceController.text,
+                            "brand_id": selectedBrand?.id,
+                            if (previousPriceController.text.isNotEmpty)
+                              "discount": previousPriceController.text,
+                            "category_ids": selectedSubCategories.map((e) => e.id).toList(),
+                            "file_ids": productPhotos.map((e) => e.id).toList(),
+                          });
+                        }
+                      },
+                      child: Container(
+                        height: 45,
+                        decoration: BoxDecoration(
+                          color: Col.primary,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        margin: EdgeInsets.symmetric(horizontal: 14),
+                        child: Center(
+                          child:
+                              state is ProductCreateLoading
+                                  ? CircularProgressIndicator()
+                                  : Text("Опубликовать", style: TextStyle(color: Colors.white)),
+                        ),
+                      ),
+                    );
+                  },
+                )
+                : null,
         body: SingleChildScrollView(
+          controller: scrollController,
           child: Padd(
             hor: 10,
             ver: 20,
@@ -658,7 +645,14 @@ class UploadingImageCard extends StatelessWidget {
               child: Icon(Icons.cancel, color: Color(0xFFF3F3F3)),
             ),
             if (value != null)
-              SizedBox(height: 30, width: 30, child: CircularProgressIndicator(value: value)),
+              Align(
+                alignment: Alignment.center,
+                child: SizedBox(
+                  height: 30,
+                  width: 30,
+                  child: CircularProgressIndicator(value: value),
+                ),
+              ),
             if (failure != null) Icon(Icons.dangerous_outlined, color: Colors.red),
           ],
         ),

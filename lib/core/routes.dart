@@ -76,7 +76,13 @@ class Routes {
       case productParametersPage:
         return MaterialPageRoute(builder: (_) => ProductParametresPage(data?['product']));
       case reelCreatePage:
-        return MaterialPageRoute(builder: (_) => ReelCreatePage(data?['product']));
+        return MaterialPageRoute(
+          builder:
+              (_) => ReelCreatePage(
+                product: data?['product'],
+                laterCreateReel: data?['laterCreateReel'],
+              ),
+        );
     }
 
     return null;

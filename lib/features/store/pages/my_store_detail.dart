@@ -42,9 +42,11 @@ class _MyStoreDetailState extends State<MyStoreDetail> {
                       children: [
                         SizedBox(
                           height: 360,
+                          width: double.infinity,
                           child: MeninkiNetworkImage(
                             file: state.market.cover_image!,
                             networkImageType: NetworkImageType.large,
+                            fit: BoxFit.cover,
                           ),
                         ),
                         Align(
@@ -76,6 +78,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> {
                               child: MeninkiNetworkImage(
                                 file: state.market.cover_image!,
                                 networkImageType: NetworkImageType.small,
+                                fit: BoxFit.cover,
                               ),
                             ),
                           ),

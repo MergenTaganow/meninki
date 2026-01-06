@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/features/home/widgets/home_widget.dart';
-import 'package:meninki/features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
+import 'package:meninki/features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import 'package:meninki/features/store/bloc/get_stores_bloc/get_stores_bloc.dart';
 import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/products_search.dart';
 import '../widgets/profile_page_widget.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,7 +22,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void initState() {
     context.read<GetReelsBloc>().add(GetReel());
     context.read<GetStoresBloc>().add(GetStores());
-    context.read<LikedReelsCubit>().init();
+    context.read<GetProductsBloc>().add(GetProduct());
     tabController = TabController(length: 4, vsync: this);
     super.initState();
   }
@@ -35,8 +36,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           alignment: Alignment.bottomCenter,
           children: [
             TabBarView(
+              physics: NeverScrollableScrollPhysics(),
               controller: tabController,
-              children: [HomeWidget(), Container(), Container(), ProfilePageWidget()],
+              children: [HomeWidget(), ProductsSearch(), Container(), ProfilePageWidget()],
             ),
             BottomNavBar(tabController),
           ],

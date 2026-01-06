@@ -103,8 +103,8 @@ class _ReelPageState extends State<ReelPage> {
 }
 
 class ReelWidget extends StatefulWidget {
-  final Reel reel;
-  const ReelWidget({super.key, required this.reel});
+  Reel reel;
+  ReelWidget({super.key, required this.reel});
 
   @override
   State<ReelWidget> createState() => _ReelWidgetState();
@@ -206,16 +206,13 @@ class _ReelWidgetState extends State<ReelWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '@reviewer2023',
+                                  '@${widget.reel.user_id}',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                ExpandableText(
-                                  text:
-                                      'Купила очки как у моего братюни! Совсем недорого, горбатая бабка продавала на ВДНХ. Качество хорошее, цвет точно такой жеnad osi asxn rxak',
-                                ),
+                                ExpandableText(text: widget.reel.description ?? ''),
                               ],
                             ),
                           ),
@@ -262,6 +259,11 @@ class _ReelWidgetState extends State<ReelWidget> {
                       if (state is LikedReelsSuccess) {
                         return GestureDetector(
                           onTap: () {
+                            var count =
+                                (widget.reel.user_favorite_count ?? 0) +
+                                (state.reelIds.contains(widget.reel.id) ? -1 : 1);
+                            widget.reel = widget.reel.copyWith(user_favorite_count: count);
+                            setState(() {});
                             context.read<LikedReelsCubit>().likeTapped(widget.reel.id);
                           },
                           child: iconCount(

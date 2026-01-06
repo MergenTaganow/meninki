@@ -5,9 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
-import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-
 import '../../../core/api.dart';
 import '../../../core/helpers.dart';
 import '../blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
@@ -60,9 +58,14 @@ class ReelCard extends StatelessWidget {
                                     (controller.isVideoInitialized() ?? false) &&
                                     (controller.isPlaying() ?? false))
                                 ? BetterPlayer(controller: controller)
-                                : MeninkiNetworkImage(
-                                  file: reel.file,
-                                  networkImageType: NetworkImageType.small,
+                                : CachedNetworkImage(
+                                  imageUrl: '$baseUrl/public/${reel.file.resizedFiles?.small}',
+                                  placeholder:
+                                      (context, url) =>
+                                          (reel.file.blurhash?.isNotEmpty ?? false)
+                                              ? BlurHash(hash: reel.file.blurhash ?? "")
+                                              : Container(),
+                                  errorWidget: (context, url, error) => const Icon(Icons.error),
                                 ),
                       ),
                     ),

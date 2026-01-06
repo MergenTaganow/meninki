@@ -1,12 +1,13 @@
 import 'package:meninki/features/categories/models/brand.dart';
 import 'package:meninki/features/categories/models/category.dart';
+import 'package:meninki/features/global/model/name.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/store/models/market.dart';
 
 class Product {
   int id;
-  String name;
-  String description;
+  Name name;
+  Name? description;
   bool? is_active;
   bool? is_verified;
   num? price;
@@ -19,11 +20,12 @@ class Product {
   Brand? brand;
   List<Category>? categories;
   List<MeninkiFile>? product_files;
+  MeninkiFile? cover_image;
 
   Product({
     required this.id,
     required this.name,
-    required this.description,
+    this.description,
     this.is_active,
     this.is_verified,
     this.price,
@@ -36,16 +38,17 @@ class Product {
     this.brand,
     this.categories,
     this.product_files,
+    this.cover_image,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: (json["id"]),
-      name: json["name"],
-      description: json["description"],
+      name: Name.fromJson(json["name"]),
+      description: Name.fromJson(json["description"]),
       is_active: json["is_active"],
       is_verified: json["is_verified"],
-      price: (json["price"]),
+      price: (json["price"] is String) ? num.parse(json["price"]) : json["price"],
       discount: (json["discount"]),
       market: json["market"] != null ? Market.fromJson(json["market"]) : null,
       created_at: json["created_at"],
@@ -53,6 +56,7 @@ class Product {
       user_favorite_count: (json["user_favorite_count"]),
       rate_count: (json["rate_count"]),
       brand: json["brand"] != null ? Brand.fromJson(json["brand"]) : null,
+      cover_image: json["cover_image"] != null ? MeninkiFile.fromJson(json["cover_image"]) : null,
       categories:
           json["categories"] != null
               ? (json["categories"] as List).map((e) => Category.fromJson(e)).toList()

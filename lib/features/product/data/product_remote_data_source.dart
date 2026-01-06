@@ -11,6 +11,7 @@ import '../../../core/failure.dart';
 abstract class ProductRemoteDataSource {
   Future<Either<Failure, Product>> createProduct(Map<String, dynamic> data);
   Future<Either<Failure, Product>> getProductById(int id);
+  Future<Either<Failure, List<Product>>> getProducts(Query query);
   Future<Either<Failure, List<ProductParameter>>> getParameters(Query query);
   Future<Either<Failure, List<ProductAttribute>>> getAttributes(Query query);
   Future<Either<Failure, Success>> sendComposition(Map<String, dynamic> data);
@@ -35,7 +36,7 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Product>> getProductById(int id) async {
     try {
-      var response = await api.dio.get('v1/manager/products/$id', queryParameters: {"lang": "tk"});
+      var response = await api.dio.get('v1/products/$id', queryParameters: {"lang": "tk"});
       print(response.data);
 
       return Right(Product.fromJson(response.data['payload']));
@@ -79,12 +80,28 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Success>> sendComposition(Map<String, dynamic> data) async {
     try {
-      var response = await api.dio.post('v1/manager/compositions', data: data);
+      var response = await api.dio.post('v1/compositions', data: data);
       print(response.data);
 
       return Right(Success());
     } catch (e) {
       return Left(handleError(e));
     }
+  }
+
+  @override
+  Future<Either<Failure, List<Product>>> getProducts(Query query) async {
+    // try {
+    var response = await api.dio.get(
+      'v1/products',
+      queryParameters: {...query.toMap(), "lang": "tk", "order_direction": "asc"},
+    );
+
+    List<Product> product =
+        (response.data['payload'] as List).map((e) => Product.fromJson(e)).toList();
+    return Right(product);
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 }

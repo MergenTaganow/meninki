@@ -1,4 +1,5 @@
 import 'package:meninki/features/auth/models/user.dart';
+import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/store/models/province.dart';
 
@@ -17,6 +18,7 @@ class Market {
   int? user_rate_count;
   int? user_favorite_count;
   List<MeninkiFile>? files;
+  List<Product>? products;
   Province? province;
   User? user;
 
@@ -34,6 +36,7 @@ class Market {
     this.user_favorite_count,
     this.files,
     this.province,
+    this.products,
     this.user,
   });
 
@@ -53,6 +56,10 @@ class Market {
       files:
           json["files"] != null
               ? (json["files"] as List).map((e) => MeninkiFile.fromJson(e)).toList()
+              : null,
+      products:
+          json["products"] != null
+              ? (json["products"] as List).map((e) => Product.fromJson(e)).toList()
               : null,
       province: json["province"] != null ? Province.fromJson(json["province"]) : null,
       user: json["user"] != null ? User.fromJson(json["user"]) : null,

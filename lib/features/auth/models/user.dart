@@ -34,7 +34,10 @@ class User {
       token: json["token"] != null ? Token.fromMap(json["token"]) : null,
       id: (json["id"]),
       created_at: json["created_at"] != null ? DateTime.tryParse(json["created_at"]) : null,
-      phonenumber: json["phonenumber"],
+      phonenumber:
+          (json["phonenumber"] is int)
+              ? (json["phonenumber"] as int).toString()
+              : json["phonenumber"],
       username: json["username"],
       first_name: json["first_name"],
       last_name: json["last_name"],

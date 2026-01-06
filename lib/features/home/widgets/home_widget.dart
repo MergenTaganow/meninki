@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/store/bloc/get_stores_bloc/get_stores_bloc.dart';
-import '../../../core/colors.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/helpers.dart';
+import '../../global/widgets/meninki_network_image.dart';
+import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
+import '../../product/widgets/product_card.dart';
 import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import '../../reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
-import '../../reels/model/reels.dart';
-import '../../reels/widgets/reel_card.dart';
+import '../../store/models/market.dart';
+import 'home_adds.dart';
+import 'home_lenta.dart';
+import 'home_main.dart';
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
@@ -19,7 +22,6 @@ class HomeWidget extends StatefulWidget {
 
 class _HomeWidgetState extends State<HomeWidget> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<Reel> reels = [];
 
   final List<String> tabs = ['Лента', 'Главная', 'Объявления'];
 
@@ -48,148 +50,24 @@ class _HomeWidgetState extends State<HomeWidget> with SingleTickerProviderStateM
       },
       child: Padd(
         pad: 10,
-        child: Column(
-          children: [
-            customTabBar(),
-            Box(h: 20),
-            BlocBuilder<GetStoresBloc, GetStoresState>(
-              builder: (context, state) {
-                if (state is GetStoresSuccess && state.stores.isNotEmpty) {
-                  return SizedBox(
-                    height: 130,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        var store = state.stores[index];
-                        return Container(
-                          height: 130,
-                          width: 90,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Stack(
-                            children: [
-                              // image
-                              if (store.cover_image != null)
-                                MeninkiNetworkImage(
-                                  file: store.cover_image!,
-                                  networkImageType: NetworkImageType.small,
-                                ),
-
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Text(
-                                  store.name,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 12, color: Colors.white),
-                                ),
-                              ),
-                              Align(
-                                alignment: Alignment.topRight,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(40),
-                                    color: Colors.white,
-                                  ),
-                                  margin: EdgeInsets.only(right: 6, top: 6),
-                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  child: Text(
-                                    "13",
-                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 10),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                      separatorBuilder: (context, index) => Box(w: 8),
-                      itemCount: state.stores.length,
-                    ),
-                  );
-                }
-                return Container();
-              },
-            ),
-            Box(h: 20),
-            Expanded(
-              child: BlocBuilder<GetReelsBloc, GetReelsState>(
-                builder: (context, state) {
-                  if (state is GetReelLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (state is GetReelSuccess) {
-                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                      if (mounted) {
-                        setState(() {
-                          reels = state.reels;
-                        });
-                      }
-                    });
-                  }
-
-                  if (state is GetReelFailed) {
-                    // return ErrorPage(
-                    //   fl: state.fl,
-                    //   onRefresh: () {
-                    //     context.read<GetOrdersBloc>().add(RefreshLastOrders());
-                    //   },
-                    // );
-                    return Text("error");
-                  }
-
-                  if (reels.isEmpty) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Svvg.asset('_emptyy'),
-                        const Box(h: 16),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Col.primary,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                          ),
-                          onPressed: () {
-                            context.read<GetReelsBloc>().add(GetReel());
-                          },
-                          child: SizedBox(
-                            height: 45,
-                            child: Center(
-                              child: Padd(
-                                hor: 10,
-                                child: Text(
-                                  "lg.tryAgain",
-                                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-
-                  return RefreshIndicator(
-                    backgroundColor: Colors.white,
-                    onRefresh: () async {
-                      context.read<GetReelsBloc>().add(GetReel());
-                    },
-                    child: MasonryGridView.count(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 14,
-                      crossAxisSpacing: 8,
-                      itemCount: reels.length,
-                      itemBuilder: (context, index) {
-                        return ReelCard(reel: reels[index]);
-                      },
-                    ),
-                  );
-                  // if (state is ReelPagLoading) const CircularProgressIndicator(),
-                },
+        child: RefreshIndicator(
+          onRefresh: () async {
+            context.read<GetReelsBloc>().add(GetReel());
+            context.read<GetStoresBloc>().add(GetStores());
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              customTabBar(),
+              Expanded(
+                child: TabBarView(
+                  physics: NeverScrollableScrollPhysics(),
+                  controller: _tabController,
+                  children: [HomeLenta(), HomeMain(), HomeAdd()],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

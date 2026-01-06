@@ -51,7 +51,9 @@ class _AttributesSheetState extends State<AttributesSheet> {
             child: BlocBuilder<GetProductAttributesBloc, GetProductAttributesState>(
               builder: (context, state) {
                 if (state is GetProductAttributeLoading) {
-                  return CircularProgressIndicator();
+                  return Center(
+                    child: SizedBox(height: 30, width: 30, child: CircularProgressIndicator()),
+                  );
                 }
                 if (state is GetProductAttributeFailed) {
                   return Text(state.message ?? "error");

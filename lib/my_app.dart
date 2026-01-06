@@ -45,6 +45,15 @@ class _MyAppState extends State<MyApp> {
         }
       },
       child: MaterialApp(
+        builder: (context, child) {
+          return GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: child!,
+          );
+        },
         theme: Theme.of(context).copyWith(
           scaffoldBackgroundColor: Color(0xFFFBFBFB),
           appBarTheme: AppBarTheme.of(context).copyWith(

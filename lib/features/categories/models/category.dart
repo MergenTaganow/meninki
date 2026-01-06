@@ -29,7 +29,7 @@ class Category {
       slug: json["slug"],
       level: (json["level"]),
       children:
-          json["children"] != null
+          (json["children"] != null && (json["children"] as List).isNotEmpty)
               ? (json["children"] as List).map((e) => Category.fromJson(e)).toList()
               : null,
     );

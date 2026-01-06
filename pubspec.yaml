@@ -53,6 +53,7 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_blurhash: ^0.9.1
   better_player: ^0.0.84
+  skeletonizer: ^1.4.3
 
 dev_dependencies:
   flutter_test:

@@ -4,7 +4,7 @@ import '../features/auth/data/employee_local_data_source.dart';
 import '../features/auth/models/user.dart';
 import 'failure.dart';
 
-String baseUrl = 'https://meninki.kamilussat.com';
+String baseUrl = 'https://meninki.asuda.agency';
 
 class Api {
   final EmployeeLocalDataSource emplDs;

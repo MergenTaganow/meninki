@@ -33,7 +33,7 @@ class _CategoriesSelectingPageState extends State<CategoriesSelectingPage> {
             BlocBuilder<GetCategoriesCubit, GetCategoriesState>(
               builder: (context, state) {
                 if (state is GetCategoriesLoading) {
-                  return CircularProgressIndicator();
+                  return Center(child: CircularProgressIndicator());
                 }
                 if (state is GetCategoriesFailed) {
                   return Center(child: Text(state.failure.message ?? "error"));

@@ -1,5 +1,6 @@
 import 'package:better_player/better_player.dart';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:meninki/features/reels/blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import 'package:meta/meta.dart';
@@ -47,6 +48,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
       looping: false,
       allowedScreenSleep: false,
       controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
+      // fit: BoxFit.cover,
     );
 
     final controller = BetterPlayerController(
@@ -59,7 +61,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
     // Wait until ready
     await controller.setVolume(0);
 
-    sl<ReelPlayingQueueCubit>().addReady({reel.id: controller});
+    // sl<ReelPlayingQueueCubit>().addReady({reel.id: controller});
 
     emit.call(ReelsControllersLoading(controllersMap));
   }

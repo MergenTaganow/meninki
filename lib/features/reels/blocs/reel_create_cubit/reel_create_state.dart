@@ -12,4 +12,9 @@ final class ReelCreateFailed extends ReelCreateState {
   ReelCreateFailed(this.failure);
 }
 
+final class LaterCreateReel extends ReelCreateState {
+  final Map<String, dynamic> map;
+  LaterCreateReel(this.map);
+}
+
 final class ReelCreateSuccess extends ReelCreateState {}

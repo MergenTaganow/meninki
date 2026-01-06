@@ -8,6 +8,7 @@ import '../../../core/failure.dart';
 abstract class StoreRemoteDataSource {
   Future<Either<Failure, Success>> storeCreate(Map map);
   Future<Either<Failure, List<Market>>> getStores(Query query);
+  Future<Either<Failure, List<Market>>> getStoresProducts(Query query);
   Future<Either<Failure, Market>> getStoreByID(int id);
 }
 
@@ -43,14 +44,34 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   @override
   Future<Either<Failure, List<Market>>> getStores(Query query) async {
     try {
-      print(query.toMap());
-      var response = await api.dio.get('v1/reels/market/count', queryParameters: query.toMap());
+      var response = await api.dio.get(
+        'v1/market',
+        queryParameters: {...query.toMap(), "order_direction": "asc", "lang": "tk"},
+      );
 
-      print(response.data);
       var list = (response.data['payload'] as List).map((e) => Market.fromJson(e)).toList();
       return Right(list);
     } catch (e) {
       return Left(handleError(e));
     }
+  }
+
+  @override
+  Future<Either<Failure, List<Market>>> getStoresProducts(Query query) async {
+    // try {
+    ///Todo later need to add language
+    print({...query.toMap(), "order_direction": "asc"});
+    var response = await api.dio.get(
+      'v1/market/product',
+      queryParameters: {...query.toMap(), "order_direction": "asc"},
+    );
+
+    print(response.data);
+    var list = (response.data['payload'] as List).map((e) => Market.fromJson(e)).toList();
+    print(list.length);
+    return Right(list);
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 }
