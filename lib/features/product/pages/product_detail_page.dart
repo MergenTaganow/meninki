@@ -7,6 +7,7 @@ import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/home/widgets/reels_list.dart';
 import 'package:meninki/features/product/bloc/get_product_by_id/get_product_by_id_cubit.dart';
 import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
+import 'package:meninki/features/reels/model/query.dart';
 import '../../global/widgets/meninki_network_image.dart';
 import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 
@@ -288,7 +289,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ),
                           ),
                           Box(h: 20),
-                          ReelsList(),
+                          ReelsList(query: Query(product_ids: [state.product.id])),
                         ],
                       );
                     }

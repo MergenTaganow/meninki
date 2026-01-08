@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:meninki/features/auth/bloc/otp_cubit/otp_cubit.dart';
+import 'package:meninki/features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,7 @@ import '../features/categories/bloc/brand_selecting_cubit/brand_selecting_cubit.
 import '../features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import '../features/categories/bloc/get_brands_bloc/get_brands_bloc.dart';
 import '../features/categories/bloc/get_categories_cubit/get_categories_cubit.dart';
+import '../features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import '../features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import '../features/product/bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import '../features/product/bloc/compositions_send_cubit/compositions_send_cubit.dart';
@@ -21,6 +23,8 @@ import '../features/product/bloc/get_product_by_id/get_product_by_id_cubit.dart'
 import '../features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../features/product/bloc/product_create_cubit/product_create_cubit.dart';
 import '../features/product/data/product_remote_data_source.dart';
+import '../features/province/blocks/get_provinces_bloc/get_provinces_cubit.dart';
+import '../features/province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import '../features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 import '../features/reels/blocs/file_upl_bloc/file_upl_bloc.dart';
 import '../features/reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
@@ -42,6 +46,10 @@ Future<void> init() async {
 
   sl.registerLazySingleton<EmployeeLocalDataSource>(() => EmployeeLocalDataSourceImpl(pref: sl()));
   sl.registerLazySingleton<Api>(() => Api(sl())..initApiClient());
+
+  //global
+  sl.registerLazySingleton<SortCubit>(() => SortCubit());
+  sl.registerLazySingleton<KeyFilterCubit>(() => KeyFilterCubit());
 
   //auth
   sl.registerLazySingleton<AuthBloc>(() => AuthBloc(sl(), sl()));
@@ -83,4 +91,9 @@ Future<void> init() async {
   sl.registerLazySingleton<GetProductAttributesBloc>(() => GetProductAttributesBloc(sl()));
   sl.registerLazySingleton<CompositionsSendCubit>(() => CompositionsSendCubit(sl()));
   sl.registerLazySingleton<GetStoreProductsBloc>(() => GetStoreProductsBloc(sl()));
+
+  //province
+  sl.registerLazySingleton<GetProvincesCubit>(() => GetProvincesCubit(sl()));
+  sl.registerLazySingleton<ProvinceSelectingCubit>(() => ProvinceSelectingCubit());
+
 }

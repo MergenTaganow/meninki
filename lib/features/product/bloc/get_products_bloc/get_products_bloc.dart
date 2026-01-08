@@ -43,7 +43,7 @@ class GetProductsBloc extends Bloc<GetProductsEvent, GetProductsState> {
         offset: page,
         limit: limit,
         // sortAs: event.query?.sortAs ?? 'created_at',
-        sortBy: event.query?.sortBy ?? 'id',
+        // sortBy: event.query?.sortBy ?? 'id',
       ),
     );
 
@@ -64,7 +64,7 @@ class GetProductsBloc extends Bloc<GetProductsEvent, GetProductsState> {
         offset: page,
         limit: limit,
         // sortAs: event.query?.sortAs ?? 'created_at',
-        sortBy: event.query?.sortBy ?? 'id',
+        // sortBy: event.query?.sortBy ?? 'id',
       ),
     );
 

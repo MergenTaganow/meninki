@@ -14,7 +14,8 @@ class KeyFilterCubit extends Cubit<KeyFilterState> {
     emit.call(KeyFilterSuccess(selectedMap));
   }
 
-  static String orders_tempering_glasses = "orders_tempering_glasses";
+  static String product_search_min_price = "product_search_min_price";
+  static String product_search_max_price = "product_search_max_price";
 
   // static showRadioSelectionSheet(
   //     {required BuildContext context,

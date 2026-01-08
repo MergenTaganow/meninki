@@ -1,8 +1,8 @@
 import 'package:meninki/features/auth/models/user.dart';
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
-import 'package:meninki/features/store/models/province.dart';
 
+import '../../province/models/province.dart';
 import '../pages/select_location_page.dart';
 
 class Market {

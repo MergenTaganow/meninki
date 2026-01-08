@@ -9,15 +9,29 @@ class CategorySelectingCubit extends Cubit<CategorySelectingState> {
 
   Map<String, List<Category>> selectedMap = {};
 
-  selectCategory(String key, Category category) {
+  selectCategory({required String key, required Category category, bool singleSelection = false}) {
     var selectedDivisions = selectedMap[key] ?? [];
-    var index = selectedDivisions.indexWhere((element) => element.id == category.id);
-    if (index != -1) {
-      selectedDivisions.removeAt(index);
+    if (singleSelection) {
+      var index = selectedDivisions.indexWhere((element) => element.id == category.id);
+      if (index != -1) {
+        selectedDivisions.removeAt(index);
+      } else {
+        selectedDivisions = [category];
+      }
     } else {
-      selectedDivisions.add(category);
+      var index = selectedDivisions.indexWhere((element) => element.id == category.id);
+      if (index != -1) {
+        selectedDivisions.removeAt(index);
+      } else {
+        selectedDivisions.add(category);
+      }
     }
     selectedMap[key] = selectedDivisions;
+    emit.call(CategorySelectingSuccess(selectedMap));
+  }
+
+  selectList({required String key, required List<Category> categories}) {
+    selectedMap[key] = categories;
     emit.call(CategorySelectingSuccess(selectedMap));
   }
 
@@ -28,4 +42,5 @@ class CategorySelectingCubit extends Cubit<CategorySelectingState> {
   }
 
   static String product_creating_category = 'product_creating_category';
+  static String product_searching_category = 'product_searching_category';
 }

@@ -9,6 +9,8 @@ import 'features/categories/bloc/brand_selecting_cubit/brand_selecting_cubit.dar
 import 'features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import 'features/categories/bloc/get_brands_bloc/get_brands_bloc.dart';
 import 'features/categories/bloc/get_categories_cubit/get_categories_cubit.dart';
+import 'features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
+import 'features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import 'features/product/bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import 'features/product/bloc/compositions_send_cubit/compositions_send_cubit.dart';
@@ -17,6 +19,8 @@ import 'features/product/bloc/get_parameters_bloc/get_product_parameters_bloc.da
 import 'features/product/bloc/get_product_by_id/get_product_by_id_cubit.dart';
 import 'features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import 'features/product/bloc/product_create_cubit/product_create_cubit.dart';
+import 'features/province/blocks/get_provinces_bloc/get_provinces_cubit.dart';
+import 'features/province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import 'features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 import 'features/reels/blocs/file_upl_bloc/file_upl_bloc.dart';
 import 'features/reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
@@ -65,6 +69,10 @@ void main() async {
         BlocProvider<ReelCreateCubit>(create: (context) => sl<ReelCreateCubit>()),
         BlocProvider<GetProductsBloc>(create: (context) => sl<GetProductsBloc>()),
         BlocProvider<GetStoreProductsBloc>(create: (context) => sl<GetStoreProductsBloc>()),
+        BlocProvider<SortCubit>(create: (context) => sl<SortCubit>()),
+        BlocProvider<GetProvincesCubit>(create: (context) => sl<GetProvincesCubit>()),
+        BlocProvider<ProvinceSelectingCubit>(create: (context) => sl<ProvinceSelectingCubit>()),
+        BlocProvider<KeyFilterCubit>(create: (context) => sl<KeyFilterCubit>()),
       ],
       child: const MyApp(),
     ),

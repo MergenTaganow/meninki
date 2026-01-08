@@ -1,6 +1,8 @@
+import 'package:meninki/features/global/model/name.dart';
+
 class Category {
   int id;
-  String name;
+  Name? name;
   int? parent_id;
   bool is_active;
   String? icon;
@@ -22,7 +24,7 @@ class Category {
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
       id: (json["id"]),
-      name: json["name"],
+      name: json["name"] != null ? Name.fromJson(json["name"]) : null,
       parent_id: (json["parent_id"]),
       is_active: json["is_active"],
       icon: json["icon"],

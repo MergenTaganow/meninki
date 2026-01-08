@@ -12,6 +12,8 @@ import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'package:meninki/features/store/widgets/ColorPicker.dart';
 
+import '../../province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
+import '../../province/widgets/province_selection.dart';
 import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 
 class StoreCreatePage extends StatefulWidget {
@@ -323,6 +325,13 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                   ],
                 ),
 
+                ///provicne
+                Box(h: 10),
+                ProvinceSelection(
+                  selectionKey: ProvinceSelectingCubit.product_creating_province,
+                  singleSelection: true,
+                ),
+
                 //phoneNumber
                 Box(h: 10),
                 Column(
@@ -394,15 +403,15 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                   ),
                 ),
                 Box(h: 10),
-                ColorPicker(
-                  selectedColor: selectedColor,
-                  onColorSelected: (color) {
-                    setState(() {
-                      selectedColor = color;
-                    });
-                  },
-                ),
 
+                // ColorPicker(
+                //   selectedColor: selectedColor,
+                //   onColorSelected: (color) {
+                //     setState(() {
+                //       selectedColor = color;
+                //     });
+                //   },
+                // ),
                 Box(h: 50),
                 BlocBuilder<StoreCreateCubit, StoreCreateState>(
                   builder: (context, state) {
@@ -416,6 +425,10 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                         ),
                         onPressed: () {
                           if (state is! StoreCreateLoading) {
+                            var provinces =
+                                context
+                                    .read<ProvinceSelectingCubit>()
+                                    .selectedMap[ProvinceSelectingCubit.product_creating_province];
                             context.read<StoreCreateCubit>().createStore({
                               "name": nameController.text.trim(),
                               "description": {
@@ -430,7 +443,8 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                               },
                               "location": {"longitude": 38.7373, "latitude": 52.7373},
                               "cover_image_id": coverImage?.id,
-                              "province_id": 1,
+                              if (provinces?.isNotEmpty ?? false)
+                                "province_id": provinces?.first.id,
                               "username": usernameController.text.trim(),
                               "profile_color": '#${selectedColor.value.toRadixString(16)}',
                               "file_ids": [1],

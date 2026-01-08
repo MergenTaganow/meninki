@@ -1,40 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:meninki/features/product/bloc/get_products_bloc/get_products_bloc.dart';
+import 'package:meninki/features/product/models/product.dart';
+import 'package:meninki/features/product/widgets/product_card.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
-import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
-import '../../reels/model/reels.dart';
-import '../../reels/widgets/reel_card.dart';
 
-class ReelsList extends StatefulWidget {
+class ProductsList extends StatefulWidget {
   final Query query;
-  const ReelsList({required this.query, super.key});
+  const ProductsList({required this.query, super.key});
 
   @override
-  State<ReelsList> createState() => _ReelsListState();
+  State<ProductsList> createState() => _ProductsListState();
 }
 
-class _ReelsListState extends State<ReelsList> {
-  List<Reel> reels = [];
+class _ProductsListState extends State<ProductsList> {
+  List<Product> products = [];
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GetReelsBloc, GetReelsState>(
+    return BlocBuilder<GetProductsBloc, GetProductsState>(
       builder: (context, state) {
-        if (state is GetReelLoading) {
+        if (state is GetProductLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is GetReelSuccess) {
+        if (state is GetProductSuccess) {
           WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
             setState(() {
-              reels = state.reels;
+              products = state.products;
             });
           });
         }
 
-        if (state is GetReelFailed) {
+        if (state is GetProductFailed) {
           // return ErrorPage(
           //   fl: state.fl,
           //   onRefresh: () {
@@ -44,7 +44,7 @@ class _ReelsListState extends State<ReelsList> {
           return Text("error");
         }
 
-        if (reels.isEmpty) {
+        if (products.isEmpty) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -56,7 +56,7 @@ class _ReelsListState extends State<ReelsList> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                 ),
                 onPressed: () {
-                  context.read<GetReelsBloc>().add(GetReel(widget.query));
+                  context.read<GetProductsBloc>().add(GetProduct(widget.query));
                 },
                 child: SizedBox(
                   height: 45,
@@ -75,22 +75,17 @@ class _ReelsListState extends State<ReelsList> {
           );
         }
 
-        return RefreshIndicator(
-          backgroundColor: Colors.white,
-          onRefresh: () async {
-            context.read<GetReelsBloc>().add(GetReel(widget.query));
+        return MasonryGridView.count(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          mainAxisSpacing: 14,
+          crossAxisSpacing: 8,
+          itemCount: products.length,
+          itemBuilder: (context, index) {
+            return ProductCard(product: products[index]);
           },
-          child: MasonryGridView.count(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 14,
-            crossAxisSpacing: 8,
-            itemCount: reels.length,
-            itemBuilder: (context, index) {
-              return ReelCard(reel: reels[index]);
-            },
-          ),
         );
         // if (state is ReelPagLoading) const CircularProgressIndicator(),
       },

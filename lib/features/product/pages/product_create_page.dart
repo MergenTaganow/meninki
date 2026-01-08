@@ -99,7 +99,11 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
               CustomSnackBar.showSnackBar(context: context, title: "Успешно", isError: false);
               createdProduct = state.product;
               setState(() {});
-              scrollController.animateTo(0, duration: Duration(seconds: 1), curve: Curves.easeInOut);
+              scrollController.animateTo(
+                0,
+                duration: Duration(seconds: 1),
+                curve: Curves.easeInOut,
+              );
               // Go.popGo(Routes.productDetailPage, argument: {'productId': state.product.id});
             }
             if (state is ProductCreateFailed) {
@@ -408,7 +412,13 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                 Box(h: 30),
                 GestureDetector(
                   onTap: () {
-                    Go.to(Routes.categoriesSelectingPage);
+                    Go.to(
+                      Routes.categoriesSelectingPage,
+                      argument: {
+                        "selectionKey": CategorySelectingCubit.product_creating_category,
+                        "singleSelection": false,
+                      },
+                    );
                   },
                   child: Container(
                     height: 45,
@@ -434,7 +444,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                         border: Border.all(color: Col.passiveGreyQuick),
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      child: Text(selectedSubCategories[index].name),
+                      child: Text(selectedSubCategories[index].name?.tk ?? ""),
                     );
                   }),
                 ),

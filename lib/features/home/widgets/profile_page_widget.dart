@@ -6,6 +6,7 @@ import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import 'package:meninki/features/home/model/profile.dart';
 import 'package:meninki/features/home/widgets/reels_list.dart';
+import 'package:meninki/features/reels/model/query.dart';
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
 import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
@@ -172,7 +173,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                           ),
                         ),
                       ),
-                      ReelsList(),
+                      ReelsList(query: Query(user_id: state.profile.id)),
                     ],
                   ),
                 ),

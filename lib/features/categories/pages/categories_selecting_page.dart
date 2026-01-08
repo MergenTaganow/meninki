@@ -7,7 +7,14 @@ import 'package:meninki/features/categories/bloc/get_categories_cubit/get_catego
 import 'package:meninki/features/categories/models/category.dart';
 
 class CategoriesSelectingPage extends StatefulWidget {
-  const CategoriesSelectingPage({super.key});
+  final String selectionKey;
+  final bool? singleSelection;
+
+  const CategoriesSelectingPage({
+    super.key,
+    this.singleSelection = false,
+    required this.selectionKey,
+  });
 
   @override
   State<CategoriesSelectingPage> createState() => _CategoriesSelectingPageState();
@@ -63,7 +70,14 @@ class _CategoriesSelectingPageState extends State<CategoriesSelectingPage> {
     return GestureDetector(
       onTap: () {
         if (category.children?.isNotEmpty ?? false) {
-          Go.to(Routes.subCategoriesSelectingPage, argument: {"categories": category.children});
+          Go.to(
+            Routes.subCategoriesSelectingPage,
+            argument: {
+              "categories": category.children,
+              "selectionKey": widget.selectionKey,
+              "singleSelection": widget.singleSelection,
+            },
+          );
         }
       },
       child: Container(
@@ -71,7 +85,7 @@ class _CategoriesSelectingPageState extends State<CategoriesSelectingPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(category.name, style: TextStyle(fontWeight: FontWeight.w500)),
+            Text(category.name?.tk ?? '', style: TextStyle(fontWeight: FontWeight.w500)),
             Box(w: 14),
             if (category.children?.isNotEmpty ?? false)
               Icon(Icons.navigate_next, color: Color(0xFF969696)),

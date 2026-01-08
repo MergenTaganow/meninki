@@ -9,8 +9,15 @@ import '../../../core/helpers.dart';
 
 class SubCategorySelectingPage extends StatelessWidget {
   final List<Category> categories;
+  final String selectionKey;
+  final bool? singleSelection;
 
-  const SubCategorySelectingPage(this.categories, {super.key});
+  const SubCategorySelectingPage({
+    super.key,
+    this.singleSelection = false,
+    required this.selectionKey,
+    required this.categories,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,21 +29,37 @@ class SubCategorySelectingPage extends StatelessWidget {
           builder: (context, state) {
             List<Category>? selecteds;
             if (state is CategorySelectingSuccess) {
-              selecteds = state.selectedMap[CategorySelectingCubit.product_creating_category];
+              selecteds = state.selectedMap[selectionKey];
             }
             return Column(
               children: [
                 Expanded(
                   child: ListView.separated(
+                    // itemCount: categories.length + 1,
+                    itemCount: categories.length,
                     itemBuilder: (context, index) {
-                      var selectedIndex = selecteds?.indexWhere(
-                        (e) => e.id == categories[index].id,
-                      );
+                      // if (index == 0) {
+                      //   return InkWell(
+                      //     onTap: () {
+                      //       context.read<CategorySelectingCubit>().selectList(
+                      //         key: selectionKey,
+                      //         categories: categories,
+                      //       );
+                      //     },
+                      //     child: Container(
+                      //       padding: EdgeInsets.all(14),
+                      //       child: Text('все', style: TextStyle(fontWeight: FontWeight.w500)),
+                      //     ),
+                      //   );
+                      // }
+                      // var category = categories[index - 1];
+                      var category = categories[index];
+                      var selectedIndex = selecteds?.indexWhere((e) => e.id == category.id);
                       return InkWell(
                         onTap: () {
                           context.read<CategorySelectingCubit>().selectCategory(
-                            CategorySelectingCubit.product_creating_category,
-                            categories[index],
+                            key: selectionKey,
+                            category: category,
                           );
                         },
                         child: Container(
@@ -45,7 +68,7 @@ class SubCategorySelectingPage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                categories[index].name,
+                                category.name?.tk ?? '',
                                 style: TextStyle(fontWeight: FontWeight.w500),
                               ),
                               Box(w: 14),
@@ -56,7 +79,6 @@ class SubCategorySelectingPage extends StatelessWidget {
                       );
                     },
                     separatorBuilder: (context, index) => Box(h: 6),
-                    itemCount: categories.length,
                   ),
                 ),
                 GestureDetector(

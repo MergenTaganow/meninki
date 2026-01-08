@@ -12,6 +12,8 @@ import '../features/product/pages/compositions_page.dart';
 import '../features/product/pages/product_create_page.dart';
 import '../features/product/pages/product_detail_page.dart';
 import '../features/product/pages/product_parametres_page.dart';
+import '../features/product/pages/product_search_filter_page.dart';
+import '../features/province/pages/province_selecting_page.dart';
 import '../features/reels/pages/reel_create_page.dart';
 import '../features/store/pages/my_store_detail.dart';
 import '../features/store/pages/store_create_page.dart';
@@ -40,9 +42,13 @@ class Routes {
   static const String productDetailPage = '/productDetailPage';
   static const String productParametersPage = '/productParametersPage';
   static const String compositionsPage = '/compositionsPage';
+  static const String productSearchFilterPage = '/productSearchFilterPage';
 
   //reals
   static const String reelCreatePage = '/reelCratePage';
+
+  //province
+  static const String provinceSelectingPage = '/provinceSelectingPage';
 
   static Route? onGenerateRoute(RouteSettings settings) {
     final Map? data = settings.arguments as Map?;
@@ -64,9 +70,22 @@ class Routes {
       case productCreate:
         return MaterialPageRoute(builder: (_) => ProductCreatePage(data?["storeId"]));
       case categoriesSelectingPage:
-        return MaterialPageRoute(builder: (_) => CategoriesSelectingPage());
+        return MaterialPageRoute(
+          builder:
+              (_) => CategoriesSelectingPage(
+                selectionKey: data?['selectionKey'],
+                singleSelection: data?['singleSelection'],
+              ),
+        );
       case subCategoriesSelectingPage:
-        return MaterialPageRoute(builder: (_) => SubCategorySelectingPage(data?["categories"]));
+        return MaterialPageRoute(
+          builder:
+              (_) => SubCategorySelectingPage(
+                categories: data?["categories"],
+                selectionKey: data?['selectionKey'],
+                singleSelection: data?['singleSelection'],
+              ),
+        );
       case brandSelectingPage:
         return MaterialPageRoute(builder: (_) => BrandSelectingPage());
       case compositionsPage:
@@ -75,6 +94,18 @@ class Routes {
         return MaterialPageRoute(builder: (_) => ProductDetailPage(data?['productId']));
       case productParametersPage:
         return MaterialPageRoute(builder: (_) => ProductParametresPage(data?['product']));
+      case provinceSelectingPage:
+        return MaterialPageRoute(
+          builder:
+              (_) => ProvinceSelectingPage(
+                singleSelection: data?['singleSelection'] ?? false,
+                selectionKey: data?['selectionKey'],
+              ),
+        );
+      case productSearchFilterPage:
+        return MaterialPageRoute(
+          builder: (_) => ProductSearchFilterPage(onFilter: data?['onFilter']),
+        );
       case reelCreatePage:
         return MaterialPageRoute(
           builder:
