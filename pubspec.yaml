@@ -54,6 +54,9 @@ dependencies:
   flutter_blurhash: ^0.9.1
   better_player: ^0.0.84
   skeletonizer: ^1.4.3
+  smooth_page_indicator: ^1.1.0
+  photo_view: ^0.15.0
+
 
 dev_dependencies:
   flutter_test:

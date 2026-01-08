@@ -50,8 +50,10 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
                         builder: (context, state) {
                           var selectedIndex =
                               state is BrandSelectingSuccess
-                                  ? state.selectedMap[BrandSelectingCubit.product_creating_brand]
-                                      ?.indexWhere((e) => e.id == brands[index].id)
+                                  ? (state.selectedMap[BrandSelectingCubit
+                                              .product_creating_brand] ??
+                                          [])
+                                      .indexWhere((e) => e.id == brands[index].id)
                                   : -1;
                           return InkWell(
                             onTap: () {

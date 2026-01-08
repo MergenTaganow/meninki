@@ -57,6 +57,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   @override
   void deactivate() {
     context.read<FileUplCoverImageBloc>().add(Clear());
+    context.read<FileUplBloc>().add(ClearUploading());
     context.read<CategorySelectingCubit>().emptySelections(
       CategorySelectingCubit.product_creating_category,
     );
@@ -438,13 +439,29 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                 Box(h: 10),
                 Wrap(
                   children: List.generate(selectedSubCategories.length, (index) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Col.passiveGreyQuick),
+                    return GestureDetector(
+                      onTap: () {
+                        context.read<CategorySelectingCubit>().selectCategory(
+                          key: CategorySelectingCubit.product_creating_category,
+                          category: selectedSubCategories[index],
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Col.passiveGreyQuick),
+                        ),
+                        margin: EdgeInsets.only(right: 8, bottom: 4),
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(selectedSubCategories[index].name?.tk ?? ""),
+                            Box(w: 4),
+                            Icon(Icons.clear, size: 14, color: Color(0xFF474747)),
+                          ],
+                        ),
                       ),
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      child: Text(selectedSubCategories[index].name?.tk ?? ""),
                     );
                   }),
                 ),
@@ -530,12 +547,23 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                           return UploadingImageCard(
                             file: uploadingFiles[index],
                             value: uploadingValues[index],
+                            onRemoveTap: () {
+                              context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
+                            },
                           );
                         }),
                         ...List.generate(errorFiles?.length ?? 0, (index) {
                           return UploadingImageCard(
                             file: errorFiles![index],
                             failure: errors![index],
+                            onRemoveTap: () {
+                              context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
+                            },
+                            onRetryTap: () {
+                              context.read<FileUplBloc>().add(
+                                RetryFile(errorFiles![index], UploadingFileTypes.productPhotos),
+                              );
+                            },
                           );
                         }),
                         GestureDetector(
@@ -630,11 +658,20 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
 }
 
 class UploadingImageCard extends StatelessWidget {
-  const UploadingImageCard({super.key, required this.file, this.value, this.failure});
+  const UploadingImageCard({
+    super.key,
+    required this.file,
+    this.value,
+    this.failure,
+    this.onRemoveTap,
+    this.onRetryTap,
+  });
 
   final File file;
   final double? value;
   final Failure? failure;
+  final void Function()? onRemoveTap;
+  final void Function()? onRetryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -650,20 +687,30 @@ class UploadingImageCard extends StatelessWidget {
         child: Stack(
           children: [
             Center(child: Image.file(file, fit: BoxFit.cover)),
-            Align(
-              alignment: Alignment.topRight,
-              child: Icon(Icons.cancel, color: Color(0xFFF3F3F3)),
-            ),
-            if (value != null)
-              Align(
-                alignment: Alignment.center,
-                child: SizedBox(
-                  height: 30,
-                  width: 30,
-                  child: CircularProgressIndicator(value: value),
-                ),
+            GestureDetector(
+              onTap: onRemoveTap,
+              child: Align(
+                alignment: Alignment.topRight,
+                child: Icon(Icons.cancel, color: Color(0xFFF3F3F3)),
               ),
-            if (failure != null) Icon(Icons.dangerous_outlined, color: Colors.red),
+            ),
+
+            Align(
+              alignment: Alignment.center,
+              child:
+                  (value != null)
+                      ? SizedBox(
+                        height: 30,
+                        width: 30,
+                        child: CircularProgressIndicator(value: value),
+                      )
+                      : failure != null
+                      ? GestureDetector(
+                        onTap: onRetryTap,
+                        child: Icon(Icons.refresh, color: Colors.red),
+                      )
+                      : null,
+            ),
           ],
         ),
       ),

@@ -67,7 +67,7 @@ class _CategoriesSelectingPageState extends State<CategoriesSelectingPage> {
   }
 
   Widget categoryCard(Category category) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         if (category.children?.isNotEmpty ?? false) {
           Go.to(

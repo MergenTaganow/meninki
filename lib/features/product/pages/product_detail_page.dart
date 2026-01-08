@@ -8,6 +8,7 @@ import 'package:meninki/features/home/widgets/reels_list.dart';
 import 'package:meninki/features/product/bloc/get_product_by_id/get_product_by_id_cubit.dart';
 import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
 import 'package:meninki/features/reels/model/query.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../global/widgets/meninki_network_image.dart';
 import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 
@@ -21,6 +22,8 @@ class ProductDetailPage extends StatefulWidget {
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
+  PageController productImagesController = PageController();
+
   @override
   void initState() {
     context.read<GetProductByIdCubit>().getProduct(widget.productId);
@@ -61,23 +64,42 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           if (state.product.product_files?.isNotEmpty ?? false)
                             SizedBox(
                               height: 250,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  return SizedBox(
-                                    height: 250,
-                                    width: MediaQuery.sizeOf(context).width,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(14),
-                                      child: MeninkiNetworkImage(
-                                        file: state.product.product_files![index],
-                                        networkImageType: NetworkImageType.large,
-                                        fit: BoxFit.cover,
-                                      ),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: PageView(
+                                      controller: productImagesController,
+                                      children:
+                                          state.product.product_files!
+                                              .map(
+                                                (e) => SizedBox(
+                                                  height: 250,
+                                                  width: MediaQuery.sizeOf(context).width,
+                                                  child: ClipRRect(
+                                                    borderRadius: BorderRadius.circular(14),
+                                                    child: MeninkiNetworkImage(
+                                                      file: e,
+                                                      networkImageType: NetworkImageType.large,
+                                                      fit: BoxFit.cover,
+                                                      otherFiles: state.product.product_files,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
                                     ),
-                                  );
-                                },
-                                itemCount: state.product.product_files?.length,
+                                  ),
+                                  Box(h: 10),
+                                  SmoothPageIndicator(
+                                    controller: productImagesController,
+                                    count: state.product.product_files?.length ?? 0,
+                                    effect: WormEffect(
+                                      dotHeight: 8,
+                                      dotWidth: 8,
+                                      activeDotColor: Col.primary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           Box(h: 20),
@@ -148,24 +170,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                                   child: BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
                                     builder: (context, fileState) {
-                                      print(fileState);
-                                      if (fileState is FileUploadingCoverImage) {
-                                        return Row(
-                                          children: [
-                                            Text(
-                                              'Reel is uploading',
-                                              maxLines: 2,
-                                              style: TextStyle(fontWeight: FontWeight.w500),
-                                            ),
-                                            Box(w: 10),
-                                            Expanded(
-                                              child: LinearProgressIndicator(
-                                                value: fileState.progress,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }
                                       if (fileState is FileUploadCoverImageFailure) {
                                         return Row(
                                           children: [
@@ -202,7 +206,24 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                           ],
                                         );
                                       }
-                                      return Container();
+                                      return Row(
+                                        children: [
+                                          Text(
+                                            'Reel is uploading',
+                                            maxLines: 2,
+                                            style: TextStyle(fontWeight: FontWeight.w500),
+                                          ),
+                                          Box(w: 10),
+                                          Expanded(
+                                            child: LinearProgressIndicator(
+                                              value:
+                                                  fileState is FileUploadingCoverImage
+                                                      ? fileState.progress
+                                                      : null,
+                                            ),
+                                          ),
+                                        ],
+                                      );
                                     },
                                   ),
                                 );

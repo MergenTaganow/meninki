@@ -216,17 +216,20 @@ class _HomeMainState extends State<HomeMain> {
                       borderRadius: BorderRadius.circular(14),
                       child: Stack(
                         children: [
-                          Container(
-                            height: 120,
-                            width: 90,
-                            decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: MeninkiNetworkImage(
-                              file: store!.cover_image!,
-                              networkImageType: NetworkImageType.small,
-                              fit: BoxFit.cover,
+                          IgnorePointer(
+                            ignoring: true,
+                            child: Container(
+                              height: 120,
+                              width: 90,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: MeninkiNetworkImage(
+                                file: store!.cover_image!,
+                                networkImageType: NetworkImageType.small,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                           // image

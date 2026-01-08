@@ -29,7 +29,7 @@ class SubCategorySelectingPage extends StatelessWidget {
           builder: (context, state) {
             List<Category>? selecteds;
             if (state is CategorySelectingSuccess) {
-              selecteds = state.selectedMap[selectionKey];
+              selecteds = state.selectedMap[selectionKey] ?? [];
             }
             return Column(
               children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:meninki/core/go.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../core/helpers.dart';
@@ -63,49 +64,57 @@ class _HomeLentaState extends State<HomeLenta> {
                           itemBuilder: (context, index) {
                             // Use dummy store when loading to avoid index errors
                             final store = isLoading ? null : stores[index];
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    height: 120,
-                                    width: 90,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey,
-                                      borderRadius: BorderRadius.circular(14),
+                            return InkWell(
+                              onTap: (){
+                                // Go.to(store)
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      height: 120,
+                                      width: 90,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey,
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child:
+                                          (store?.cover_image != null)
+                                              ? IgnorePointer(
+                                                ignoring: true,
+                                                child: MeninkiNetworkImage(
+                                                  file: store!.cover_image!,
+                                                  networkImageType: NetworkImageType.small,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              )
+                                              : null,
                                     ),
-                                    child:
-                                        (store?.cover_image != null)
-                                            ? MeninkiNetworkImage(
-                                              file: store!.cover_image!,
-                                              networkImageType: NetworkImageType.small,
-                                              fit: BoxFit.cover,
-                                            )
-                                            : null,
-                                  ),
-                                  // image
-                                  if (store?.cover_image != null)
-                                    Positioned(
-                                      right: 0,
-                                      top: 0,
-                                      // alignment: Alignment.topRight,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(40),
-                                          color: Colors.white,
-                                        ),
-                                        margin: EdgeInsets.only(right: 6, top: 6),
-                                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                        child: Text(
-                                          (store?.user_rate_count ?? 0).toString(),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 10,
+                                    // image
+                                    if (store?.cover_image != null)
+                                      Positioned(
+                                        right: 0,
+                                        top: 0,
+                                        // alignment: Alignment.topRight,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(40),
+                                            color: Colors.white,
+                                          ),
+                                          margin: EdgeInsets.only(right: 6, top: 6),
+                                          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          child: Text(
+                                            (store?.user_rate_count ?? 0).toString(),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 10,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                ],
+                                  ],
+                                ),
                               ),
                             );
                           },
