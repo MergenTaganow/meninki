@@ -28,11 +28,11 @@ class FileUplCoverImageBloc extends Bloc<FileUplCoverImageEvent, FileUplCoverIma
     UploadFile event,
     Emitter<FileUplCoverImageState> emit,
   ) async {
-    emit(FileUploadingCoverImage(0));
+    emit(FileUploadingCoverImage(0, event.file));
 
     try {
       await for (final (progress, file) in ds.uploadFile(event.file)) {
-        emit(FileUploadingCoverImage(progress));
+        emit(FileUploadingCoverImage(progress, event.file));
 
         if (file != null) {
           emit(FileUploadCoverImageSuccess(file));

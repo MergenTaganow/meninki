@@ -1,4 +1,6 @@
 import 'package:bloc/bloc.dart';
+import 'package:meninki/core/go.dart';
+import 'package:meninki/core/routes.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../core/failure.dart';
@@ -18,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         repo.saveUser(u: null);
         repo.signOut();
         emit(AuthFailed(const Failure()));
+        Go.too(Routes.loginMethodsScreen);
       }
 
       if (event is GetLocalUser) {

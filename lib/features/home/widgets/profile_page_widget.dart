@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/api.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'package:meninki/features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import 'package:meninki/features/home/model/profile.dart';
 import 'package:meninki/features/home/widgets/reels_list.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
+import '../../reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import '../../store/models/market.dart';
 
@@ -23,6 +25,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
   @override
   void initState() {
     context.read<GetProfileCubit>().getMyProfile();
+    context.read<GetMyReelsBloc>().add(GetMyReel());
     super.initState();
   }
 
@@ -173,7 +176,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                           ),
                         ),
                       ),
-                      ReelsList(query: Query(user_id: state.profile.id)),
+                      MyReelsList(query: Query(user_id: state.profile.id)),
+                      Box(h: 90),
                     ],
                   ),
                 ),
@@ -272,6 +276,9 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
           GestureDetector(
             onTap: () {
               Go.to(Routes.productDetailPage, argument: {"productId": 1});
+            },
+            onLongPress: () {
+              context.read<AuthBloc>().add(LogoutEvent());
             },
             child: Icon(Icons.settings, color: Col.primary),
           ),

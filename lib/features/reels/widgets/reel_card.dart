@@ -12,9 +12,10 @@ import '../blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
 import '../model/reels.dart';
 
 class ReelCard extends StatelessWidget {
-  const ReelCard({super.key, required this.reel});
+  const ReelCard({super.key, required this.reel, required this.allReels});
 
   final Reel reel;
+  final List<Reel> allReels;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class ReelCard extends StatelessWidget {
           final controller = state.controllers[reel.id];
           return InkWell(
             onTap: () {
-              Go.to(Routes.reelScreen, argument: {"reel": reel});
+              Go.to(Routes.reelScreen, argument: {"reel": reel, "reels": allReels});
             },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

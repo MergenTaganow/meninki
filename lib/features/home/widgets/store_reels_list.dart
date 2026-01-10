@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:meninki/features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
+import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
 
-class MyReelsList extends StatefulWidget {
+class StoreReelsList extends StatefulWidget {
   final Query query;
-  const MyReelsList({required this.query, super.key});
+  const StoreReelsList({required this.query, super.key});
 
   @override
-  State<MyReelsList> createState() => _MyReelsListState();
+  State<StoreReelsList> createState() => _StoreReelsListState();
 }
 
-class _MyReelsListState extends State<MyReelsList> {
+class _StoreReelsListState extends State<StoreReelsList> {
   List<Reel> reels = [];
 
   @override
@@ -26,12 +26,12 @@ class _MyReelsListState extends State<MyReelsList> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GetMyReelsBloc, GetMyReelsState>(
+    return BlocBuilder<GetStoreReelsBloc, GetReelsState>(
       builder: (context, state) {
-        if (state is GetMyReelLoading) {
+        if (state is GetReelLoading) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (state is GetMyReelSuccess) {
+        if (state is GetReelSuccess) {
           WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
             setState(() {
               reels = state.reels;
@@ -39,7 +39,7 @@ class _MyReelsListState extends State<MyReelsList> {
           });
         }
 
-        if (state is GetMyReelFailed) {
+        if (state is GetReelFailed) {
           // return ErrorPage(
           //   fl: state.fl,
           //   onRefresh: () {
@@ -61,7 +61,7 @@ class _MyReelsListState extends State<MyReelsList> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                 ),
                 onPressed: () {
-                  context.read<GetMyReelsBloc>().add(GetMyReel(widget.query));
+                  context.read<GetStoreReelsBloc>().add(GetReel(widget.query));
                 },
                 child: SizedBox(
                   height: 45,
@@ -83,7 +83,7 @@ class _MyReelsListState extends State<MyReelsList> {
         return RefreshIndicator(
           backgroundColor: Colors.white,
           onRefresh: () async {
-            context.read<GetMyReelsBloc>().add(GetMyReel(widget.query));
+            context.read<GetStoreReelsBloc>().add(GetReel(widget.query));
           },
           child: MasonryGridView.count(
             shrinkWrap: true,

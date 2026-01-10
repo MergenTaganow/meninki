@@ -5,9 +5,11 @@ import 'package:meninki/features/store/bloc/get_store_products/get_store_product
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../core/helpers.dart';
+import '../../../core/routes.dart';
 import '../../global/widgets/meninki_network_image.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../../product/widgets/product_card.dart';
+import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import '../../store/bloc/get_stores_bloc/get_stores_bloc.dart';
 import '../../store/models/market.dart';
 
@@ -212,46 +214,54 @@ class _HomeMainState extends State<HomeMain> {
                   itemBuilder: (context, index) {
                     // Use dummy store when loading to avoid index errors
                     final store = isLoading ? null : stores[index];
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: Stack(
-                        children: [
-                          IgnorePointer(
-                            ignoring: true,
-                            child: Container(
-                              height: 120,
-                              width: 90,
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: MeninkiNetworkImage(
-                                file: store!.cover_image!,
-                                networkImageType: NetworkImageType.small,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          // image
-                          if (store.cover_image != null)
-                            Positioned(
-                              right: 0,
-                              top: 0,
-                              // alignment: Alignment.topRight,
+                    return GestureDetector(
+                      onTap: () {
+                        // if (store.id != null) {
+                        context.read<GetMarketByIdCubit>().getStoreById(store.id);
+                        Go.to(Routes.publicStoreDetail);
+                        // }
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Stack(
+                          children: [
+                            IgnorePointer(
+                              ignoring: true,
                               child: Container(
+                                height: 120,
+                                width: 90,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(40),
-                                  color: Colors.white,
+                                  color: Colors.grey,
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
-                                margin: EdgeInsets.only(right: 6, top: 6),
-                                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                child: Text(
-                                  (store.user_rate_count ?? 0).toString(),
-                                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 10),
+                                child: MeninkiNetworkImage(
+                                  file: store!.cover_image!,
+                                  networkImageType: NetworkImageType.small,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
-                        ],
+                            // image
+                            if (store.cover_image != null)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                // alignment: Alignment.topRight,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(40),
+                                    color: Colors.white,
+                                  ),
+                                  margin: EdgeInsets.only(right: 6, top: 6),
+                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  child: Text(
+                                    (store.user_rate_count ?? 0).toString(),
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 10),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     );
                   },

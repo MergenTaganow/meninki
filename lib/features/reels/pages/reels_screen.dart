@@ -4,17 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/helpers.dart';
+import 'package:meninki/features/comments/pages/comments_page.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
-import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
+// import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import '../../../core/api.dart';
+import '../../../core/go.dart';
+import '../../../core/routes.dart';
 import '../widgets/users_profile.dart';
 
 class ReelPage extends StatefulWidget {
   final Reel reel;
-  const ReelPage({required this.reel, super.key});
+  final List<Reel> reels;
+  const ReelPage({required this.reel, required this.reels, super.key});
 
   @override
   State<ReelPage> createState() => _ReelPageState();
@@ -26,15 +30,11 @@ class _ReelPageState extends State<ReelPage> {
 
   @override
   void initState() {
-    var position = context.read<GetReelsBloc>().reels.indexWhere((e) => e.id == widget.reel.id);
-    print("position-____$position");
-    print("position-____$position");
-    print("position-____$position");
-    print("position-____$position");
+    var position = widget.reels.indexWhere((e) => e.id == widget.reel.id);
     // controller = PreloadPageController(initialPage: position);
     controller = PageController(initialPage: position);
-    context.read<CurrentReelCubit>().set(widget.reel);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CurrentReelCubit>().set(widget.reel);
       setState(() {});
     });
     super.initState();
@@ -49,53 +49,16 @@ class _ReelPageState extends State<ReelPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<GetReelsBloc, GetReelsState>(
-        builder: (context, state) {
-          if (state is GetReelSuccess) {
-            // var urls =
-            //     state.reels.map((e) => "$baseUrl/public/${e.file.video_master_playlist}").toList();
-            // ListView.builder(
-            //   itemCount: urls.length,
-            //   itemBuilder: (context, index) {
-            //     return SizedBox(
-            //       height: MediaQuery.of(context).size.height,
-            //       child: BetterPlayerListVideoPlayer(
-            //         BetterPlayerDataSource(
-            //           BetterPlayerDataSourceType.network,
-            //           urls[index],
-            //           videoFormat: BetterPlayerVideoFormat.hls,
-            //           bufferingConfiguration: BetterPlayerBufferingConfiguration(
-            //             minBufferMs: 500, // lower → faster start
-            //             maxBufferMs: 3000, // enough for stability
-            //             bufferForPlaybackMs: 300, // super fast start
-            //             bufferForPlaybackAfterRebufferMs: 1000,
-            //           ),
-            //         ),
-            //         configuration: BetterPlayerConfiguration(
-            //           autoPlay: true,
-            //           looping: true,
-            //           fit: BoxFit.contain,
-            //           controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
-            //           placeholder: Center(child: CircularProgressIndicator()),
-            //         ),
-            //       ),
-            //     );
-            //   },
-            // );
-            return PageView.builder(
-              controller: controller,
-              scrollDirection: Axis.vertical,
-              // preloadPagesCount: 3,
-              itemCount: state.reels.length,
-              onPageChanged: (index) {
-                context.read<CurrentReelCubit>().set(state.reels[index]);
-              },
-              itemBuilder: (context, index) {
-                return ReelWidget(reel: state.reels[index]);
-              },
-            );
-          }
-          return Container();
+      body: PageView.builder(
+        controller: controller,
+        scrollDirection: Axis.vertical,
+        // preloadPagesCount: 3,
+        itemCount: widget.reels.length,
+        onPageChanged: (index) {
+          context.read<CurrentReelCubit>().set(widget.reels[index]);
+        },
+        itemBuilder: (context, index) {
+          return ReelWidget(reel: widget.reels[index]);
         },
       ),
     );
@@ -112,6 +75,8 @@ class ReelWidget extends StatefulWidget {
 
 class _ReelWidgetState extends State<ReelWidget> {
   late BetterPlayerController controller;
+
+  bool firstPlaying = true;
 
   @override
   void initState() {
@@ -165,18 +130,32 @@ class _ReelWidgetState extends State<ReelWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CurrentReelCubit, CurrentReelState>(
-      builder: (context, state) {
+    return BlocConsumer<CurrentReelCubit, CurrentReelState>(
+      listener: (context, state) {
         if (state is CurrentReelSuccess &&
             state.reel?.id == widget.reel.id &&
-            (controller.isVideoInitialized() ?? false) &&
+            // (controller.isVideoInitialized() ?? false) &&
             !(controller.isPlaying() ?? true)) {
+          print("##########play will be called############");
           controller.play();
+          firstPlaying = false;
         }
         if (state is CurrentReelSuccess &&
             (controller.isPlaying() ?? false) &&
             state.reel?.id != widget.reel.id) {
           controller.pause();
+        }
+      },
+      builder: (context, state) {
+        print(firstPlaying);
+        if (firstPlaying &&
+            state is CurrentReelSuccess &&
+            state.reel?.id == widget.reel.id &&
+            (controller.isVideoInitialized() ?? false) &&
+            !(controller.isPlaying() ?? true)) {
+          print("will play reel from builder");
+          controller.play();
+          firstPlaying = false;
         }
         return Stack(
           children: [
@@ -193,9 +172,12 @@ class _ReelWidgetState extends State<ReelWidget> {
                         (controller.isVideoInitialized() ?? false) &&
                                 (controller.isPlaying() ?? false)
                             ? BetterPlayer(controller: controller)
-                            : MeninkiNetworkImage(
-                              file: widget.reel.file,
-                              networkImageType: NetworkImageType.large,
+                            : IgnorePointer(
+                              ignoring: true,
+                              child: MeninkiNetworkImage(
+                                file: widget.reel.file,
+                                networkImageType: NetworkImageType.large,
+                              ),
                             ),
                         Align(
                           alignment: Alignment.bottomLeft,
@@ -275,7 +257,30 @@ class _ReelWidgetState extends State<ReelWidget> {
                       return Container();
                     },
                   ),
-                  iconCount(icon: "comment", count: (widget.reel.comment_count ?? 0).toString()),
+                  GestureDetector(
+                    onTap: () async {
+                      await controller.videoPlayerController?.pause();
+                      // var position = await controller.videoPlayerController?.position;
+                      // controller.setVolume(0);
+
+                      // await Go.to(Routes.commentsPage, argument: {"reel": widget.reel})?
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CommentsPage(reel: widget.reel)),
+                      );
+
+                      // print(controller.isVideoInitialized());
+                      // controller.seekTo(position ?? Duration(seconds: 0));
+                      // controller.setVolume(100);
+
+                      // print("set reel colled again");
+                      // firstPlaying = true;
+                    },
+                    child: iconCount(
+                      icon: "comment",
+                      count: (widget.reel.comment_count ?? 0).toString(),
+                    ),
+                  ),
                   iconCount(icon: "repost", count: (widget.reel.repost_count ?? 0).toString()),
                 ],
               ),

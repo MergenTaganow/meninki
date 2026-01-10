@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
@@ -92,83 +93,81 @@ class _ProductsSearchState extends State<ProductsSearch> {
         onRefresh: () async {
           context.read<GetProductsBloc>().add(GetProduct());
         },
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              ///search
-              SizedBox(
-                height: 55,
-                child: TextField(
-                  controller: search,
-                  decoration: InputDecoration(
-                    fillColor: Color(0xFFF3F3F3),
-                    filled: true,
-                    prefixIcon: Icon(Icons.search, color: Color(0xFF969696)),
-                    suffixIcon:
-                        search.text.isNotEmpty
-                            ? GestureDetector(
-                              onTap: () {
-                                search.clear();
-                              },
-                              child: Icon(Icons.highlight_remove_rounded, color: Color(0xFF474747)),
-                            )
-                            : null,
-                    hintText: "Поиск",
-                    hintStyle: TextStyle(color: Color(0xFF969696)),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Colors.white, width: 0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Colors.white, width: 0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Color(0xFF0A0A0A), width: 1),
-                    ),
+        child: Column(
+          children: [
+            ///search
+            SizedBox(
+              height: 55,
+              child: TextField(
+                controller: search,
+                decoration: InputDecoration(
+                  fillColor: Color(0xFFF3F3F3),
+                  filled: true,
+                  prefixIcon: Icon(Icons.search, color: Color(0xFF969696)),
+                  suffixIcon:
+                      search.text.isNotEmpty
+                          ? GestureDetector(
+                            onTap: () {
+                              search.clear();
+                            },
+                            child: Icon(Icons.highlight_remove_rounded, color: Color(0xFF474747)),
+                          )
+                          : null,
+                  hintText: "Поиск",
+                  hintStyle: TextStyle(color: Color(0xFF969696)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: Colors.white, width: 0),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: Colors.white, width: 0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: Color(0xFF0A0A0A), width: 1),
                   ),
                 ),
               ),
-              Box(h: 10),
+            ),
+            Box(h: 10),
 
-              ///searchTypes
-              SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        selectedType = searchTypes[index];
-                        setState(() {});
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color:
-                              selectedType == searchTypes[index] ? Col.primary : Color(0xFFF3F3F3),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        child: Text(
-                          searchTypes[index],
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color:
-                                selectedType == searchTypes[index] ? Col.white : Color(0xFF474747),
-                          ),
+            ///searchTypes
+            SizedBox(
+              height: 36,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      selectedType = searchTypes[index];
+                      setState(() {});
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: selectedType == searchTypes[index] ? Col.primary : Color(0xFFF3F3F3),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      child: Text(
+                        searchTypes[index],
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: selectedType == searchTypes[index] ? Col.white : Color(0xFF474747),
                         ),
                       ),
-                    );
-                  },
-                  separatorBuilder: (context, index) => Box(w: 6),
-                  itemCount: searchTypes.length,
-                ),
+                    ),
+                  );
+                },
+                separatorBuilder: (context, index) => Box(w: 6),
+                itemCount: searchTypes.length,
               ),
-              Box(h: 20),
+            ),
+            Box(h: 20),
 
-              ///body
-              BlocBuilder<GetProductsBloc, GetProductsState>(
+            ///body
+            Expanded(
+              child: BlocBuilder<GetProductsBloc, GetProductsState>(
                 builder: (context, state) {
                   if (state is GetProductLoading) {
                     return Center(child: CircularProgressIndicator());
@@ -227,15 +226,16 @@ class _ProductsSearchState extends State<ProductsSearch> {
                           ),
                         ),
                         Box(h: 20),
-                        SizedBox(
-                          height: 240,
-                          child: ListView.separated(
+                        Expanded(
+                          child: MasonryGridView.count(
                             itemBuilder: (context, index) {
-                              return ProductCard(product: state.products[index]);
+                              return ProductCard(product: state.products[index], height: 340);
                             },
                             itemCount: state.products.length,
-                            scrollDirection: Axis.horizontal,
-                            separatorBuilder: (BuildContext context, int index) => Box(w: 8),
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 14,
+                            crossAxisSpacing: 8,
+                            // separatorBuilder: (BuildContext context, int index) => Box(w: 8),
                           ),
                         ),
                       ],
@@ -244,8 +244,8 @@ class _ProductsSearchState extends State<ProductsSearch> {
                   return Container();
                 },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

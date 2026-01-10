@@ -4,10 +4,10 @@ import '../../data/reels_remote_data_source.dart';
 import '../../model/query.dart';
 import '../../model/reels.dart';
 
-part 'get_reels_event.dart';
-part 'get_reels_state.dart';
+part 'get_my_reels_event.dart';
+part 'get_my_reels_state.dart';
 
-class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
+class GetMyReelsBloc extends Bloc<GetMyReelsEvent, GetMyReelsState> {
   final ReelsRemoteDataSource ds;
   List<Reel> reels = [];
 
@@ -15,29 +15,29 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
   int limit = 15;
   bool canPag = false;
 
-  GetVerifiedReelsBloc(this.ds) : super(GetReelInitial()) {
-    on<GetReelsEvent>((event, emit) async {
-      if (event is GetReel) {
+  GetMyReelsBloc(this.ds) : super(GetMyReelInitial()) {
+    on<GetMyReelsEvent>((event, emit) async {
+      if (event is GetMyReel) {
         canPag = false;
 
-        emit.call(GetReelLoading());
+        emit.call(GetMyReelLoading());
         emit.call(await _getReels(event));
       }
 
-      if (event is ReelPag) {
+      if (event is MyReelPag) {
         if (!canPag) return;
 
         canPag = false;
-        emit.call(ReelPagLoading(reels));
+        emit.call(MyReelPagLoading(reels));
         emit.call(await _paginate(event));
       }
     });
   }
 
-  Future<GetReelsState> _paginate(ReelPag event) async {
+  Future<GetMyReelsState> _paginate(MyReelPag event) async {
     page += 1;
 
-    final failOrNot = await ds.getReels(
+    final failOrNot = await ds.getMyReels(
       (event.query ?? Query()).copyWith(
         offset: page,
         limit: limit,
@@ -46,17 +46,19 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
       ),
     );
 
-    return failOrNot.fold((l) => GetReelFailed(message: l.message, statusCode: l.statusCode), (r) {
+    return failOrNot.fold((l) => GetMyReelFailed(message: l.message, statusCode: l.statusCode), (
+      r,
+    ) {
       reels.addAll(r);
       if (r.length == limit) canPag = true;
-      return GetReelSuccess(reels, r.length == limit);
+      return GetMyReelSuccess(reels, r.length == limit);
     });
   }
 
-  Future<GetReelsState> _getReels(GetReel event) async {
+  Future<GetMyReelsState> _getReels(GetMyReel event) async {
     page = 1;
 
-    final failOrNot = await ds.getReels(
+    final failOrNot = await ds.getMyReels(
       (event.query ?? Query()).copyWith(
         offset: page,
         limit: limit,
@@ -65,18 +67,12 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
       ),
     );
 
-    return failOrNot.fold((l) => GetReelFailed(message: l.message, statusCode: l.statusCode), (r) {
+    return failOrNot.fold((l) => GetMyReelFailed(message: l.message, statusCode: l.statusCode), (
+      r,
+    ) {
       if (r.length == limit) canPag = true;
       reels = r;
-      return GetReelSuccess(r, r.length == limit);
+      return GetMyReelSuccess(r, r.length == limit);
     });
   }
-}
-
-class GetProductReelsBloc extends GetVerifiedReelsBloc {
-  GetProductReelsBloc(super.ds);
-}
-
-class GetStoreReelsBloc extends GetVerifiedReelsBloc {
-  GetStoreReelsBloc(super.ds);
 }

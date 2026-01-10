@@ -25,21 +25,27 @@ class ProductCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: (height ?? 240) - 70,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Center(
-                child:
-                    (product.cover_image != null)
-                        ? MeninkiNetworkImage(
-                          file: product.cover_image!,
-                          networkImageType: NetworkImageType.small,
-                          fit: BoxFit.cover,
-                        )
-                        : null,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                height: (height ?? 240) - 85,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Center(
+                  child:
+                      (product.cover_image != null)
+                          ? IgnorePointer(
+                            ignoring: true,
+                            child: MeninkiNetworkImage(
+                              file: product.cover_image!,
+                              networkImageType: NetworkImageType.small,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                          : null,
+                ),
               ),
             ),
             Box(h: 4),
@@ -55,7 +61,7 @@ class ProductCard extends StatelessWidget {
                 ),
                 if (product.discount != null)
                   Text(
-                    "-${(100 - (product.price! * 100) / product.discount!).toStringAsFixed(0)}%",
+                    "-${(product.discount!).toStringAsFixed(0)}%",
                     style: TextStyle(fontSize: 12),
                   ),
               ],

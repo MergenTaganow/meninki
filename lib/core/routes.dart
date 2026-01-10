@@ -7,6 +7,7 @@ import 'package:meninki/features/reels/pages/reels_screen.dart';
 
 import '../features/categories/pages/categories_selecting_page.dart';
 import '../features/categories/pages/sub_category_selecting_page.dart';
+import '../features/comments/pages/comments_page.dart';
 import '../features/home/pages/home_page.dart';
 import '../features/product/pages/compositions_page.dart';
 import '../features/product/pages/product_create_page.dart';
@@ -16,6 +17,7 @@ import '../features/product/pages/product_search_filter_page.dart';
 import '../features/province/pages/province_selecting_page.dart';
 import '../features/reels/pages/reel_create_page.dart';
 import '../features/store/pages/my_store_detail.dart';
+import '../features/store/pages/public_store_detail_page.dart';
 import '../features/store/pages/store_create_page.dart';
 
 class Routes {
@@ -33,6 +35,7 @@ class Routes {
   //store
   static const String storeCreatePage = '/storeCreatePage';
   static const String myStoreDetail = '/myStoreDetail';
+  static const String publicStoreDetail = '/publicStoreDetail';
 
   //product
   static const String productCreate = '/productCreate';
@@ -50,13 +53,18 @@ class Routes {
   //province
   static const String provinceSelectingPage = '/provinceSelectingPage';
 
+  //comments
+  static const String commentsPage = '/commentsPage';
+
   static Route? onGenerateRoute(RouteSettings settings) {
     final Map? data = settings.arguments as Map?;
     switch (settings.name) {
       case loginMethodsScreen:
         return MaterialPageRoute(builder: (_) => LoginMethodsScreen());
       case reelScreen:
-        return MaterialPageRoute(builder: (_) => ReelPage(reel: data?['reel']));
+        return MaterialPageRoute(
+          builder: (_) => ReelPage(reel: data?['reel'], reels: data?['reels']),
+        );
       case otpScreen:
         return MaterialPageRoute(builder: (_) => OtpScreen(data?['phoneNumber']));
       case registerScreen:
@@ -94,6 +102,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => ProductDetailPage(data?['productId']));
       case productParametersPage:
         return MaterialPageRoute(builder: (_) => ProductParametresPage(data?['product']));
+      case commentsPage:
+        return MaterialPageRoute(builder: (_) => CommentsPage(reel: data?['reel']));
       case provinceSelectingPage:
         return MaterialPageRoute(
           builder:
@@ -106,6 +116,8 @@ class Routes {
         return MaterialPageRoute(
           builder: (_) => ProductSearchFilterPage(onFilter: data?['onFilter']),
         );
+      case publicStoreDetail:
+        return MaterialPageRoute(builder: (_) => PublicStoreDetail());
       case reelCreatePage:
         return MaterialPageRoute(
           builder:

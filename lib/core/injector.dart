@@ -13,6 +13,10 @@ import '../features/categories/bloc/brand_selecting_cubit/brand_selecting_cubit.
 import '../features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import '../features/categories/bloc/get_brands_bloc/get_brands_bloc.dart';
 import '../features/categories/bloc/get_categories_cubit/get_categories_cubit.dart';
+import '../features/comments/bloc/comment_action/comment_action_cubit.dart';
+import '../features/comments/bloc/comment_by_id_cubit/comment_by_id_cubit.dart';
+import '../features/comments/bloc/get_comments_bloc/get_comments_bloc.dart';
+import '../features/comments/bloc/send_comment_cubit/send_comment_cubit.dart';
 import '../features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import '../features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import '../features/product/bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
@@ -28,6 +32,7 @@ import '../features/province/blocks/province_selecting_cubit/province_selecting_
 import '../features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 import '../features/reels/blocs/file_upl_bloc/file_upl_bloc.dart';
 import '../features/reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
+import '../features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import '../features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
 import '../features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
 import '../features/reels/blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
@@ -60,12 +65,15 @@ Future<void> init() async {
 
   //reels
   sl.registerLazySingleton<ReelsRemoteDataSource>(() => ReelsRemoteDataImpl(sl()));
-  sl.registerLazySingleton<GetReelsBloc>(() => GetReelsBloc(sl()));
+  sl.registerLazySingleton<GetVerifiedReelsBloc>(() => GetVerifiedReelsBloc(sl()));
+  sl.registerLazySingleton<GetMyReelsBloc>(() => GetMyReelsBloc(sl()));
   sl.registerLazySingleton<ReelPlayingQueueCubit>(() => ReelPlayingQueueCubit());
   sl.registerLazySingleton<ReelsControllersBloc>(() => ReelsControllersBloc());
   sl.registerLazySingleton<CurrentReelCubit>(() => CurrentReelCubit());
   sl.registerLazySingleton<LikedReelsCubit>(() => LikedReelsCubit(sl())..init());
   sl.registerLazySingleton<ReelCreateCubit>(() => ReelCreateCubit(sl()));
+  sl.registerLazySingleton<GetProductReelsBloc>(() => GetProductReelsBloc(sl()));
+  sl.registerLazySingleton<GetStoreReelsBloc>(() => GetStoreReelsBloc(sl()));
 
   //store
   sl.registerLazySingleton<StoreRemoteDataSource>(() => StoreRemoteDataImpl(sl()));
@@ -96,4 +104,9 @@ Future<void> init() async {
   sl.registerLazySingleton<GetProvincesCubit>(() => GetProvincesCubit(sl()));
   sl.registerLazySingleton<ProvinceSelectingCubit>(() => ProvinceSelectingCubit());
 
+  //comments
+  sl.registerLazySingleton<GetCommentsBloc>(() => GetCommentsBloc(sl()));
+  sl.registerLazySingleton<SendCommentCubit>(() => SendCommentCubit(sl()));
+  sl.registerLazySingleton<CommentActionCubit>(() => CommentActionCubit());
+  sl.registerLazySingleton<CommentByIdCubit>(() => CommentByIdCubit(sl()));
 }

@@ -42,7 +42,7 @@ class _HomeWidgetState extends State<HomeWidget> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<GetReelsBloc, GetReelsState>(
+    return BlocListener<GetVerifiedReelsBloc, GetReelsState>(
       listener: (context, state) {
         if (state is GetReelSuccess) {
           context.read<ReelsControllersBloc>().add(NewReels(state.reels));
@@ -50,24 +50,18 @@ class _HomeWidgetState extends State<HomeWidget> with SingleTickerProviderStateM
       },
       child: Padd(
         pad: 10,
-        child: RefreshIndicator(
-          onRefresh: () async {
-            context.read<GetReelsBloc>().add(GetReel());
-            context.read<GetStoresBloc>().add(GetStores());
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              customTabBar(),
-              Expanded(
-                child: TabBarView(
-                  physics: NeverScrollableScrollPhysics(),
-                  controller: _tabController,
-                  children: [HomeLenta(), HomeMain(), HomeAdd()],
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            customTabBar(),
+            Expanded(
+              child: TabBarView(
+                physics: NeverScrollableScrollPhysics(),
+                controller: _tabController,
+                children: [HomeLenta(), HomeMain(), HomeAdd()],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

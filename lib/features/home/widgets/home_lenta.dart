@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/core/go.dart';
+import 'package:meninki/core/routes.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../core/helpers.dart';
@@ -10,6 +11,7 @@ import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import '../../reels/model/meninki_file.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
+import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import '../../store/bloc/get_stores_bloc/get_stores_bloc.dart';
 import '../../store/models/market.dart';
 
@@ -25,11 +27,17 @@ class _HomeLentaState extends State<HomeLenta> {
   List<Market> stores = [];
 
   @override
+  void initState() {
+    context.read<GetVerifiedReelsBloc>().add(GetReel());
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
       backgroundColor: Colors.white,
       onRefresh: () async {
-        context.read<GetReelsBloc>().add(GetReel());
+        context.read<GetVerifiedReelsBloc>().add(GetReel());
         context.read<GetStoresBloc>().add(GetStores());
       },
       child: SingleChildScrollView(
@@ -65,8 +73,11 @@ class _HomeLentaState extends State<HomeLenta> {
                             // Use dummy store when loading to avoid index errors
                             final store = isLoading ? null : stores[index];
                             return InkWell(
-                              onTap: (){
-                                // Go.to(store)
+                              onTap: () {
+                                if (store?.id != null) {
+                                  context.read<GetMarketByIdCubit>().getStoreById(store!.id);
+                                  Go.to(Routes.publicStoreDetail);
+                                }
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(14),
@@ -148,7 +159,7 @@ class _HomeLentaState extends State<HomeLenta> {
               ],
             ),
             Box(h: 20),
-            BlocBuilder<GetReelsBloc, GetReelsState>(
+            BlocBuilder<GetVerifiedReelsBloc, GetReelsState>(
               builder: (context, state) {
                 if (state is GetReelSuccess) {
                   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -227,7 +238,7 @@ class _HomeLentaState extends State<HomeLenta> {
                                 file: MeninkiFile(id: 0, name: '', original_file: ''),
                               )
                               : reels[index];
-                      return ReelCard(reel: reel);
+                      return ReelCard(reel: reel, allReels: reels);
                     },
                   ),
                 );

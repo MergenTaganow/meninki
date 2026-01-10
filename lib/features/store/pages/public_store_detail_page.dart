@@ -8,6 +8,7 @@ import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
+import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 
@@ -15,16 +16,15 @@ import '../../home/widgets/reels_list.dart';
 import '../../home/widgets/store_reels_list.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../../product/widgets/products_list.dart';
-import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 
-class MyStoreDetail extends StatefulWidget {
-  const MyStoreDetail({super.key});
+class PublicStoreDetail extends StatefulWidget {
+  const PublicStoreDetail({super.key});
 
   @override
-  State<MyStoreDetail> createState() => _MyStoreDetailState();
+  State<PublicStoreDetail> createState() => _PublicStoreDetailState();
 }
 
-class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProviderStateMixin {
+class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTickerProviderStateMixin {
   late TabController tabController;
 
   @override
@@ -125,10 +125,10 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  Go.to(
-                                    Routes.productCreate,
-                                    argument: {'storeId': state.market.id},
-                                  );
+                                  // Go.to(
+                                  //   Routes.productCreate,
+                                  //   argument: {'storeId': state.market.id},
+                                  // );
                                 },
                                 child: Container(
                                   height: 45,
@@ -137,7 +137,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                                     borderRadius: BorderRadius.circular(14),
                                     color: Col.primary,
                                   ),
-                                  child: Center(child: Icon(Icons.add_circle, color: Colors.white)),
+                                  child: Center(child: Svvg.asset('store_message')),
                                 ),
                               ),
                             ],

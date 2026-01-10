@@ -10,7 +10,9 @@ import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../global/widgets/meninki_network_image.dart';
+import '../../home/widgets/product_reels_list.dart';
 import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
+import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final int productId;
@@ -32,15 +34,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
-      listener: (context, state) {
-        if (state is FileUploadCoverImageSuccess) {
-          var laterReel = context.read<ReelCreateCubit>().laterCreateReel;
-          if (laterReel?['product_id'] == widget.productId) {
-            context.read<ReelCreateCubit>().sendLaterReel(state.file.id);
-          }
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
+          listener: (context, state) {
+            if (state is FileUploadCoverImageSuccess) {
+              var laterReel = context.read<ReelCreateCubit>().laterCreateReel;
+              if (laterReel?['product_id'] == widget.productId) {
+                context.read<ReelCreateCubit>().sendLaterReel(state.file.id);
+              }
+            }
+          },
+        ),
+        BlocListener<GetProductByIdCubit, GetProductByIdState>(
+          listener: (context, state) {
+            if (state is GetProductByIdSuccess) {
+              context.read<GetProductReelsBloc>().add(
+                GetReel(Query(product_ids: [state.product.id])),
+              );
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(title: Text("Товар"), actions: [Svvg.asset('share')]),
         body: Padd(
@@ -158,8 +173,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                           BlocBuilder<ReelCreateCubit, ReelCreateState>(
                             builder: (context, reelCreateState) {
+                              if (reelCreateState is LaterCreateReel) {}
                               if (reelCreateState is LaterCreateReel &&
-                                  reelCreateState.map['product_id'] == state.product.id) {
+                                  reelCreateState.map['link_id'] == state.product.id) {
                                 return Container(
                                   height: 66,
                                   decoration: BoxDecoration(
@@ -310,7 +326,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             ),
                           ),
                           Box(h: 20),
-                          ReelsList(query: Query(product_ids: [state.product.id])),
+                          ProductReelsList(query: Query(product_ids: [state.product.id])),
                         ],
                       );
                     }

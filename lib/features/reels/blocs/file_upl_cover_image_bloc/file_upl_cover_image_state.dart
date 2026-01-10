@@ -7,8 +7,9 @@ final class FileUplCoverImageInitial extends FileUplCoverImageState {}
 
 class FileUploadingCoverImage extends FileUplCoverImageState {
   final double progress;
+  final File file;
 
-  FileUploadingCoverImage(this.progress);
+  FileUploadingCoverImage(this.progress, this.file);
 }
 
 class FileUploadCoverImageSuccess extends FileUplCoverImageState {

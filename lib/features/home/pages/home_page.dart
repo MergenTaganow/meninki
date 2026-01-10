@@ -20,7 +20,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   void initState() {
-    context.read<GetReelsBloc>().add(GetReel());
     context.read<GetStoresBloc>().add(GetStores());
     context.read<GetProductsBloc>().add(GetProduct());
     tabController = TabController(length: 4, vsync: this);

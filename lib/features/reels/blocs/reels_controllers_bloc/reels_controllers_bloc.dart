@@ -17,7 +17,9 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
     on<ReelsControllersEvent>((event, emit) {
       if (event is NewReels) {
         for (var i in event.reels) {
-          if (controllersMap.containsKey(i.id) == false) {
+          ///Todo later need to control image reels
+          if (controllersMap.containsKey(i.id) == false &&
+              (!(i.file.mimetype ?? '').contains('image'))) {
             _initController(i);
           }
         }

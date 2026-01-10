@@ -21,6 +21,8 @@ class Market {
   List<Product>? products;
   Province? province;
   User? user;
+  int? product_verified_count;
+  int? reel_verified_count;
 
   Market({
     required this.id,
@@ -38,6 +40,8 @@ class Market {
     this.province,
     this.products,
     this.user,
+    this.product_verified_count,
+    this.reel_verified_count,
   });
 
   factory Market.fromJson(Map<String, dynamic> json) {
@@ -53,6 +57,8 @@ class Market {
       rate_count: json["rate_count"],
       user_rate_count: json["user_rate_count"],
       user_favorite_count: json["user_favorite_count"],
+      product_verified_count: json["product_verified_count"],
+      reel_verified_count: json["reel_verified_count"],
       files:
           json["files"] != null
               ? (json["files"] as List).map((e) => MeninkiFile.fromJson(e)).toList()

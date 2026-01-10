@@ -72,7 +72,7 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
               );
             }
             if (state is ReelCreateSuccess) {
-              context.read<GetReelsBloc>().add(GetReel());
+              //Todo reel create bolonson name etmeli??
               CustomSnackBar.showSnackBar(context: context, title: "Успешно", isError: false);
               Navigator.popUntil(context, (route) => route.isFirst);
             }
@@ -101,13 +101,14 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                   'title': title.text.trim(),
                   'description': description.text.trim(),
                   if (file != null) 'file_id': file?.id,
-                  'product_id': widget.product.id,
+                  'link_id': widget.product.id,
                   "link": "string",
                   "type": "product",
                   "is_active": true,
                   "market_id": 1,
                   "tags": ["string"],
                 };
+                print(fileState);
                 if (file == null && fileState is FileUploadingCoverImage) {
                   context.read<ReelCreateCubit>().setReel(map);
                   Go.pop();
@@ -275,7 +276,12 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                           borderRadius: BorderRadius.circular(10),
                           color: Colors.grey.withOpacity(0.3),
                         ),
-                        child: Center(child: CircularProgressIndicator(value: state.progress)),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            value: state.progress,
+                            color: Colors.white,
+                          ),
+                        ),
                       );
                     }
 
