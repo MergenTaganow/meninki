@@ -9,6 +9,7 @@ import '../../categories/bloc/category_selecting_cubit/category_selecting_cubit.
 import '../../global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import '../../global/blocs/sort_cubit/sort_cubit.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
+import '../../product/pages/product_search_filter_page.dart';
 import '../../product/widgets/product_card.dart';
 import '../../province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 
@@ -41,27 +42,8 @@ class _ProductsSearchState extends State<ProductsSearch> {
 
   @override
   void deactivate() {
-    clearFilters();
+    clearProductSearchFilters();
     super.deactivate();
-  }
-
-  clearFilters() {
-    context.read<KeyFilterCubit>().select(
-      key: KeyFilterCubit.product_search_min_price,
-      value: null,
-    );
-    context.read<KeyFilterCubit>().select(
-      key: KeyFilterCubit.product_search_max_price,
-      value: null,
-    );
-    context.read<SortCubit>().selectSort(key: SortCubit.productSearchSort, newSort: null);
-    // context.read<ProvinceSelectingCubit>().emptySelections(
-    //   ProvinceSelectingCubit.product_searching_province,
-    // );
-    context.read<CategorySelectingCubit>().emptySelections(
-      CategorySelectingCubit.product_searching_category,
-    );
-    filterList.clear();
   }
 
   @override
@@ -215,7 +197,7 @@ class _ProductsSearchState extends State<ProductsSearch> {
                                     ),
                                     GestureDetector(
                                       onTap: () {
-                                        clearFilters();
+                                        clearProductSearchFilters();
                                         context.read<GetProductsBloc>().add(GetProduct());
                                       },
                                       child: Icon(Icons.highlight_remove),

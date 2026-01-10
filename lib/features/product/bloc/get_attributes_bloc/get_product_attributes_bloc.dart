@@ -46,8 +46,8 @@ class GetProductAttributesBloc extends Bloc<GetProductAttributesEvent, GetProduc
       (event.query ?? Query()).copyWith(
         offset: page,
         limit: limit,
-        sortAs: event.query?.sortAs ?? 'asc',
-        sortBy: event.query?.sortBy ?? 'id',
+        sortAs: event.query?.orderDirection ?? 'asc',
+        sortBy: event.query?.orderBy ?? 'id',
       ),
     );
 
@@ -70,8 +70,8 @@ class GetProductAttributesBloc extends Bloc<GetProductAttributesEvent, GetProduc
       (event.query ?? Query()).copyWith(
         offset: page,
         limit: limit,
-        sortAs: event.query?.sortAs ?? 'asc',
-        sortBy: event.query?.sortBy ?? 'id',
+        sortAs: event.query?.orderDirection ?? 'asc',
+        sortBy: event.query?.orderBy ?? 'id',
       ),
     );
 

@@ -42,8 +42,8 @@ class GetStoresBloc extends Bloc<GetStoresEvent, GetStoresState> {
         limit: limit,
         offset: page,
         keyword: event.search ?? '',
-        sortAs: 'asc',
-        sortBy: 'id',
+        orderDirection: 'asc',
+        orderBy: 'id',
       ),
     );
     return failOrNot.fold((l) => GetStoresFailed(l), (r) {
@@ -57,7 +57,7 @@ class GetStoresBloc extends Bloc<GetStoresEvent, GetStoresState> {
     await Future.delayed(const Duration(milliseconds: 400));
     page++;
     final failOrNot = await ds.getStores(
-      Query(offset: page, limit: limit, keyword: event.search, sortAs: 'asc', sortBy: 'id'),
+      Query(offset: page, limit: limit, keyword: event.search, orderDirection: 'asc', orderBy: 'id'),
     );
     return failOrNot.fold((l) => GetStoresFailed(l), (r) {
       if (r.length == limit) canPag = true;

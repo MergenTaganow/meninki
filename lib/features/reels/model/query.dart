@@ -15,11 +15,10 @@ class Query {
   String? date;
   String? status;
   List? statuses;
-  String? sortBy;
-  String? sortAs;
+  String? orderBy;
+  String? orderDirection;
   String? dateFrom;
   String? dateTo;
-  String? orderBy;
   bool? ignoreEmpty;
   int? parameter_id;
   int? user_id;
@@ -32,11 +31,10 @@ class Query {
     this.date,
     this.status,
     this.statuses,
-    this.sortBy,
-    this.sortAs,
+    this.orderBy,
+    this.orderDirection,
     this.dateFrom,
     this.dateTo,
-    this.orderBy,
     this.ignoreEmpty,
     this.parameter_id,
     this.user_id,
@@ -87,7 +85,6 @@ class Query {
     String? sortAs,
     String? dateFrom,
     String? dateTo,
-    String? orderBy,
     String? approachType,
     String? type,
     bool? ignoreEmpty,
@@ -103,11 +100,10 @@ class Query {
       date: date ?? this.date,
       status: status ?? this.status,
       statuses: statuses ?? this.statuses,
-      sortBy: sortBy ?? this.sortBy,
-      sortAs: sortAs ?? this.sortAs,
+      orderBy: sortBy ?? this.orderBy,
+      orderDirection: sortAs ?? this.orderDirection,
       dateFrom: dateFrom ?? this.dateFrom,
       dateTo: dateTo ?? this.dateTo,
-      orderBy: orderBy ?? this.orderBy,
       ignoreEmpty: ignoreEmpty ?? this.ignoreEmpty,
       parameter_id: parameter_id ?? this.parameter_id,
       market_ids: market_ids ?? this.market_ids,
@@ -130,11 +126,10 @@ class Query {
       if (date != null) 'date': date,
       if (status != null) 'status': status,
       if (statuses != null) 'statuses[]': statuses,
-      if (sortBy != null) 'order_by': sortBy,
-      if (sortAs != null) 'order_direction': sortAs,
+      if (orderBy != null) 'order_by': orderBy,
+      if (orderDirection != null) 'order_direction': orderDirection,
       if (dateFrom != null) 'dateFrom': dateFrom,
       if (dateTo != null) 'dateTo': dateTo,
-      if (orderBy != null) 'orderBy': orderBy,
       if (ignoreEmpty != null) 'ignoreEmpty': ignoreEmpty,
       if (parameter_id != null) 'parameter_id': parameter_id,
       if (user_id != null) 'user_id': user_id,
@@ -188,14 +183,13 @@ class Query {
         other.date == date &&
         other.status == status &&
         other.statuses == statuses &&
-        other.sortBy == sortBy &&
-        other.sortAs == sortAs &&
+        other.orderBy == orderBy &&
+        other.orderDirection == orderDirection &&
         other.dateFrom == dateFrom &&
         other.dateTo == dateTo &&
         other.user_id == user_id &&
         other.product_ids == product_ids &&
-        other.category_ids == category_ids &&
-        other.orderBy == orderBy;
+        other.category_ids == category_ids;
   }
 
   @override
@@ -209,13 +203,12 @@ class Query {
         date.hashCode ^
         status.hashCode ^
         statuses.hashCode ^
-        sortBy.hashCode ^
-        sortAs.hashCode ^
+        orderBy.hashCode ^
+        orderDirection.hashCode ^
         dateFrom.hashCode ^
         dateTo.hashCode ^
         user_id.hashCode ^
         category_ids.hashCode ^
-        product_ids.hashCode ^
-        orderBy.hashCode;
+        product_ids.hashCode;
   }
 }

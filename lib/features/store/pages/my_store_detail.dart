@@ -14,6 +14,7 @@ import 'package:meninki/features/store/bloc/get_market_by_id/get_market_by_id_cu
 import '../../home/widgets/reels_list.dart';
 import '../../home/widgets/store_reels_list.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
+import '../../product/pages/product_search_filter_page.dart';
 import '../../product/widgets/products_list.dart';
 import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 
@@ -29,8 +30,8 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
 
   @override
   void initState() {
+    clearProductSearchFilters();
     tabController = TabController(length: 2, vsync: this);
-
     super.initState();
   }
 
@@ -41,7 +42,9 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
       body: BlocConsumer<GetMarketByIdCubit, GetMarketByIdState>(
         listener: (BuildContext context, GetMarketByIdState state) {
           if (state is GetMarketByIdSuccess) {
-            context.read<GetProductsBloc>().add(GetProduct(Query(market_ids: [state.market.id])));
+            context.read<GetOneStoresProducts>().add(
+              GetProduct(Query(market_ids: [state.market.id])),
+            );
             context.read<GetStoreReelsBloc>().add(GetReel(Query(market_ids: [state.market.id])));
           }
         },
@@ -251,7 +254,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                   controller: tabController,
                   children: [
                     StoreReelsList(query: Query(market_ids: [state.market.id])),
-                    ProductsList(query: Query(market_ids: [state.market.id])),
+                    StoreProductsList(query: Query(market_ids: [state.market.id])),
                   ],
                 ),
               ),

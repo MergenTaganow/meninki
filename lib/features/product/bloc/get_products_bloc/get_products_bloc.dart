@@ -77,3 +77,11 @@ class GetProductsBloc extends Bloc<GetProductsEvent, GetProductsState> {
     });
   }
 }
+
+class GetOneStoresProducts extends GetProductsBloc {
+  GetOneStoresProducts(super.ds);
+}
+
+class GetDiscountProducts extends GetProductsBloc {
+  GetDiscountProducts(super.ds);
+}

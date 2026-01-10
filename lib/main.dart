@@ -85,6 +85,8 @@ void main() async {
         BlocProvider<GetMyReelsBloc>(create: (context) => sl<GetMyReelsBloc>()),
         BlocProvider<GetProductReelsBloc>(create: (context) => sl<GetProductReelsBloc>()),
         BlocProvider<GetStoreReelsBloc>(create: (context) => sl<GetStoreReelsBloc>()),
+        BlocProvider<GetOneStoresProducts>(create: (context) => sl<GetOneStoresProducts>()),
+        BlocProvider<GetDiscountProducts>(create: (context) => sl<GetDiscountProducts>()),
       ],
       child: const MyApp(),
     ),

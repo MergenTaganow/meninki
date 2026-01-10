@@ -99,6 +99,8 @@ Future<void> init() async {
   sl.registerLazySingleton<GetProductAttributesBloc>(() => GetProductAttributesBloc(sl()));
   sl.registerLazySingleton<CompositionsSendCubit>(() => CompositionsSendCubit(sl()));
   sl.registerLazySingleton<GetStoreProductsBloc>(() => GetStoreProductsBloc(sl()));
+  sl.registerLazySingleton<GetOneStoresProducts>(() => GetOneStoresProducts(sl()));
+  sl.registerLazySingleton<GetDiscountProducts>(() => GetDiscountProducts(sl()));
 
   //province
   sl.registerLazySingleton<GetProvincesCubit>(() => GetProvincesCubit(sl()));

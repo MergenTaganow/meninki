@@ -8,20 +8,20 @@ import 'package:meninki/features/reels/model/query.dart';
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
 
-class ProductsList extends StatefulWidget {
+class StoreProductsList extends StatefulWidget {
   final Query query;
-  const ProductsList({required this.query, super.key});
+  const StoreProductsList({required this.query, super.key});
 
   @override
-  State<ProductsList> createState() => _ProductsListState();
+  State<StoreProductsList> createState() => _StoreProductsListState();
 }
 
-class _ProductsListState extends State<ProductsList> {
+class _StoreProductsListState extends State<StoreProductsList> {
   List<Product> products = [];
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GetProductsBloc, GetProductsState>(
+    return BlocBuilder<GetOneStoresProducts, GetProductsState>(
       builder: (context, state) {
         if (state is GetProductLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -56,7 +56,7 @@ class _ProductsListState extends State<ProductsList> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                 ),
                 onPressed: () {
-                  context.read<GetProductsBloc>().add(GetProduct(widget.query));
+                  context.read<GetOneStoresProducts>().add(GetProduct(widget.query));
                 },
                 child: SizedBox(
                   height: 45,

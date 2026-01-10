@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
+import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/bloc/get_store_products/get_store_products_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -25,8 +26,12 @@ class _HomeMainState extends State<HomeMain> {
   List<Market> storesProducts = [];
   ScrollController scrollController = ScrollController();
 
+  ///Todo later need to change to discount orderby
+  Query discountProductsQuery = Query(orderDirection: 'desc', orderBy: /*'discount'*/ 'price');
+
   @override
   void initState() {
+    context.read<GetDiscountProducts>().add(GetProduct());
     context.read<GetStoreProductsBloc>().add(GetProductStores());
     scrollController.addListener(() {
       if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
@@ -42,7 +47,7 @@ class _HomeMainState extends State<HomeMain> {
       backgroundColor: Colors.white,
       onRefresh: () async {
         context.read<GetStoresBloc>().add(GetStores());
-        context.read<GetProductsBloc>().add(GetProduct());
+        context.read<GetDiscountProducts>().add(GetProduct());
         context.read<GetStoreProductsBloc>().add(GetProductStores());
       },
       child: SingleChildScrollView(
@@ -59,7 +64,7 @@ class _HomeMainState extends State<HomeMain> {
             baners(),
             Box(h: 20),
 
-            ///products
+            /// discount products
             products(),
 
             ///marketProducts
@@ -131,8 +136,8 @@ class _HomeMainState extends State<HomeMain> {
     );
   }
 
-  BlocBuilder<GetProductsBloc, GetProductsState> products() {
-    return BlocBuilder<GetProductsBloc, GetProductsState>(
+  BlocBuilder<GetDiscountProducts, GetProductsState> products() {
+    return BlocBuilder<GetDiscountProducts, GetProductsState>(
       builder: (context, state) {
         if (state is GetProductLoading) {
           return Center(child: CircularProgressIndicator());

@@ -6,6 +6,7 @@ import 'package:meninki/features/categories/bloc/category_selecting_cubit/catego
 import 'package:meninki/features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import 'package:meninki/features/province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import '../../../core/colors.dart';
+import '../../../core/injector.dart';
 import '../../categories/widgets/category_selection.dart';
 import '../../global/blocs/sort_cubit/sort_cubit.dart';
 import '../../global/widgets/sort_selection.dart';
@@ -117,24 +118,7 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        context.read<KeyFilterCubit>().select(
-                          key: KeyFilterCubit.product_search_min_price,
-                          value: null,
-                        );
-                        context.read<KeyFilterCubit>().select(
-                          key: KeyFilterCubit.product_search_max_price,
-                          value: null,
-                        );
-                        context.read<SortCubit>().selectSort(
-                          key: SortCubit.productSearchSort,
-                          newSort: null,
-                        );
-                        // context.read<ProvinceSelectingCubit>().emptySelections(
-                        //   ProvinceSelectingCubit.product_searching_province,
-                        // );
-                        context.read<CategorySelectingCubit>().emptySelections(
-                          CategorySelectingCubit.product_searching_category,
-                        );
+                        clearProductSearchFilters();
                       },
                       child: Container(
                         height: 45,
@@ -180,4 +164,14 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
       ),
     );
   }
+}
+
+clearProductSearchFilters() {
+  sl<KeyFilterCubit>().select(key: KeyFilterCubit.product_search_min_price, value: null);
+  sl<KeyFilterCubit>().select(key: KeyFilterCubit.product_search_max_price, value: null);
+  sl<SortCubit>().selectSort(key: SortCubit.productSearchSort, newSort: null);
+  // context.read<ProvinceSelectingCubit>().emptySelections(
+  //   ProvinceSelectingCubit.product_searching_province,
+  // );
+  sl<CategorySelectingCubit>().emptySelections(CategorySelectingCubit.product_searching_category);
 }

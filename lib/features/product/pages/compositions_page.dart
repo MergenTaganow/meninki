@@ -47,7 +47,7 @@ class _CompositionsPageState extends State<CompositionsPage> {
     return BlocListener<CompositionsSendCubit, CompositionsSendState>(
       listener: (context, state) {
         if (state is CompositionsSendSuccess) {
-          context.read<GetProductsBloc>().add(GetProduct());
+          ///Todo what should do after create product
           CustomSnackBar.showSnackBar(context: context, title: "Успешно", isError: false);
           Navigator.popUntil(context, (route) => route.isFirst);
         }

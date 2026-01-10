@@ -9,6 +9,7 @@ import '../../models/market.dart';
 part 'get_store_products_event.dart';
 part 'get_store_products_state.dart';
 
+///This cubit should be used only in home main it gets refers to different endpoint and shows different result
 class GetStoreProductsBloc extends Bloc<GetStoreProductsEvent, GetStoreProductsState> {
   final StoreRemoteDataSource ds;
   List<Market> stores = [];
@@ -38,7 +39,7 @@ class GetStoreProductsBloc extends Bloc<GetStoreProductsEvent, GetStoreProductsS
   Future<GetStoreProductsState> _getStores(GetProductStores event) async {
     page = 1;
     final failOrNot = await ds.getStoresProducts(
-      Query(limit: limit, offset: page, keyword: event.search ?? '', sortAs: 'asc', sortBy: 'id'),
+      Query(limit: limit, offset: page, keyword: event.search ?? '', orderDirection: 'asc', orderBy: 'id'),
     );
     return failOrNot.fold((l) => GetProductStoresFailed(l), (r) {
       if (r.length == limit) canPag = true;
@@ -51,7 +52,7 @@ class GetStoreProductsBloc extends Bloc<GetStoreProductsEvent, GetStoreProductsS
     await Future.delayed(const Duration(milliseconds: 400));
     page++;
     final failOrNot = await ds.getStoresProducts(
-      Query(offset: page, limit: limit, keyword: event.search, sortAs: 'asc', sortBy: 'id'),
+      Query(offset: page, limit: limit, keyword: event.search, orderDirection: 'asc', orderBy: 'id'),
     );
     return failOrNot.fold((l) => GetProductStoresFailed(l), (r) {
       if (r.length == limit) canPag = true;
