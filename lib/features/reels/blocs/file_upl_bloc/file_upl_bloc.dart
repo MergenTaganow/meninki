@@ -14,7 +14,7 @@ import '../file_processing_cubit/file_processing_cubit.dart';
 part 'file_upl_event.dart';
 part 'file_upl_state.dart';
 
-enum UploadingFileTypes { productPhotos }
+enum UploadingFileTypes { productPhotos,addPhotos }
 
 class FileUplBloc extends Bloc<FileUplEvent, FileUplState> {
   final ReelsRemoteDataSource ds;

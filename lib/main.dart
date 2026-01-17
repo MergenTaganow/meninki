@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'core/injector.dart';
+import 'features/adds/bloc/add_create_cubit/add_create_cubit.dart';
 import 'features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'features/auth/bloc/otp_cubit/otp_cubit.dart';
 import 'features/auth/bloc/register_cubit/register_cubit.dart';
@@ -92,6 +93,7 @@ void main() async {
         BlocProvider<GetBannersBloc>(create: (context) => sl<GetBannersBloc>()),
         BlocProvider<GetSearchedReelsBloc>(create: (context) => sl<GetSearchedReelsBloc>()),
         BlocProvider<FileProcessingCubit>(create: (context) => sl<FileProcessingCubit>()),
+        BlocProvider<AddCreateCubit>(create: (context) => sl<AddCreateCubit>()),
       ],
       child: const MyApp(),
     ),

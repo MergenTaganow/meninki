@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meninki/features/adds/pages/add_create_page.dart';
 import 'package:meninki/features/auth/pages/login_methods_screen.dart';
 import 'package:meninki/features/auth/pages/otp_screen.dart';
 import 'package:meninki/features/auth/pages/register_screen.dart';
@@ -57,6 +58,9 @@ class Routes {
 
   //comments
   static const String commentsPage = '/commentsPage';
+
+  //adds
+  static const String addCreatePage = '/addCreatePage';
 
   static Route? onGenerateRoute(RouteSettings settings) {
     final Map? data = settings.arguments as Map?;
@@ -122,6 +126,8 @@ class Routes {
         return MaterialPageRoute(builder: (_) => ReelsFilterPage(onFilter: data?['onFilter']));
       case publicStoreDetail:
         return MaterialPageRoute(builder: (_) => PublicStoreDetail());
+      case addCreatePage:
+        return MaterialPageRoute(builder: (_) => AddCreatePage());
       case reelCreatePage:
         return MaterialPageRoute(
           builder:

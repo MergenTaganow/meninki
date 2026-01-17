@@ -1,10 +1,12 @@
 import 'package:get_it/get_it.dart';
+import 'package:meninki/features/adds/data/add_remote_data_source.dart';
 import 'package:meninki/features/auth/bloc/otp_cubit/otp_cubit.dart';
 import 'package:meninki/features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/adds/bloc/add_create_cubit/add_create_cubit.dart';
 import '../features/auth/bloc/aut_bloc/auth_bloc.dart';
 import '../features/auth/bloc/register_cubit/register_cubit.dart';
 import '../features/auth/data/auth_remote_data_source.dart';
@@ -116,4 +118,8 @@ Future<void> init() async {
   sl.registerLazySingleton<SendCommentCubit>(() => SendCommentCubit(sl()));
   sl.registerLazySingleton<CommentActionCubit>(() => CommentActionCubit());
   sl.registerLazySingleton<CommentByIdCubit>(() => CommentByIdCubit(sl()));
+
+  // add
+  sl.registerLazySingleton<AddRemoteDataSource>(() => AddRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<AddCreateCubit>(() => AddCreateCubit(sl()));
 }

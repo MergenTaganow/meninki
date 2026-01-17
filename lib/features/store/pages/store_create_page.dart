@@ -639,7 +639,7 @@ class UploadingCoverImage extends StatelessWidget {
                   ? MeninkiNetworkImage(
                     file: coverImage!,
                     networkImageType: NetworkImageType.small,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                   )
                   : Image.asset('assets/images/app_logo.png', fit: BoxFit.cover))
               : Icon(Icons.camera_alt_outlined),

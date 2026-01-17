@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/core/colors.dart';
+import 'package:meninki/core/go.dart';
+import 'package:meninki/core/routes.dart';
 
 import '../../../core/helpers.dart';
 
@@ -12,9 +14,10 @@ class HomeAdd extends StatefulWidget {
   State<HomeAdd> createState() => _HomeAddState();
 }
 
-class _HomeAddState extends State<HomeAdd> {
+class _HomeAddState extends State<HomeAdd> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -38,14 +41,19 @@ class _HomeAddState extends State<HomeAdd> {
                     ),
                   ],
                 ),
-                Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                    color: Col.primary,
-                    borderRadius: BorderRadius.circular(14),
+                GestureDetector(
+                  onTap: () {
+                    Go.to(Routes.addCreatePage);
+                  },
+                  child: Container(
+                    height: 40,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      color: Col.primary,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(child: Icon(Icons.add_circle, color: Colors.white)),
                   ),
-                  child: Center(child: Icon(Icons.add_circle, color: Colors.white)),
                 ),
               ],
             ),
