@@ -41,8 +41,8 @@ class GetMyReelsBloc extends Bloc<GetMyReelsEvent, GetMyReelsState> {
       (event.query ?? Query()).copyWith(
         offset: page,
         limit: limit,
-        sortAs: event.query?.orderDirection ?? 'asc',
-        sortBy: event.query?.orderBy ?? 'created_at',
+        orderDirection: event.query?.orderDirection ?? 'asc',
+        orderBy: event.query?.orderBy ?? 'created_at',
       ),
     );
 
@@ -62,8 +62,8 @@ class GetMyReelsBloc extends Bloc<GetMyReelsEvent, GetMyReelsState> {
       (event.query ?? Query()).copyWith(
         offset: page,
         limit: limit,
-        sortAs: event.query?.orderDirection ?? 'asc',
-        sortBy: event.query?.orderBy ?? 'created_at',
+        orderDirection: event.query?.orderDirection ?? 'asc',
+        orderBy: event.query?.orderBy ?? 'created_at',
       ),
     );
 

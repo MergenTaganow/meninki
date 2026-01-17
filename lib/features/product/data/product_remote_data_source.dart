@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:meninki/core/success.dart';
+import 'package:meninki/features/banner/models/banner.dart';
 import 'package:meninki/features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import 'package:meninki/features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import 'package:meninki/features/global/blocs/sort_cubit/sort_cubit.dart';
@@ -22,6 +23,7 @@ abstract class ProductRemoteDataSource {
   Future<Either<Failure, List<ProductAttribute>>> getAttributes(Query query);
   Future<Either<Failure, Success>> sendComposition(Map<String, dynamic> data);
   Future<Either<Failure, List<Province>>> getProvinces();
+  Future<Either<Failure, List<Banner>>> getBanners(Query query);
 }
 
 class ProductRemoteDataImpl extends ProductRemoteDataSource {
@@ -32,7 +34,6 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   Future<Either<Failure, Product>> createProduct(Map<String, dynamic> data) async {
     try {
       var response = await api.dio.post('v1/manager/products', data: data);
-      print(response.data);
 
       return Right(Product.fromJson(response.data['payload']));
     } catch (e) {
@@ -44,7 +45,6 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   Future<Either<Failure, Product>> getProductById(int id) async {
     try {
       var response = await api.dio.get('v1/products/$id', queryParameters: {"lang": "tk"});
-      print(response.data);
 
       return Right(Product.fromJson(response.data['payload']));
     } catch (e) {
@@ -88,7 +88,6 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   Future<Either<Failure, Success>> sendComposition(Map<String, dynamic> data) async {
     try {
       var response = await api.dio.post('v1/compositions', data: data);
-      print(response.data);
 
       return Right(Success());
     } catch (e) {
@@ -109,8 +108,6 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
             .product_searching_category] ??
         [];
     var keyFilters = sl<KeyFilterCubit>().selectedMap;
-    print(sl<CategorySelectingCubit>().selectedMap);
-    print(categories);
 
     var map = {
       ...query.toMap(),
@@ -123,7 +120,6 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
       if (keyFilters[KeyFilterCubit.product_search_min_price] != null)
         "min_price": keyFilters[KeyFilterCubit.product_search_min_price],
     };
-    print("map$map");
     var response = await api.dio.get('v1/products', queryParameters: map);
 
     List<Product> product =
@@ -145,6 +141,20 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
     List<Province> province =
         (response.data['payload'] as List).map((e) => Province.fromJson(e)).toList();
     return Right(province);
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
+  }
+
+  @override
+  Future<Either<Failure, List<Banner>>> getBanners(Query query) async {
+    // try {
+    print(query.toMap());
+    var response = await api.dio.get('v1/banners', queryParameters: query.toMap());
+
+    List<Banner> banners =
+        (response.data['payload'] as List).map((e) => Banner.fromJson(e)).toList();
+    return Right(banners);
     // } catch (e) {
     //   return Left(handleError(e));
     // }

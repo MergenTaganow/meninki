@@ -1,17 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
-import 'package:meninki/core/api.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/global/widgets/images_back_button.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
-
-import '../../home/widgets/reels_list.dart';
 import '../../home/widgets/store_reels_list.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../../product/pages/product_search_filter_page.dart';
@@ -36,6 +33,14 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
   }
 
   @override
+  void deactivate() {
+    context.read<GetMarketByIdCubit>().clear();
+    context.read<GetOneStoresProducts>().add(ClearProducts());
+    context.read<GetStoreReelsBloc>().add(ClearReels());
+    super.deactivate();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFBFBFB),
@@ -45,7 +50,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
             context.read<GetOneStoresProducts>().add(
               GetProduct(Query(market_ids: [state.market.id])),
             );
-            context.read<GetStoreReelsBloc>().add(GetReel(Query(market_ids: [state.market.id])));
+            context.read<GetStoreReelsBloc>().add(GetReel(Query(market_id: state.market.id)));
           }
         },
         builder: (context, state) {
@@ -56,206 +61,231 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
             return Center(child: Text(state.failure.message ?? 'error'));
           }
           if (state is GetMarketByIdSuccess) {
-            return NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  //store detail
-                  SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (state.market.cover_image != null)
-                          Stack(
-                            children: [
-                              SizedBox(
-                                height: 360,
-                                width: double.infinity,
-                                child: MeninkiNetworkImage(
-                                  file: state.market.cover_image!,
-                                  networkImageType: NetworkImageType.large,
-                                  fit: BoxFit.cover,
+            return RefreshIndicator(
+              notificationPredicate: (notification) {
+                // with NestedScrollView local(depth == 2) OverscrollNotification are not sent
+                return notification.depth == 2;
+              },
+              onRefresh: () async {
+                context.read<GetMarketByIdCubit>().getStoreById(state.market.id);
+              },
+              child: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) {
+                  return [
+                    //store detail
+                    SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (state.market.cover_image != null)
+                            Stack(
+                              children: [
+                                SizedBox(
+                                  height: 360,
+                                  width: double.infinity,
+                                  child: MeninkiNetworkImage(
+                                    file: state.market.cover_image!,
+                                    networkImageType: NetworkImageType.large,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ),
-                              Align(
-                                alignment: Alignment.topLeft,
-                                child: Padd(
-                                  left: 30,
-                                  top: 60,
-                                  child: GestureDetector(
+                                ImagesBackButton(),
+                              ],
+                            ),
+                          Container(
+                            color: Colors.white,
+                            padding: EdgeInsets.all(14),
+                            child: Row(
+                              children: [
+                                if (state.market.cover_image != null)
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: SizedBox(
+                                      height: 45,
+                                      width: 45,
+                                      child: MeninkiNetworkImage(
+                                        file: state.market.cover_image!,
+                                        networkImageType: NetworkImageType.small,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                Box(w: 14),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        state.market.name.trans(context),
+                                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Material(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(14),
+                                    splashColor: Colors.white.withOpacity(0.22),
+                                    highlightColor: Colors.white.withOpacity(0.10),
                                     onTap: () {
-                                      Go.pop();
+                                      HapticFeedback.mediumImpact();
+                                      Future.delayed(const Duration(milliseconds: 120), () {
+                                        Go.to(
+                                          Routes.productCreate,
+                                          argument: {'storeId': state.market.id},
+                                        );
+                                      });
                                     },
-                                    child: Icon(
-                                      Icons.navigate_before,
-                                      color: Colors.white,
-                                      size: 25,
+                                    child: Ink(
+                                      height: 45,
+                                      width: 45,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(14),
+                                        color: Col.primary,
+                                      ),
+                                      child: const Center(
+                                        child: Icon(Icons.add_circle, color: Colors.white),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        Container(
-                          color: Colors.white,
-                          padding: EdgeInsets.all(14),
-                          child: Row(
-                            children: [
-                              if (state.market.cover_image != null)
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(100),
-                                  child: SizedBox(
-                                    height: 45,
-                                    width: 45,
-                                    child: MeninkiNetworkImage(
-                                      file: state.market.cover_image!,
-                                      networkImageType: NetworkImageType.small,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              Box(w: 14),
-                              Expanded(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                          Box(h: 10),
+                          Padd(
+                            hor: 14,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                singleRow(title: "Телефон", value: "+993 62 66 66 66 "),
+                                singleRow(title: "Описание", value: state.market.description ?? ''),
+                                singleRow(title: "Юзернейм", value: state.market.username ?? ''),
+                                Row(
                                   children: [
-                                    Text(
-                                      state.market.name,
-                                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                    Expanded(
+                                      child: card(
+                                        child: Padd(
+                                          ver: 10,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text("Подписчики"),
+                                              Text(
+                                                state.market.user_favorite_count.toString(),
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Box(w: 10),
+                                    Expanded(
+                                      child: card(
+                                        child: Padd(
+                                          ver: 10,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text("Место в рейтинге"),
+                                              Text(
+                                                state.market.rate_count.toString(),
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Go.to(
-                                    Routes.productCreate,
-                                    argument: {'storeId': state.market.id},
-                                  );
-                                },
-                                child: Container(
-                                  height: 45,
-                                  width: 45,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(14),
-                                    color: Col.primary,
-                                  ),
-                                  child: Center(child: Icon(Icons.add_circle, color: Colors.white)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Box(h: 10),
-                        Padd(
-                          hor: 14,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              singleRow(title: "Телефон", value: "+993 62 66 66 66 "),
-                              singleRow(title: "Описание", value: state.market.description ?? ''),
-                              singleRow(title: "Юзернейм", value: state.market.username ?? ''),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: card(
-                                      child: Padd(
-                                        ver: 10,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text("Подписчики"),
-                                            Text(
-                                              state.market.user_favorite_count.toString(),
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Box(w: 10),
-                                  Expanded(
-                                    child: card(
-                                      child: Padd(
-                                        ver: 10,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text("Место в рейтинге"),
-                                            Text(
-                                              state.market.rate_count.toString(),
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // reels-products tabs
-                  SliverAppBar(
-                    pinned: true,
-                    floating: true,
-                    snap: true, // optional but nice
-                    automaticallyImplyLeading: false,
-                    titleSpacing: 0,
-                    title: Padd(
-                      hor: 10,
-                      child: Row(
-                        children: List.generate(2, (index) {
-                          return GestureDetector(
-                            onTap: () {
-                              tabController.animateTo(index);
-                              setState(() {});
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color:
-                                    tabController.index == index ? Col.primary : Color(0xFFF3F3F3),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                              margin: EdgeInsets.only(right: 6),
-                              child: Text(
-                                "${index == 0 ? "Обзоры" : "Товары"} • ${index == 0 ? state.market.reel_verified_count : state.market.product_verified_count}",
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color:
-                                      tabController.index == index ? Col.white : Color(0xFF474747),
-                                ),
-                              ),
+                              ],
                             ),
-                          );
-                        }),
+                          ),
+                        ],
                       ),
                     ),
+
+                    // reels-products tabs
+                    SliverAppBar(
+                      pinned: true,
+                      floating: true,
+                      snap: true, // optional but nice
+                      automaticallyImplyLeading: false,
+                      titleSpacing: 0,
+                      title: Padd(
+                        hor: 10,
+                        child: Row(
+                          children: List.generate(2, (index) {
+                            return Material(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(14),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(14),
+                                splashColor: Colors.black.withOpacity(0.12),
+                                highlightColor: Colors.black.withOpacity(0.06),
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  Future.delayed(const Duration(milliseconds: 100), () {
+                                    tabController.animateTo(index);
+                                    setState(() {});
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOut,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                                  margin: const EdgeInsets.only(right: 6),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        tabController.index == index
+                                            ? Col.primary
+                                            : const Color(0xFFF3F3F3),
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  child: AnimatedDefaultTextStyle(
+                                    duration: const Duration(milliseconds: 200),
+                                    curve: Curves.easeOut,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color:
+                                          tabController.index == index
+                                              ? Col.white
+                                              : const Color(0xFF474747),
+                                    ),
+                                    child: Text(
+                                      "${index == 0 ? "Обзоры" : "Товары"} • ${index == 0 ? state.market.reel_verified_count : state.market.product_verified_count}",
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    ),
+                  ];
+                },
+                body: Padd(
+                  hor: 10,
+                  child: TabBarView(
+                    controller: tabController,
+                    children: [
+                      StoreReelsList(query: Query(market_id: state.market.id)),
+                      StoreProductsList(query: Query(market_ids: [state.market.id])),
+                    ],
                   ),
-                ];
-              },
-              body: Padd(
-                hor: 10,
-                child: TabBarView(
-                  controller: tabController,
-                  children: [
-                    StoreReelsList(query: Query(market_ids: [state.market.id])),
-                    StoreProductsList(query: Query(market_ids: [state.market.id])),
-                  ],
                 ),
               ),
             );

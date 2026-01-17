@@ -65,7 +65,6 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
         };
       }
       var data = {'userName': username, 'password': password};
-      print(data);
       var response = await api.dio.post(
         '/admin/v1/employees/login',
         data: data,
@@ -123,7 +122,6 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
         'v1/authentications/validate-otp',
         data: {'phonenumber': phoneNumber, "otp": otp},
       );
-      print(response.data);
       User user;
       if (response.data['payload'] is String) {
         user = User(temporaryToken: response.data['payload']);

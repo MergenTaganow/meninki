@@ -12,3 +12,5 @@ class ProductPag extends GetProductsEvent {
   final Query? query;
   ProductPag({this.query});
 }
+
+class ClearProducts extends GetProductsEvent {}

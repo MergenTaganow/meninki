@@ -4,6 +4,8 @@ import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/product/bloc/compositions_send_cubit/compositions_send_cubit.dart';
 import 'package:meninki/features/product/models/product.dart';
 import '../../../core/colors.dart';
+import '../../../core/go.dart';
+import '../../../core/routes.dart';
 import '../../global/widgets/custom_snack_bar.dart';
 import '../bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import '../bloc/get_products_bloc/get_products_bloc.dart';
@@ -47,9 +49,9 @@ class _CompositionsPageState extends State<CompositionsPage> {
     return BlocListener<CompositionsSendCubit, CompositionsSendState>(
       listener: (context, state) {
         if (state is CompositionsSendSuccess) {
-          ///Todo what should do after create product
           CustomSnackBar.showSnackBar(context: context, title: "Успешно", isError: false);
           Navigator.popUntil(context, (route) => route.isFirst);
+          Go.popGo(Routes.productDetailPage, argument: {'productId': widget.product.id});
         }
       },
       child: Scaffold(
@@ -57,7 +59,7 @@ class _CompositionsPageState extends State<CompositionsPage> {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: BlocBuilder<CompositionsSendCubit, CompositionsSendState>(
           builder: (context, state) {
-            return GestureDetector(
+            return InkWell(
               onTap: () {
                 context.read<CompositionsSendCubit>().send(
                   productId: widget.product.id,

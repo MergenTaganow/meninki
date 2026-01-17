@@ -12,3 +12,5 @@ class ReelPag extends GetReelsEvent {
   final Query? query;
   ReelPag({this.query});
 }
+
+class ClearReels extends GetReelsEvent {}

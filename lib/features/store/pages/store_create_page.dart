@@ -2,12 +2,15 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/api.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
+import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
+import 'package:meninki/features/reels/blocs/file_processing_cubit/file_processing_cubit.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'package:meninki/features/store/widgets/ColorPicker.dart';
@@ -117,6 +120,16 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
             }
           },
         ),
+        BlocListener<FileProcessingCubit, FileProcessingState>(
+          listener: (context, state) {
+            if (state is FileProcessingUpdated) {
+              if (state.file.id == coverImage?.id) {
+                coverImage = state.file;
+                setState(() {});
+              }
+            }
+          },
+        ),
       ],
       child: Scaffold(
         backgroundColor: selectedColor,
@@ -133,23 +146,24 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
               children: [
                 BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
                   builder: (context, state) {
-                    return Row(
-                      children: [
-                        InkWell(
-                          onTap: () async {
-                            if (state is! FileUploadingCoverImage) {
-                              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                type: FileType.image,
-                                lockParentWindow: true,
-                              );
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(100),
+                      onTap: () async {
+                        if (state is! FileUploadingCoverImage) {
+                          FilePickerResult? result = await FilePicker.platform.pickFiles(
+                            type: FileType.image,
+                            lockParentWindow: true,
+                          );
 
-                              if (result != null) {
-                                File file = File(result.files.single.path!);
-                                context.read<FileUplCoverImageBloc>().add(UploadFile(file));
-                              }
-                            }
-                          },
-                          child: ClipRRect(
+                          if (result != null) {
+                            File file = File(result.files.single.path!);
+                            context.read<FileUplCoverImageBloc>().add(UploadFile(file));
+                          }
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          ClipRRect(
                             borderRadius: BorderRadius.circular(100),
                             child: Container(
                               height: 70,
@@ -159,40 +173,27 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                                 color: Colors.white,
                                 border: Border.all(color: Color(0xFFF3F3F3), width: 1),
                               ),
-                              child: Center(
-                                child:
-                                    (state is FileUploadingCoverImage)
-                                        ? SizedBox(
-                                          height: 25,
-                                          width: 25,
-                                          child: CircularProgressIndicator(
-                                            value: state.progress,
-                                            color: Colors.blue,
-                                          ),
-                                        )
-                                        : (coverImage != null)
-                                        ? Image.network(
-                                          '$baseUrl/public/${coverImage?.resizedFiles?.small}',
-                                          fit: BoxFit.cover,
-                                        )
-                                        : Icon(Icons.camera_alt_outlined),
+                              child: UploadingCoverImage(
+                                coverImage: coverImage,
+                                loadingProgress:
+                                    state is FileUploadingCoverImage ? state.progress : null,
                               ),
                             ),
                           ),
-                        ),
-                        Box(w: 14),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text("Аватар вашего магазина"),
-                            Text(
-                              'Нажмите, чтобы изменить',
-                              style: TextStyle(fontSize: 12, color: Color(0xFF969696)),
-                            ),
-                          ],
-                        ),
-                      ],
+                          Box(w: 14),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Аватар вашего магазина"),
+                              Text(
+                                'Нажмите, чтобы изменить',
+                                style: TextStyle(fontSize: 12, color: Color(0xFF969696)),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -364,7 +365,7 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                         border: true,
                         borderColor: Color(0xFF474747),
                         borderRadius: 14,
-                        suffixWidget: GestureDetector(
+                        suffixWidget: InkWell(
                           onTap: () {
                             setState(() {
                               contacts.remove(contacts.keys.toList()[index]);
@@ -378,27 +379,39 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                 }),
 
                 Box(h: 10),
-                GestureDetector(
-                  onTap: () {
-                    addContactsSheet(context);
-                  },
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFF3F3F3),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: EdgeInsets.all(10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "Добавить контакт",
-                            style: TextStyle(color: Color(0xFF474747), fontWeight: FontWeight.w500),
+                Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    splashColor: Colors.black.withOpacity(0.12),
+                    highlightColor: Colors.black.withOpacity(0.06),
+                    onTap: () {
+                      Future.delayed(const Duration(milliseconds: 120), () {
+                        addContactsSheet(context);
+                      });
+                    },
+                    child: Ink(
+                      height: 50,
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F3F3),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: const [
+                          Expanded(
+                            child: Text(
+                              "Добавить контакт",
+                              style: TextStyle(
+                                color: Color(0xFF474747),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
-                        ),
-                        Icon(Icons.add_circle_outline_rounded, color: Color(0xFF474747)),
-                      ],
+                          Icon(Icons.add_circle_outline_rounded, color: Color(0xFF474747)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -419,11 +432,31 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                       height: 50,
                       width: double.infinity,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          backgroundColor: Col.primary,
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(Col.primary),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+
+                          /// ⭐ Ripple tuning
+                          overlayColor: MaterialStateProperty.resolveWith((states) {
+                            if (states.contains(MaterialState.pressed)) {
+                              return Colors.white.withOpacity(0.18);
+                            }
+                            if (states.contains(MaterialState.hovered)) {
+                              return Colors.white.withOpacity(0.08);
+                            }
+                            return null;
+                          }),
+
+                          /// Optional: remove elevation jump
+                          elevation: MaterialStateProperty.resolveWith(
+                            (states) => states.contains(MaterialState.pressed) ? 1 : 2,
+                          ),
                         ),
                         onPressed: () {
+                          HapticFeedback.mediumImpact();
+
                           if (state is! StoreCreateLoading) {
                             var provinces =
                                 context
@@ -462,9 +495,16 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                         },
                         child:
                             state is StoreCreateLoading
-                                ? CircularProgressIndicator()
+                                ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                                  ),
+                                )
                                 : Row(
-                                  children: [
+                                  children: const [
                                     Expanded(
                                       child: Text(
                                         "Отправить на проверку",
@@ -529,37 +569,80 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
   }
 
   Widget singleSheetButton({required String type, required String title, required IconData icon}) {
-    return GestureDetector(
-      onTap: () {
-        if (contacts.containsKey(type)) return;
-        var controller;
-        if (type == "email") controller = email;
-        if (type == "webpage") controller = webpage;
-        if (type == "telegram") controller = telegram;
-        if (type == "instagram") controller = instagram;
-        if (type == "tictok") controller = tictok;
-        if (controller == null) return;
-        setState(() {
-          contacts.addAll({type: controller});
-        });
-        Navigator.pop(context);
-      },
-      child: Container(
-        height: 45,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-        padding: EdgeInsets.all(10),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(color: Color(0xFF474747), fontWeight: FontWeight.w500),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        splashColor: Colors.black.withOpacity(0.08),
+        highlightColor: Colors.black.withOpacity(0.04),
+        onTap: () {
+          HapticFeedback.selectionClick();
+
+          Future.delayed(const Duration(milliseconds: 120), () {
+            if (contacts.containsKey(type)) return;
+
+            var controller;
+            if (type == "email") controller = email;
+            if (type == "webpage") controller = webpage;
+            if (type == "telegram") controller = telegram;
+            if (type == "instagram") controller = instagram;
+            if (type == "tictok") controller = tictok;
+            if (controller == null) return;
+
+            setState(() {
+              contacts.addAll({type: controller});
+            });
+            Navigator.pop(context);
+          });
+        },
+        child: Ink(
+          height: 45,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(color: Color(0xFF474747), fontWeight: FontWeight.w500),
+                ),
               ),
-            ),
-            Icon(icon, color: Color(0xFF474747)),
-          ],
+              Icon(icon, color: const Color(0xFF474747)),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class UploadingCoverImage extends StatelessWidget {
+  const UploadingCoverImage({super.key, required this.coverImage, required this.loadingProgress});
+
+  final MeninkiFile? coverImage;
+  final double? loadingProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child:
+          (loadingProgress != null)
+              ? SizedBox(
+                height: 25,
+                width: 25,
+                child: CircularProgressIndicator(value: loadingProgress, color: Colors.blue),
+              )
+              : (coverImage != null)
+              ? ((coverImage?.status == 'ready' &&
+                      (coverImage?.resizedFiles?.small?.isNotEmpty ?? false))
+                  ? MeninkiNetworkImage(
+                    file: coverImage!,
+                    networkImageType: NetworkImageType.small,
+                    fit: BoxFit.cover,
+                  )
+                  : Image.asset('assets/images/app_logo.png', fit: BoxFit.cover))
+              : Icon(Icons.camera_alt_outlined),
     );
   }
 }

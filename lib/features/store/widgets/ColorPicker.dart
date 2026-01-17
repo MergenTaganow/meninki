@@ -29,7 +29,7 @@ class ColorPicker extends StatelessWidget {
       children:
           colors.map((color) {
             final isSelected = color == selectedColor;
-            return GestureDetector(
+            return InkWell(
               onTap: () => onColorSelected(color),
               child: Container(
                 width: 40,

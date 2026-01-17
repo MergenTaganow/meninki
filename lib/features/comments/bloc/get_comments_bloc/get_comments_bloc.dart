@@ -44,7 +44,7 @@ class GetCommentsBloc extends Bloc<GetCommentsEvent, GetCommentsState> {
 
     final failOrNot = await ds.getComments(
       reelId: event.reelId,
-      query: (event.query ?? Query()).copyWith(offset: page, limit: limit, sortAs: "asc"),
+      query: (event.query ?? Query()).copyWith(offset: page, limit: limit, orderDirection: "asc"),
     );
 
     return failOrNot.fold((l) => GetCommentsFailed(message: l.message, statusCode: l.statusCode), (
@@ -61,7 +61,7 @@ class GetCommentsBloc extends Bloc<GetCommentsEvent, GetCommentsState> {
 
     final failOrNot = await ds.getComments(
       reelId: event.reelId,
-      query: (event.query ?? Query()).copyWith(offset: page, limit: limit, sortAs: "asc"),
+      query: (event.query ?? Query()).copyWith(offset: page, limit: limit, orderDirection: "asc"),
     );
 
     return failOrNot.fold((l) => GetCommentsFailed(message: l.message, statusCode: l.statusCode), (

@@ -31,20 +31,36 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
         emit.call(ReelPagLoading(reels));
         emit.call(await _paginate(event));
       }
+      if (event is ClearReels) {
+        reels = [];
+        page = 1;
+        emit.call(GetReelInitial());
+      }
     });
   }
 
   Future<GetReelsState> _paginate(ReelPag event) async {
     page += 1;
 
-    final failOrNot = await ds.getReels(
-      (event.query ?? Query()).copyWith(
-        offset: page,
-        limit: limit,
-        sortAs: event.query?.orderDirection ?? 'asc',
-        sortBy: event.query?.orderBy ?? 'created_at',
-      ),
-    );
+    final failOrNot =
+        (event.query?.filtered ?? false)
+            ///This is wrong but was made for extend Blocs filter problems in endpoint
+            ? await ds.getFilteredReels(
+              (event.query ?? Query()).copyWith(
+                offset: page,
+                limit: limit,
+                orderDirection: event.query?.orderDirection ?? 'asc',
+                orderBy: event.query?.orderBy ?? 'created_at',
+              ),
+            )
+            : await ds.getReels(
+              (event.query ?? Query()).copyWith(
+                offset: page,
+                limit: limit,
+                orderDirection: event.query?.orderDirection ?? 'asc',
+                orderBy: event.query?.orderBy ?? 'created_at',
+              ),
+            );
 
     return failOrNot.fold((l) => GetReelFailed(message: l.message, statusCode: l.statusCode), (r) {
       reels.addAll(r);
@@ -56,14 +72,25 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
   Future<GetReelsState> _getReels(GetReel event) async {
     page = 1;
 
-    final failOrNot = await ds.getReels(
-      (event.query ?? Query()).copyWith(
-        offset: page,
-        limit: limit,
-        sortAs: event.query?.orderDirection ?? 'asc',
-        sortBy: event.query?.orderBy ?? 'created_at',
-      ),
-    );
+    final failOrNot =
+        (event.query?.filtered ?? false)
+            ///This is wrong but was made for extend Blocs filter problems in endpoint
+            ? await ds.getFilteredReels(
+              (event.query ?? Query()).copyWith(
+                offset: page,
+                limit: limit,
+                orderDirection: event.query?.orderDirection ?? 'asc',
+                orderBy: event.query?.orderBy ?? 'created_at',
+              ),
+            )
+            : await ds.getReels(
+              (event.query ?? Query()).copyWith(
+                offset: page,
+                limit: limit,
+                orderDirection: event.query?.orderDirection ?? 'asc',
+                orderBy: event.query?.orderBy ?? 'created_at',
+              ),
+            );
 
     return failOrNot.fold((l) => GetReelFailed(message: l.message, statusCode: l.statusCode), (r) {
       if (r.length == limit) canPag = true;
@@ -79,4 +106,8 @@ class GetProductReelsBloc extends GetVerifiedReelsBloc {
 
 class GetStoreReelsBloc extends GetVerifiedReelsBloc {
   GetStoreReelsBloc(super.ds);
+}
+
+class GetSearchedReelsBloc extends GetVerifiedReelsBloc {
+  GetSearchedReelsBloc(super.ds);
 }

@@ -16,6 +16,7 @@ import '../features/product/pages/product_parametres_page.dart';
 import '../features/product/pages/product_search_filter_page.dart';
 import '../features/province/pages/province_selecting_page.dart';
 import '../features/reels/pages/reel_create_page.dart';
+import '../features/reels/pages/reels_filter_page.dart';
 import '../features/store/pages/my_store_detail.dart';
 import '../features/store/pages/public_store_detail_page.dart';
 import '../features/store/pages/store_create_page.dart';
@@ -49,6 +50,7 @@ class Routes {
 
   //reals
   static const String reelCreatePage = '/reelCratePage';
+  static const String reelsFilterPage = '/reelsFilterPage';
 
   //province
   static const String provinceSelectingPage = '/provinceSelectingPage';
@@ -116,6 +118,8 @@ class Routes {
         return MaterialPageRoute(
           builder: (_) => ProductSearchFilterPage(onFilter: data?['onFilter']),
         );
+      case reelsFilterPage:
+        return MaterialPageRoute(builder: (_) => ReelsFilterPage(onFilter: data?['onFilter']));
       case publicStoreDetail:
         return MaterialPageRoute(builder: (_) => PublicStoreDetail());
       case reelCreatePage:

@@ -13,7 +13,7 @@ class GetProductsBloc extends Bloc<GetProductsEvent, GetProductsState> {
   List<Product> products = [];
 
   int page = 1;
-  int limit = 150;
+  int limit = 20;
   bool canPag = false;
 
   GetProductsBloc(this.ds) : super(GetProductInitial()) {
@@ -31,6 +31,12 @@ class GetProductsBloc extends Bloc<GetProductsEvent, GetProductsState> {
         canPag = false;
         emit.call(ProductPagLoading(products));
         emit.call(await _paginate(event));
+      }
+
+      if (event is ClearProducts) {
+        products = [];
+        page = 1;
+        emit.call(GetProductInitial());
       }
     });
   }

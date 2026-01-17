@@ -9,6 +9,7 @@ import '../features/auth/bloc/aut_bloc/auth_bloc.dart';
 import '../features/auth/bloc/register_cubit/register_cubit.dart';
 import '../features/auth/data/auth_remote_data_source.dart';
 import '../features/auth/data/employee_local_data_source.dart';
+import '../features/banner/bloc/get_banners_bloc/get_banners_bloc.dart';
 import '../features/categories/bloc/brand_selecting_cubit/brand_selecting_cubit.dart';
 import '../features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import '../features/categories/bloc/get_brands_bloc/get_brands_bloc.dart';
@@ -30,6 +31,7 @@ import '../features/product/data/product_remote_data_source.dart';
 import '../features/province/blocks/get_provinces_bloc/get_provinces_cubit.dart';
 import '../features/province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import '../features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
+import '../features/reels/blocs/file_processing_cubit/file_processing_cubit.dart';
 import '../features/reels/blocs/file_upl_bloc/file_upl_bloc.dart';
 import '../features/reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 import '../features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
@@ -74,6 +76,8 @@ Future<void> init() async {
   sl.registerLazySingleton<ReelCreateCubit>(() => ReelCreateCubit(sl()));
   sl.registerLazySingleton<GetProductReelsBloc>(() => GetProductReelsBloc(sl()));
   sl.registerLazySingleton<GetStoreReelsBloc>(() => GetStoreReelsBloc(sl()));
+  sl.registerLazySingleton<GetSearchedReelsBloc>(() => GetSearchedReelsBloc(sl()));
+  sl.registerLazySingleton<FileProcessingCubit>(() => FileProcessingCubit(sl()));
 
   //store
   sl.registerLazySingleton<StoreRemoteDataSource>(() => StoreRemoteDataImpl(sl()));
@@ -101,6 +105,7 @@ Future<void> init() async {
   sl.registerLazySingleton<GetStoreProductsBloc>(() => GetStoreProductsBloc(sl()));
   sl.registerLazySingleton<GetOneStoresProducts>(() => GetOneStoresProducts(sl()));
   sl.registerLazySingleton<GetDiscountProducts>(() => GetDiscountProducts(sl()));
+  sl.registerLazySingleton<GetBannersBloc>(() => GetBannersBloc(sl()));
 
   //province
   sl.registerLazySingleton<GetProvincesCubit>(() => GetProvincesCubit(sl()));

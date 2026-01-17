@@ -33,7 +33,7 @@ class ReelCreatePage extends StatefulWidget {
 class _ReelCreatePageState extends State<ReelCreatePage> {
   TextEditingController title = TextEditingController();
   TextEditingController description = TextEditingController();
-  MeninkiFile? file;
+  File? file;
   BetterPlayerController? controller;
 
   @override
@@ -54,12 +54,12 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
   void dispose() {
     title.dispose();
     description.dispose();
+    controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var fileState = sl<FileUplCoverImageBloc>().state;
     return MultiBlocListener(
       listeners: [
         BlocListener<ReelCreateCubit, ReelCreateState>(
@@ -72,21 +72,20 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
               );
             }
             if (state is ReelCreateSuccess) {
-              //Todo reel create bolonson name etmeli??
               CustomSnackBar.showSnackBar(context: context, title: "Успешно", isError: false);
               Navigator.popUntil(context, (route) => route.isFirst);
             }
           },
         ),
-        BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
-          listener: (context, state) async {
-            if (state is FileUploadCoverImageSuccess) {
-              file = state.file;
-              await initController();
-              setState(() {});
-            }
-          },
-        ),
+        // BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
+        //   listener: (context, state) async {
+        //     if (state is FileUploadCoverImageSuccess) {
+        //       // file = state.file;
+        //       // await initController();
+        //       // setState(() {});
+        //     }
+        //   },
+        // ),
       ],
       child: Scaffold(
         appBar: AppBar(
@@ -95,12 +94,12 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: BlocBuilder<ReelCreateCubit, ReelCreateState>(
           builder: (context, state) {
-            return GestureDetector(
+            return InkWell(
               onTap: () {
                 var map = {
                   'title': title.text.trim(),
                   'description': description.text.trim(),
-                  if (file != null) 'file_id': file?.id,
+                  // if (file != null) 'file_id': file?.id,
                   'link_id': widget.product.id,
                   "link": "string",
                   "type": "product",
@@ -108,14 +107,18 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                   "market_id": 1,
                   "tags": ["string"],
                 };
-                print(fileState);
-                if (file == null && fileState is FileUploadingCoverImage) {
+                if (file != null) {
+                  context.read<FileUplCoverImageBloc>().add(UploadFile(file!));
+                  CustomSnackBar.showSnackBar(
+                    context: context,
+                    title: 'reel will be created',
+                    isError: false,
+                  );
                   context.read<ReelCreateCubit>().setReel(map);
                   Go.pop();
                   return;
-                }
-                if (state is! ReelCreateLoading) {
-                  context.read<ReelCreateCubit>().createReel(map);
+                } else {
+                  CustomSnackBar.showYellowSnackBar(context: context, title: "choose file");
                 }
               },
               child: Container(
@@ -227,102 +230,169 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                 Box(h: 20),
                 Text("Media", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                 Box(h: 20),
-
-                BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
-                  builder: (context, state) {
-                    if (state is FileUploadCoverImageSuccess) {
-                      return InkWell(
-                        onTap: () {},
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width / 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: Container(
-                                  height: 240,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    color:
-                                        (controller?.isVideoInitialized() ?? false)
-                                            ? Colors.black
-                                            : Colors.grey.withOpacity(0.5),
-                                  ),
-                                  child: Center(
-                                    child:
-                                        (controller != null &&
-                                                (controller?.isVideoInitialized() ?? false) &&
-                                                (controller?.isPlaying() ?? false))
-                                            ? BetterPlayer(controller: controller!)
-                                            : MeninkiNetworkImage(
-                                              file: state.file,
-                                              networkImageType: NetworkImageType.small,
-                                            ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                    if (state is FileUploadingCoverImage) {
-                      return Container(
-                        height: 240,
-                        width: MediaQuery.of(context).size.width / 2,
-                        decoration: BoxDecoration(
+                if (file != null)
+                  // ClipRRect(
+                  //   borderRadius: BorderRadius.circular(10),
+                  //   child:
+                  //       controller == null
+                  //           ? Container(
+                  //             color: Colors.grey.withOpacity(0.3),
+                  //             child: const Center(child: Icon(Icons.play_circle_outline)),
+                  //           )
+                  //           : AspectRatio(
+                  //             aspectRatio:
+                  //                 controller!.getAspectRatio() ??
+                  //                 controller?.videoPlayerController?.value.aspectRatio ??
+                  //                 9 / 16, // dynamic or fallback
+                  //             child: BetterPlayer(controller: controller!),
+                  //           ),
+                  // )
+                  Container(
+                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.grey.withOpacity(0.3),
+                    ),
+                    child: Stack(
+                      children: [
+                        ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          color: Colors.grey.withOpacity(0.3),
+                          child:
+                              controller == null
+                                  ? const Center(child: Icon(Icons.play_circle_outline))
+                                  : BetterPlayer(controller: controller!),
                         ),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            value: state.progress,
-                            color: Colors.white,
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: GestureDetector(
+                            onTap: () {
+                              file = null;
+                              controller = null;
+                              setState(() {});
+                            },
+                            child: Icon(Icons.cancel, color: Color(0xFFF3F3F3)),
                           ),
                         ),
+                      ],
+                    ),
+                  )
+                else
+                  InkWell(
+                    onTap: () async {
+                      FilePickerResult? result = await FilePicker.platform.pickFiles(
+                        type: FileType.video,
+                        lockParentWindow: true,
+                        allowMultiple: false,
                       );
-                    }
 
-                    return GestureDetector(
-                      onTap: () async {
-                        FilePickerResult? result = await FilePicker.platform.pickFiles(
-                          type: FileType.media,
-                          lockParentWindow: true,
-                          allowMultiple: false,
-                        );
+                      if (result != null) {
+                        file = File(result.files.single.path!);
+                        controller = null;
 
-                        if (result != null) {
-                          File file = File(result.files.single.path!);
-                          context.read<FileUplCoverImageBloc>().add(UploadFile(file));
-                        }
-                      },
-                      child: Container(
-                        height: 106,
-                        width: 106,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Color(0xFFEAEAEA),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(Icons.add_circle, color: Colors.black),
-                              Text(
-                                "Добавить медиа",
-                                style: TextStyle(fontSize: 12),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
+                        controller = BetterPlayerController(
+                          const BetterPlayerConfiguration(
+                            autoPlay: true,
+                            looping: true,
+                            fit: BoxFit.cover,
+
+                            controlsConfiguration: BetterPlayerControlsConfiguration(
+                              showControls: true,
+                            ),
                           ),
+                          betterPlayerDataSource: BetterPlayerDataSource(
+                            BetterPlayerDataSourceType.file,
+                            file!.path,
+                          ),
+                        );
+                        controller?.setVolume(0);
+                        setState(() {});
+                        // context.read<FileUplCoverImageBloc>().add(UploadFile(file));
+                      }
+                    },
+                    child: Container(
+                      height: 106,
+                      width: 106,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        color: Color(0xFFEAEAEA),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_circle, color: Colors.black),
+                            Text(
+                              "Добавить медиа",
+                              style: TextStyle(fontSize: 12),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                // BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
+                //   builder: (context, state) {
+                //     if (state is FileUploadCoverImageSuccess) {
+                //       return InkWell(
+                //         onTap: () {},
+                //         child: SizedBox(
+                //           width: MediaQuery.of(context).size.width / 2,
+                //           child: Column(
+                //             crossAxisAlignment: CrossAxisAlignment.start,
+                //             mainAxisSize: MainAxisSize.min,
+                //             children: [
+                //               ClipRRect(
+                //                 borderRadius: BorderRadius.circular(16),
+                //                 child: Container(
+                //                   height: 240,
+                //                   decoration: BoxDecoration(
+                //                     borderRadius: BorderRadius.circular(16),
+                //                     color:
+                //                         (controller?.isVideoInitialized() ?? false)
+                //                             ? Colors.black
+                //                             : Colors.grey.withOpacity(0.5),
+                //                   ),
+                //                   child: Center(
+                //                     child:
+                //                         (controller != null &&
+                //                                 (controller?.isVideoInitialized() ?? false) &&
+                //                                 (controller?.isPlaying() ?? false))
+                //                             ? BetterPlayer(controller: controller!)
+                //                             : MeninkiNetworkImage(
+                //                               file: state.file,
+                //                               networkImageType: NetworkImageType.small,
+                //                             ),
+                //                   ),
+                //                 ),
+                //               ),
+                //             ],
+                //           ),
+                //         ),
+                //       );
+                //     }
+                //     if (state is FileUploadingCoverImage) {
+                //       return Container(
+                //         height: 240,
+                //         width: MediaQuery.of(context).size.width / 2,
+                //         decoration: BoxDecoration(
+                //           borderRadius: BorderRadius.circular(10),
+                //           color: Colors.grey.withOpacity(0.3),
+                //         ),
+                //         child: Center(
+                //           child: CircularProgressIndicator(
+                //             value: state.progress,
+                //             color: Colors.white,
+                //           ),
+                //         ),
+                //       );
+                //     }
+                //
+                //     return ;
+                //   },
+                // ),
                 Box(h: 120),
               ],
             ),
@@ -330,41 +400,5 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
         ),
       ),
     );
-  }
-
-  initController() async {
-    final dataSource = BetterPlayerDataSource(
-      BetterPlayerDataSourceType.network,
-      "$baseUrl/public/${file?.video_chunks?.first}",
-      useAsmsAudioTracks: false,
-      useAsmsSubtitles: false,
-      useAsmsTracks: false,
-      bufferingConfiguration: BetterPlayerBufferingConfiguration(
-        minBufferMs: 2000, // lower → faster start
-        maxBufferMs: 10000, // enough for stability
-        bufferForPlaybackMs: 300, // super fast start
-        bufferForPlaybackAfterRebufferMs: 1000,
-      ),
-      cacheConfiguration: BetterPlayerCacheConfiguration(
-        useCache: true,
-        maxCacheSize: 500 * 1024 * 1024, // 50 MB
-        maxCacheFileSize: 50 * 1024 * 1024, // 10 MB per file
-      ),
-    );
-
-    final betterPlayerConfiguration = BetterPlayerConfiguration(
-      looping: false,
-      allowedScreenSleep: false,
-      controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
-    );
-
-    final controller = BetterPlayerController(
-      betterPlayerConfiguration,
-      betterPlayerDataSource: dataSource,
-    );
-    // Save immediately
-
-    // Wait until ready
-    await controller.setVolume(0);
   }
 }

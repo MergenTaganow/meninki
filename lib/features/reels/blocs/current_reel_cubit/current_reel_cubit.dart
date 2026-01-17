@@ -11,10 +11,6 @@ class CurrentReelCubit extends Cubit<CurrentReelState> {
 
   set(Reel reel) {
     currentReel = reel;
-    print("current Reels Id----${reel.id}");
-    print("current Reels Id----${reel.id}");
-    print("current Reels Id----${reel.id}");
-    print("current Reels Id----${reel.id}");
     emit.call(CurrentReelSuccess(currentReel));
   }
 }

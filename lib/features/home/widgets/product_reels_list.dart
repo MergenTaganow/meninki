@@ -40,44 +40,7 @@ class _ProductReelsListState extends State<ProductReelsList> {
         }
 
         if (state is GetReelFailed) {
-          // return ErrorPage(
-          //   fl: state.fl,
-          //   onRefresh: () {
-          //     context.read<GetOrdersBloc>().add(RefreshLastOrders());
-          //   },
-          // );
           return Text("error");
-        }
-
-        if (reels.isEmpty) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Svvg.asset('_emptyy'),
-              const Box(h: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Col.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                ),
-                onPressed: () {
-                  context.read<GetProductReelsBloc>().add(GetReel(widget.query));
-                },
-                child: SizedBox(
-                  height: 45,
-                  child: Center(
-                    child: Padd(
-                      hor: 10,
-                      child: Text(
-                        "lg.tryAgain",
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
         }
 
         return RefreshIndicator(

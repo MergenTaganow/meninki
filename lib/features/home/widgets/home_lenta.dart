@@ -14,6 +14,7 @@ import '../../reels/widgets/reel_card.dart';
 import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import '../../store/bloc/get_stores_bloc/get_stores_bloc.dart';
 import '../../store/models/market.dart';
+import '../../store/widgets/store_card.dart';
 
 class HomeLenta extends StatefulWidget {
   const HomeLenta({super.key});
@@ -22,7 +23,7 @@ class HomeLenta extends StatefulWidget {
   State<HomeLenta> createState() => _HomeLentaState();
 }
 
-class _HomeLentaState extends State<HomeLenta> {
+class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixin {
   List<Reel> reels = [];
   List<Market> stores = [];
 
@@ -34,6 +35,8 @@ class _HomeLentaState extends State<HomeLenta> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return RefreshIndicator(
       backgroundColor: Colors.white,
       onRefresh: () async {
@@ -72,62 +75,7 @@ class _HomeLentaState extends State<HomeLenta> {
                           itemBuilder: (context, index) {
                             // Use dummy store when loading to avoid index errors
                             final store = isLoading ? null : stores[index];
-                            return InkWell(
-                              onTap: () {
-                                if (store?.id != null) {
-                                  context.read<GetMarketByIdCubit>().getStoreById(store!.id);
-                                  Go.to(Routes.publicStoreDetail);
-                                }
-                              },
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(14),
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      height: 120,
-                                      width: 90,
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey,
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                      child:
-                                          (store?.cover_image != null)
-                                              ? IgnorePointer(
-                                                ignoring: true,
-                                                child: MeninkiNetworkImage(
-                                                  file: store!.cover_image!,
-                                                  networkImageType: NetworkImageType.small,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              )
-                                              : null,
-                                    ),
-                                    // image
-                                    if (store?.cover_image != null)
-                                      Positioned(
-                                        right: 0,
-                                        top: 0,
-                                        // alignment: Alignment.topRight,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(40),
-                                            color: Colors.white,
-                                          ),
-                                          margin: EdgeInsets.only(right: 6, top: 6),
-                                          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          child: Text(
-                                            (store?.user_rate_count ?? 0).toString(),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 10,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            );
+                            return Padd(left: index == 0 ? 10 : 0, child: StoreCard(store: store));
                           },
                           separatorBuilder: (context, index) => Box(w: 8),
                           itemCount: itemCount,
@@ -140,110 +88,76 @@ class _HomeLentaState extends State<HomeLenta> {
             ),
 
             Box(h: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                    Row(
-                      children: [
-                        Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
-                        Text("По дате - сначала новые", style: TextStyle(color: Color(0xFF969696))),
-                      ],
-                    ),
-                  ],
-                ),
-                Svvg.asset("sort"),
-              ],
+            Padd(
+              hor: 10,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                      Row(
+                        children: [
+                          Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
+                          Text(
+                            "По дате - сначала новые",
+                            style: TextStyle(color: Color(0xFF969696)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Svvg.asset("sort"),
+                ],
+              ),
             ),
             Box(h: 20),
-            BlocBuilder<GetVerifiedReelsBloc, GetReelsState>(
-              builder: (context, state) {
-                if (state is GetReelSuccess) {
-                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                    if (mounted) {
-                      setState(() {
-                        reels = state.reels;
-                      });
-                    }
-                  });
-                }
+            Padd(
+              hor: 10,
+              child: BlocBuilder<GetVerifiedReelsBloc, GetReelsState>(
+                builder: (context, state) {
+                  if (state is GetReelSuccess) {
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      if (mounted) {
+                        setState(() {
+                          reels = state.reels;
+                        });
+                      }
+                    });
+                  }
+                  final isLoading = state is GetReelLoading;
+                  final itemCount = isLoading ? 6 : reels.length;
 
-                if (state is GetReelFailed) {
-                  // return ErrorPage(
-                  //   fl: state.fl,
-                  //   onRefresh: () {
-                  //     context.read<GetOrdersBloc>().add(RefreshLastOrders());
-                  //   },
-                  // );
-                  return Text("error");
-                }
-
-                // if (reels.isEmpty) {
-                //   return Column(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: [
-                //       Svvg.asset('_emptyy'),
-                //       const Box(h: 16),
-                //       ElevatedButton(
-                //         style: ElevatedButton.styleFrom(
-                //           backgroundColor: Col.primary,
-                //           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                //         ),
-                //         onPressed: () {
-                //           context.read<GetReelsBloc>().add(GetReel());
-                //         },
-                //         child: SizedBox(
-                //           height: 45,
-                //           child: Center(
-                //             child: Padd(
-                //               hor: 10,
-                //               child: Text(
-                //                 "Повторить",
-                //                 style: const TextStyle(color: Colors.white, fontSize: 13),
-                //               ),
-                //             ),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   );
-                // }
-
-                final isLoading = state is GetReelLoading;
-                final itemCount = isLoading ? 6 : reels.length;
-
-                return Skeletonizer(
-                  enabled: isLoading,
-                  child: MasonryGridView.count(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 8,
-                    itemCount: itemCount,
-                    itemBuilder: (context, index) {
-                      // Use dummy reel when loading to avoid index errors
-                      final reel =
-                          isLoading
-                              ? Reel(
-                                id: index,
-                                type: '',
-                                is_active: false,
-                                is_verified: false,
-                                user_id: 0,
-                                title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
-                                file: MeninkiFile(id: 0, name: '', original_file: ''),
-                              )
-                              : reels[index];
-                      return ReelCard(reel: reel, allReels: reels);
-                    },
-                  ),
-                );
-                // if (state is ReelPagLoading) const CircularProgressIndicator(),
-              },
+                  return Skeletonizer(
+                    enabled: isLoading,
+                    child: MasonryGridView.count(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 14,
+                      crossAxisSpacing: 8,
+                      itemCount: itemCount,
+                      itemBuilder: (context, index) {
+                        // Use dummy reel when loading to avoid index errors
+                        final reel =
+                            isLoading
+                                ? Reel(
+                                  id: index,
+                                  type: '',
+                                  is_active: false,
+                                  is_verified: false,
+                                  user_id: 0,
+                                  title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
+                                  file: MeninkiFile(id: 0, name: '', original_file: ''),
+                                )
+                                : reels[index];
+                        return ReelCard(reel: reel, allReels: reels);
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
             Box(h: 100),
           ],
@@ -251,4 +165,7 @@ class _HomeLentaState extends State<HomeLenta> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

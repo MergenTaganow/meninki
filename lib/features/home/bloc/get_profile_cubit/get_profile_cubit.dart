@@ -10,6 +10,7 @@ class GetProfileCubit extends Cubit<GetProfileState> {
   GetProfileCubit(this.ds) : super(GetProfileInitial());
 
   getMyProfile() async {
+    emit.call(GetProfileLoading());
     var failOrNot = await ds.getMyProfile();
     failOrNot.fold((l) => emit.call(GetProfileFailed(l)), (r) => emit.call(GetProfileSuccess(r)));
   }

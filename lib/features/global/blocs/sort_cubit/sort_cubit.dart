@@ -13,6 +13,7 @@ class SortCubit extends Cubit<SortState> {
   }
 
   static String productSearchSort = 'productSearchSort';
+  static String reelsSearchSort = 'reelsSearchSort';
 }
 
 class Sort {

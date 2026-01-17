@@ -38,7 +38,7 @@ class _ExpandableTextState extends State<ExpandableText> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: _toggleExpanded,
       child: Text(
         widget.text,

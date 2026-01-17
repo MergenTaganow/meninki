@@ -19,7 +19,8 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
         for (var i in event.reels) {
           ///Todo later need to control image reels
           if (controllersMap.containsKey(i.id) == false &&
-              (!(i.file.mimetype ?? '').contains('image'))) {
+              (!(i.file.mimetype ?? '').contains('image')) &&
+              i.file.status == 'ready') {
             _initController(i);
           }
         }
@@ -49,6 +50,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
     final betterPlayerConfiguration = BetterPlayerConfiguration(
       looping: false,
       allowedScreenSleep: false,
+      // fit: BoxFit.cover,
       controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
       // fit: BoxFit.cover,
     );
@@ -63,7 +65,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
     // Wait until ready
     await controller.setVolume(0);
 
-    // sl<ReelPlayingQueueCubit>().addReady({reel.id: controller});
+    sl<ReelPlayingQueueCubit>().addReady({reel.id: controller});
 
     emit.call(ReelsControllersLoading(controllersMap));
   }

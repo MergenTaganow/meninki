@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:meninki/features/reels/blocs/file_processing_cubit/file_processing_cubit.dart';
 import 'package:meninki/features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
-import '../../../core/colors.dart';
-import '../../../core/helpers.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
 
 class MyReelsList extends StatefulWidget {
   final Query query;
+
   const MyReelsList({required this.query, super.key});
 
   @override
@@ -26,79 +26,68 @@ class _MyReelsListState extends State<MyReelsList> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<GetMyReelsBloc, GetMyReelsState>(
-      builder: (context, state) {
-        if (state is GetMyReelLoading) {
-          return const Center(child: CircularProgressIndicator());
+    return BlocListener<FileProcessingCubit, FileProcessingState>(
+      listener: (context, state) {
+        if (state is FileProcessingUpdated) {
+          var index = reels.indexWhere((element) => element.file.id == state.file.id);
+          if (index != -1) {
+            reels[index] = reels[index].copyWith(file: state.file);
+            setState(() {});
+          }
         }
-        if (state is GetMyReelSuccess) {
-          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-            setState(() {
-              reels = state.reels;
-            });
-          });
-        }
-
-        if (state is GetMyReelFailed) {
-          // return ErrorPage(
-          //   fl: state.fl,
-          //   onRefresh: () {
-          //     context.read<GetOrdersBloc>().add(RefreshLastOrders());
-          //   },
-          // );
-          return Text("error");
-        }
-
-        if (reels.isEmpty) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Svvg.asset('_emptyy'),
-              const Box(h: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Col.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                ),
-                onPressed: () {
-                  context.read<GetMyReelsBloc>().add(GetMyReel(widget.query));
-                },
-                child: SizedBox(
-                  height: 45,
-                  child: Center(
-                    child: Padd(
-                      hor: 10,
-                      child: Text(
-                        "lg.tryAgain",
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        }
-
-        return RefreshIndicator(
-          backgroundColor: Colors.white,
-          onRefresh: () async {
-            context.read<GetMyReelsBloc>().add(GetMyReel(widget.query));
-          },
-          child: MasonryGridView.count(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 14,
-            crossAxisSpacing: 8,
-            itemCount: reels.length,
-            itemBuilder: (context, index) {
-              return ReelCard(reel: reels[index], allReels: reels);
-            },
-          ),
-        );
-        // if (state is ReelPagLoading) const CircularProgressIndicator(),
       },
+      child: BlocConsumer<GetMyReelsBloc, GetMyReelsState>(
+        listener: (context, state) {
+          // if (state is GetMyReelSuccess) {
+          //   for (final reel in state.reels.where(
+          //     (e) => e.file.status != 'ready' && e.file.status != 'failed',
+          //   )) {
+          //     sl<FileProcessingCubit>().trackFile(reel.file);
+          //   }
+          // }
+        },
+        builder: (context, state) {
+          if (state is GetMyReelLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (state is GetMyReelSuccess) {
+            WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+              setState(() {
+                reels = state.reels;
+              });
+            });
+          }
+
+          if (state is GetMyReelFailed) {
+            // return ErrorPage(
+            //   fl: state.fl,
+            //   onRefresh: () {
+            //     context.read<GetOrdersBloc>().add(RefreshLastOrders());
+            //   },
+            // );
+            return Text("error");
+          }
+
+          return RefreshIndicator(
+            backgroundColor: Colors.white,
+            onRefresh: () async {
+              context.read<GetMyReelsBloc>().add(GetMyReel(widget.query));
+            },
+            child: MasonryGridView.count(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 14,
+              crossAxisSpacing: 8,
+              itemCount: reels.length,
+              itemBuilder: (context, index) {
+                return ReelCard(reel: reels[index], allReels: reels);
+              },
+            ),
+          );
+          // if (state is ReelPagLoading) const CircularProgressIndicator(),
+        },
+      ),
     );
   }
 }

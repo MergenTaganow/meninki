@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
+import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/banner/bloc/get_banners_bloc/get_banners_bloc.dart';
+import 'package:meninki/features/global/model/name.dart';
+import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/bloc/get_store_products/get_store_products_bloc.dart';
+import 'package:meninki/features/store/widgets/store_card.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
-import '../../../core/routes.dart';
-import '../../global/widgets/meninki_network_image.dart';
+import '../../banner/widgets/banner_list.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
+import '../../product/models/product.dart';
 import '../../product/widgets/product_card.dart';
 import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import '../../store/bloc/get_stores_bloc/get_stores_bloc.dart';
@@ -21,7 +27,7 @@ class HomeMain extends StatefulWidget {
   State<HomeMain> createState() => _HomeMainState();
 }
 
-class _HomeMainState extends State<HomeMain> {
+class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin {
   List<Market> stores = [];
   List<Market> storesProducts = [];
   ScrollController scrollController = ScrollController();
@@ -31,6 +37,7 @@ class _HomeMainState extends State<HomeMain> {
 
   @override
   void initState() {
+    context.read<GetBannersBloc>().add(GetBanner(Query(current_page: BannerPageTypes.home_main)));
     context.read<GetDiscountProducts>().add(GetProduct());
     context.read<GetStoreProductsBloc>().add(GetProductStores());
     scrollController.addListener(() {
@@ -43,12 +50,16 @@ class _HomeMainState extends State<HomeMain> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return RefreshIndicator(
       backgroundColor: Colors.white,
       onRefresh: () async {
         context.read<GetStoresBloc>().add(GetStores());
         context.read<GetDiscountProducts>().add(GetProduct());
         context.read<GetStoreProductsBloc>().add(GetProductStores());
+        context.read<GetBannersBloc>().add(
+          GetBanner(Query(current_page: BannerPageTypes.home_main)),
+        );
       },
       child: SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(),
@@ -61,11 +72,13 @@ class _HomeMainState extends State<HomeMain> {
             Box(h: 20),
 
             ///reklama
-            baners(),
+            BannersList(priority: 1),
             Box(h: 20),
 
             /// discount products
             products(),
+            BannersList(priority: 2),
+            Box(h: 20),
 
             ///marketProducts
             marketProducts(),
@@ -82,55 +95,117 @@ class _HomeMainState extends State<HomeMain> {
         if (state is GetProductStoresSuccess) {
           storesProducts = state.stores;
         }
-        return ListView.separated(
-          itemCount: storesProducts.length,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            return Container(
-              height: 270,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Color(0xFFF3F3F3), width: 1),
-              ),
-              padding: EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  Row(
+        final isLoading = state is GetProductStoresLoading;
+
+        storesProducts =
+            isLoading
+                ? List.generate(
+                  3,
+                  (_) => Market(id: 9999, name: Name()), // lightweight model or mock
+                )
+                : storesProducts;
+        return Skeletonizer(
+          enabled: isLoading,
+          effect: ShimmerEffect(
+            baseColor: const Color(0xFFEAEAEA),
+            highlightColor: const Color(0xFFF5F5F5),
+          ),
+          child: Padd(
+            hor: 10,
+            child: ListView.separated(
+              itemCount: storesProducts.length,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index) {
+                return Container(
+                  constraints: BoxConstraints(maxHeight: 292),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Color(0xFFF3F3F3), width: 1),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
                     children: [
-                      Container(
-                        height: 28,
-                        width: 28,
-                        decoration: BoxDecoration(shape: BoxShape.circle, color: Color(0xFF562846)),
+                      GestureDetector(
+                        onTap: () {
+                          context.read<GetMarketByIdCubit>().getStoreById(storesProducts[index].id);
+                          Go.to(Routes.publicStoreDetail);
+                        },
+                        child: Padd(
+                          hor: 10,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: Container(
+                                      height: 28,
+                                      width: 28,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Col.primary,
+                                      ),
+                                      child:
+                                          storesProducts[index].cover_image != null
+                                              ? IgnorePointer(
+                                                ignoring: true,
+                                                child: MeninkiNetworkImage(
+                                                  file: storesProducts[index].cover_image!,
+                                                  networkImageType: NetworkImageType.small,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              )
+                                              : null,
+                                    ),
+                                  ),
+                                  Box(w: 10),
+                                  Text(
+                                    isLoading
+                                        ? 'Store name'
+                                        : storesProducts[index].name.trans(context),
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                              Text('все', style: TextStyle(fontSize: 14, color: Colors.blueAccent)),
+                            ],
+                          ),
+                        ),
                       ),
-                      Box(w: 10),
-                      Text(
-                        storesProducts[index].name,
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                      Box(h: 10),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxHeight: 232),
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: isLoading ? 3 : storesProducts[index].products?.length ?? 0,
+                          itemBuilder: (context, productIndex) {
+                            return Padd(
+                              left: productIndex == 0 ? 10 : 0,
+                              child: Skeletonizer(
+                                enabled: isLoading,
+                                child: ProductCard(
+                                  product:
+                                      storesProducts[index].products?[productIndex] ??
+                                      Product(id: 9999, name: Name()),
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, index) => Box(w: 4),
+                        ),
                       ),
                     ],
                   ),
-                  Box(h: 10),
-                  SizedBox(
-                    height: 210,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: storesProducts[index].products?.length ?? 0,
-                      itemBuilder: (context, productIndex) {
-                        return ProductCard(
-                          height: 210,
-                          product: storesProducts[index].products![productIndex],
-                        );
-                      },
-                      separatorBuilder: (context, index) => Box(w: 2),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-          separatorBuilder: (context, index) => Box(h: 20),
+                );
+              },
+              separatorBuilder:
+                  (context, index) =>
+                      index == 0 ? Padd(ver: 4, child: BannersList(priority: 3)) : Box(h: 20),
+            ),
+          ),
         );
       },
     );
@@ -139,14 +214,14 @@ class _HomeMainState extends State<HomeMain> {
   BlocBuilder<GetDiscountProducts, GetProductsState> products() {
     return BlocBuilder<GetDiscountProducts, GetProductsState>(
       builder: (context, state) {
-        if (state is GetProductLoading) {
-          return Center(child: CircularProgressIndicator());
-        }
-        if (state is GetProductFailed) {
-          return Text(state.message ?? 'error');
-        }
-        if (state is GetProductSuccess) {
-          return Column(
+        final isLoading = state is GetProductLoading;
+        final products =
+            state is GetProductSuccess
+                ? state.products
+                : List.generate(5, (_) => Product(id: 999, name: Name())); // 👈 fake model
+        return Skeletonizer(
+          enabled: isLoading,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Скитки", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
@@ -155,39 +230,20 @@ class _HomeMainState extends State<HomeMain> {
                 height: 240,
                 child: ListView.separated(
                   itemBuilder: (context, index) {
-                    return ProductCard(product: state.products[index]);
+                    return Padd(
+                      left: index == 0 ? 10 : 0,
+                      child: ProductCard(product: products[index]),
+                    );
                   },
-                  itemCount: state.products.length,
+                  itemCount: products.length,
                   scrollDirection: Axis.horizontal,
-                  separatorBuilder: (BuildContext context, int index) => Box(w: 8),
+                  separatorBuilder: (BuildContext context, int index) => Box(w: 4),
                 ),
               ),
             ],
-          );
-        }
-        return Container();
+          ),
+        );
       },
-    );
-  }
-
-  SizedBox baners() {
-    return SizedBox(
-      height: 150,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (context, index) {
-          return Container(
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: 150,
-            decoration: BoxDecoration(
-              color: Color(0xFFEAEAEA),
-              borderRadius: BorderRadius.circular(14),
-            ),
-          );
-        },
-        separatorBuilder: (context, index) => Box(w: 10),
-        itemCount: 5,
-      ),
     );
   }
 
@@ -219,56 +275,7 @@ class _HomeMainState extends State<HomeMain> {
                   itemBuilder: (context, index) {
                     // Use dummy store when loading to avoid index errors
                     final store = isLoading ? null : stores[index];
-                    return GestureDetector(
-                      onTap: () {
-                        // if (store.id != null) {
-                        context.read<GetMarketByIdCubit>().getStoreById(store.id);
-                        Go.to(Routes.publicStoreDetail);
-                        // }
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Stack(
-                          children: [
-                            IgnorePointer(
-                              ignoring: true,
-                              child: Container(
-                                height: 120,
-                                width: 90,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey,
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: MeninkiNetworkImage(
-                                  file: store!.cover_image!,
-                                  networkImageType: NetworkImageType.small,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            // image
-                            if (store.cover_image != null)
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                // alignment: Alignment.topRight,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(40),
-                                    color: Colors.white,
-                                  ),
-                                  margin: EdgeInsets.only(right: 6, top: 6),
-                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  child: Text(
-                                    (store.user_rate_count ?? 0).toString(),
-                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 10),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
+                    return Padd(left: index == 0 ? 10 : 0, child: StoreCard(store: store));
                   },
                   separatorBuilder: (context, index) => Box(w: 8),
                   itemCount: itemCount,
@@ -280,4 +287,7 @@ class _HomeMainState extends State<HomeMain> {
       },
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

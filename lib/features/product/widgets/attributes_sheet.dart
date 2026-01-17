@@ -70,7 +70,7 @@ class _AttributesSheetState extends State<AttributesSheet> {
                   controller: widget.controller,
                   itemCount: list.length,
                   itemBuilder: (context, index) {
-                    return GestureDetector(
+                    return InkWell(
                       onTap: () {
                         context.read<CompositionsCreatCubit>().selectAttribute(
                           widget.parameter,

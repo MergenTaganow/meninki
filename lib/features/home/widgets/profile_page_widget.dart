@@ -43,6 +43,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
           return RefreshIndicator(
             onRefresh: () async {
               context.read<GetProfileCubit>().getMyProfile();
+              context.read<GetMyReelsBloc>().add(GetMyReel());
             },
             child: SingleChildScrollView(
               child: Container(
@@ -191,7 +192,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
   }
 
   Widget storeCircle(Market market) {
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         context.read<GetMarketByIdCubit>().getStoreById(market.id);
         Go.to(Routes.myStoreDetail);
@@ -216,7 +217,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
             Box(h: 10),
             Expanded(
               child: Text(
-                market.name,
+                market.name.trans(context),
                 style: TextStyle(fontSize: 12),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -231,7 +232,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
 
   Widget iconTextCardButton({required String icon, required String text, void Function()? onTap}) {
     return Expanded(
-      child: GestureDetector(
+      child: InkWell(
         onTap: onTap,
         child: card(
           child: Padd(
@@ -273,7 +274,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
               ],
             ),
           ),
-          GestureDetector(
+          InkWell(
             onTap: () {
               Go.to(Routes.productDetailPage, argument: {"productId": 1});
             },

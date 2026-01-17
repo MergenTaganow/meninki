@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/comments/pages/comments_page.dart';
+import 'package:meninki/features/global/widgets/images_back_button.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 // import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
@@ -136,7 +137,6 @@ class _ReelWidgetState extends State<ReelWidget> {
             state.reel?.id == widget.reel.id &&
             // (controller.isVideoInitialized() ?? false) &&
             !(controller.isPlaying() ?? true)) {
-          print("##########play will be called############");
           controller.play();
           firstPlaying = false;
         }
@@ -147,13 +147,11 @@ class _ReelWidgetState extends State<ReelWidget> {
         }
       },
       builder: (context, state) {
-        print(firstPlaying);
         if (firstPlaying &&
             state is CurrentReelSuccess &&
             state.reel?.id == widget.reel.id &&
             (controller.isVideoInitialized() ?? false) &&
             !(controller.isPlaying() ?? true)) {
-          print("will play reel from builder");
           controller.play();
           firstPlaying = false;
         }
@@ -239,7 +237,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                   BlocBuilder<LikedReelsCubit, LikedReelsState>(
                     builder: (context, state) {
                       if (state is LikedReelsSuccess) {
-                        return GestureDetector(
+                        return InkWell(
                           onTap: () {
                             var count =
                                 (widget.reel.user_favorite_count ?? 0) +
@@ -257,7 +255,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                       return Container();
                     },
                   ),
-                  GestureDetector(
+                  InkWell(
                     onTap: () async {
                       await controller.videoPlayerController?.pause();
                       // var position = await controller.videoPlayerController?.position;
@@ -285,6 +283,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                 ],
               ),
             ),
+            ImagesBackButton(),
           ],
         );
       },

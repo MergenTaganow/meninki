@@ -64,7 +64,7 @@ class _ParametersSheetState extends State<ParametersSheet> {
                   controller: widget.controller,
                   itemCount: list.length,
                   itemBuilder: (context, index) {
-                    return GestureDetector(
+                    return InkWell(
                       onTap: () {
                         context.read<CompositionsCreatCubit>().selectParameter(list[index]);
                         Navigator.pop(context);

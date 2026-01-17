@@ -5,8 +5,6 @@ import 'package:meninki/features/product/bloc/get_products_bloc/get_products_blo
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/product/widgets/product_card.dart';
 import 'package:meninki/features/reels/model/query.dart';
-import '../../../core/colors.dart';
-import '../../../core/helpers.dart';
 
 class StoreProductsList extends StatefulWidget {
   final Query query;
@@ -42,37 +40,6 @@ class _StoreProductsListState extends State<StoreProductsList> {
           //   },
           // );
           return Text("error");
-        }
-
-        if (products.isEmpty) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Svvg.asset('_emptyy'),
-              const Box(h: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Col.primary,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                ),
-                onPressed: () {
-                  context.read<GetOneStoresProducts>().add(GetProduct(widget.query));
-                },
-                child: SizedBox(
-                  height: 45,
-                  child: Center(
-                    child: Padd(
-                      hor: 10,
-                      child: Text(
-                        "lg.tryAgain",
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
         }
 
         return MasonryGridView.count(

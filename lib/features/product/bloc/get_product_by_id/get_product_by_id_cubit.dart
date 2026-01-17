@@ -18,4 +18,8 @@ class GetProductByIdCubit extends Cubit<GetProductByIdState> {
       (r) => emit.call(GetProductByIdSuccess(r)),
     );
   }
+
+  clear() {
+    emit.call(GetProductByIdInitial());
+  }
 }

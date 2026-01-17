@@ -29,7 +29,7 @@ class _ProductParametresPageState extends State<ProductParametresPage> {
     return Scaffold(
       appBar: AppBar(title: Text("Характеристики")),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: GestureDetector(
+      floatingActionButton: InkWell(
         onTap: () {
           Go.to(Routes.compositionsPage, argument: {"product": widget.product});
         },
@@ -62,7 +62,7 @@ class _ProductParametresPageState extends State<ProductParametresPage> {
                   }),
                   Box(h: 10),
 
-                  GestureDetector(
+                  InkWell(
                     onTap: () {
                       showModalBottomSheet(
                         context: context,

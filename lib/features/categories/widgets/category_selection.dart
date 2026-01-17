@@ -23,7 +23,7 @@ class CategorySelection extends StatelessWidget {
             children: [
               Text("Категория"),
               Box(h: 6),
-              GestureDetector(
+              InkWell(
                 onTap: () {
                   Go.to(
                     Routes.categoriesSelectingPage,

@@ -22,6 +22,12 @@ class Query {
   bool? ignoreEmpty;
   int? parameter_id;
   int? user_id;
+  int? market_id;
+  int? product_id;
+  int? priority;
+  String? current_page;
+  bool? filtered;
+
   Query({
     this.keyword,
     this.isActive,
@@ -41,6 +47,11 @@ class Query {
     this.market_ids,
     this.product_ids,
     this.category_ids,
+    this.market_id,
+    this.product_id,
+    this.priority,
+    this.current_page,
+    this.filtered,
   });
 
   Query copyWith({
@@ -81,8 +92,8 @@ class Query {
     int? scoreTo,
     String? status,
     List? statuses,
-    String? sortBy,
-    String? sortAs,
+    String? orderBy,
+    String? orderDirection,
     String? dateFrom,
     String? dateTo,
     String? approachType,
@@ -90,6 +101,11 @@ class Query {
     bool? ignoreEmpty,
     bool? hasApplied,
     bool? hasEffect,
+    int? market_id,
+    int? product_id,
+    int? priority,
+    String? current_page,
+    bool? filtered,
   }) {
     return Query(
       keyword: keyword ?? this.keyword,
@@ -100,8 +116,8 @@ class Query {
       date: date ?? this.date,
       status: status ?? this.status,
       statuses: statuses ?? this.statuses,
-      orderBy: sortBy ?? this.orderBy,
-      orderDirection: sortAs ?? this.orderDirection,
+      orderBy: orderBy ?? this.orderBy,
+      orderDirection: orderDirection ?? this.orderDirection,
       dateFrom: dateFrom ?? this.dateFrom,
       dateTo: dateTo ?? this.dateTo,
       ignoreEmpty: ignoreEmpty ?? this.ignoreEmpty,
@@ -110,6 +126,11 @@ class Query {
       product_ids: product_ids ?? this.product_ids,
       user_id: user_id ?? this.user_id,
       category_ids: category_ids ?? this.category_ids,
+      market_id: market_id ?? this.market_id,
+      product_id: product_id ?? this.product_id,
+      priority: priority ?? this.priority,
+      current_page: current_page ?? this.current_page,
+      filtered: filtered ?? this.filtered,
     );
   }
 
@@ -133,6 +154,10 @@ class Query {
       if (ignoreEmpty != null) 'ignoreEmpty': ignoreEmpty,
       if (parameter_id != null) 'parameter_id': parameter_id,
       if (user_id != null) 'user_id': user_id,
+      if (market_id != null) 'market_id': market_id,
+      if (product_id != null) 'product_id': product_id,
+      if (priority != null) 'priority': priority,
+      if (current_page != null) 'current_page': current_page,
     };
   }
 

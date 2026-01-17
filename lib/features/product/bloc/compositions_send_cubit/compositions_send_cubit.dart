@@ -26,8 +26,10 @@ class CompositionsSendCubit extends Cubit<CompositionsSendState> {
         "product_id": productId,
         "attribute_ids": compositions[i].map((e) => e.id).toList(),
       });
-      failOrNot.fold((l) => print("$i was error: ${l.message}"), (r) => print("$i was success"));
+      failOrNot.fold(
+        (l) => emit.call(CompositionsSendFailed(l)),
+        (r) => emit.call(CompositionsSendSuccess()),
+      );
     }
-    emit.call(CompositionsSendSuccess());
   }
 }

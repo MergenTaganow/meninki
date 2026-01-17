@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 class Name {
   String? tk;
   String? en;
@@ -17,5 +19,9 @@ class Name {
 
   Map<String, dynamic> toJson() {
     return {"tk": tk, "en": en, "ru": ru};
+  }
+
+  String trans(BuildContext context) {
+    return tk ?? ru ?? en ?? '';
   }
 }

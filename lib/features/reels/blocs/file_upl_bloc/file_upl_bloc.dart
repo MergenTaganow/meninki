@@ -7,7 +7,9 @@ import 'package:meninki/features/reels/data/reels_remote_data_source.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../core/api.dart';
+import '../../../../core/injector.dart';
 import '../../model/meninki_file.dart';
+import '../file_processing_cubit/file_processing_cubit.dart';
 
 part 'file_upl_event.dart';
 part 'file_upl_state.dart';
@@ -63,6 +65,7 @@ class FileUplBloc extends Bloc<FileUplEvent, FileUplState> {
           if (file != null) {
             emit(FileUploadSuccess(file, event.type));
             uploadingFiles.remove(i);
+            sl<FileProcessingCubit>().trackFile(file);
           }
         }
       } catch (e) {

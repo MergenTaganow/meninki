@@ -51,7 +51,7 @@ class _MessageCardState extends State<MessageCard> {
                   style: TextStyle(color: Col.primary, fontWeight: FontWeight.w500),
                 )
               else
-                GestureDetector(
+                InkWell(
                   onTap: () {
                     context.read<CommentActionCubit>().setEditingComment(
                       widget.comment,
@@ -79,7 +79,7 @@ class _MessageCardState extends State<MessageCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Box(h: 4),
-                GestureDetector(
+                InkWell(
                   onTap: () {
                     showChildren = !showChildren;
                     if (showChildren) {

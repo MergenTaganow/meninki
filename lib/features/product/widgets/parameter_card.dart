@@ -51,7 +51,7 @@ class ParameterCard extends StatelessWidget {
             child: ListView.separated(
               itemBuilder: (context, index) {
                 if (index == attributes.length) {
-                  return GestureDetector(
+                  return InkWell(
                     onTap: () {
                       showModalBottomSheet(
                         context: context,

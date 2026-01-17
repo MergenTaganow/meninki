@@ -31,7 +31,7 @@ class MeninkiNetworkImage extends StatelessWidget {
             : networkImageType == NetworkImageType.large
             ? file.resizedFiles?.large
             : ""}';
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(

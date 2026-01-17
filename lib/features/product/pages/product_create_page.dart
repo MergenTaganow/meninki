@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/failure.dart';
@@ -18,7 +19,9 @@ import 'package:meninki/features/reels/model/meninki_file.dart';
 
 import '../../../core/api.dart';
 import '../../../core/helpers.dart';
+import '../../reels/blocs/file_processing_cubit/file_processing_cubit.dart';
 import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
+import '../../store/pages/store_create_page.dart';
 import '../models/product.dart';
 
 class ProductCreatePage extends StatefulWidget {
@@ -94,6 +97,22 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
             }
           },
         ),
+        BlocListener<FileProcessingCubit, FileProcessingState>(
+          listener: (context, state) {
+            if (state is FileProcessingUpdated) {
+              if (state.file.id == coverImage?.id) {
+                coverImage = state.file;
+                setState(() {});
+              } else {
+                var index = productPhotos.indexWhere((element) => element.id == state.file.id);
+                if (index != -1) {
+                  productPhotos[index] = state.file;
+                  setState(() {});
+                }
+              }
+            }
+          },
+        ),
         BlocListener<ProductCreateCubit, ProductCreateState>(
           listener: (context, state) {
             if (state is ProductCreateSuccess) {
@@ -105,7 +124,6 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                 duration: Duration(seconds: 1),
                 curve: Curves.easeInOut,
               );
-              // Go.popGo(Routes.productDetailPage, argument: {'productId': state.product.id});
             }
             if (state is ProductCreateFailed) {
               CustomSnackBar.showSnackBar(
@@ -156,44 +174,71 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
             createdProduct == null
                 ? BlocBuilder<ProductCreateCubit, ProductCreateState>(
                   builder: (context, state) {
-                    return GestureDetector(
-                      onTap: () {
-                        if (state is! ProductCreateLoading) {
-                          context.read<ProductCreateCubit>().createProduct({
-                            "name": {
-                              "tk": nameTMController.text.trim(),
-                              "en": nameENController.text.trim(),
-                              "ru": nameRuController.text.trim(),
-                            },
-                            "description": {
-                              "tk": descriptionTMController.text.trim(),
-                              "en": descriptionENController.text.trim(),
-                              "ru": descriptionRuController.text.trim(),
-                            },
-                            "is_active": true,
-                            "cover_image_id": coverImage?.id,
-                            "market_id": widget.storeId,
-                            "price": priceController.text,
-                            "brand_id": selectedBrand?.id,
-                            if (previousPriceController.text.isNotEmpty)
-                              "discount": previousPriceController.text,
-                            "category_ids": selectedSubCategories.map((e) => e.id).toList(),
-                            "file_ids": productPhotos.map((e) => e.id).toList(),
-                          });
-                        }
-                      },
-                      child: Container(
-                        height: 45,
-                        decoration: BoxDecoration(
-                          color: Col.primary,
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Material(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.circular(14),
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(14),
-                        ),
-                        margin: EdgeInsets.symmetric(horizontal: 14),
-                        child: Center(
-                          child:
-                              state is ProductCreateLoading
-                                  ? CircularProgressIndicator()
-                                  : Text("Опубликовать", style: TextStyle(color: Colors.white)),
+                          splashColor: Colors.white.withOpacity(0.22),
+                          highlightColor: Colors.white.withOpacity(0.10),
+                          onTap: () {
+                            if (state is! ProductCreateLoading) {
+                              HapticFeedback.mediumImpact();
+
+                              // Give ripple time to show
+                              Future.delayed(const Duration(milliseconds: 120), () {
+                                context.read<ProductCreateCubit>().createProduct({
+                                  "name": {
+                                    "tk": nameTMController.text.trim(),
+                                    "en": nameENController.text.trim(),
+                                    "ru": nameRuController.text.trim(),
+                                  },
+                                  "description": {
+                                    "tk": descriptionTMController.text.trim(),
+                                    "en": descriptionENController.text.trim(),
+                                    "ru": descriptionRuController.text.trim(),
+                                  },
+                                  "is_active": true,
+                                  "cover_image_id": coverImage?.id,
+                                  "market_id": widget.storeId,
+                                  "price": priceController.text,
+                                  "brand_id": selectedBrand?.id,
+                                  if (previousPriceController.text.isNotEmpty)
+                                    "discount": previousPriceController.text,
+                                  "category_ids": selectedSubCategories.map((e) => e.id).toList(),
+                                  "file_ids": productPhotos.map((e) => e.id).toList(),
+                                });
+                              });
+                            }
+                          },
+                          child: Ink(
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: Col.primary,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child:
+                                  state is ProductCreateLoading
+                                      ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.0,
+                                          valueColor: AlwaysStoppedAnimation(Colors.white),
+                                        ),
+                                      )
+                                      : const Text(
+                                        "Опубликовать",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                            ),
+                          ),
                         ),
                       ),
                     );
@@ -210,24 +255,25 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
               children: [
                 BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
                   builder: (context, state) {
-                    return Row(
-                      children: [
-                        InkWell(
-                          onTap: () async {
-                            if (state is! FileUploadingCoverImage) {
-                              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                type: FileType.image,
-                                lockParentWindow: true,
-                              );
+                    return InkWell(
+                      onTap: () async {
+                        if (state is! FileUploadingCoverImage) {
+                          FilePickerResult? result = await FilePicker.platform.pickFiles(
+                            type: FileType.image,
+                            lockParentWindow: true,
+                          );
 
-                              if (result != null) {
-                                File file = File(result.files.single.path!);
-                                context.read<FileUplCoverImageBloc>().add(UploadFile(file));
-                                coverLoadingImage = file;
-                              }
-                            }
-                          },
-                          child: ClipRRect(
+                          if (result != null) {
+                            File file = File(result.files.single.path!);
+                            context.read<FileUplCoverImageBloc>().add(UploadFile(file));
+                            coverLoadingImage = file;
+                          }
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(100),
+                      child: Row(
+                        children: [
+                          ClipRRect(
                             borderRadius: BorderRadius.circular(100),
                             child: Container(
                               height: 70,
@@ -237,41 +283,45 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                                 color: Colors.white,
                                 border: Border.all(color: Color(0xFFF3F3F3), width: 1),
                               ),
-                              child:
-                                  state is FileUploadCoverImageSuccess
-                                      ? Image.network(
-                                        '$baseUrl/public/${state.file.resizedFiles?.small}',
-                                        fit: BoxFit.cover,
-                                      )
-                                      : Center(
-                                        child:
-                                            state is FileUploadingCoverImage
-                                                ? SizedBox(
-                                                  height: 25,
-                                                  width: 25,
-                                                  child: CircularProgressIndicator(
-                                                    value: state.progress,
-                                                    color: Colors.blue,
-                                                  ),
-                                                )
-                                                : Icon(Icons.camera_alt_outlined),
-                                      ),
+                              child: UploadingCoverImage(
+                                coverImage: coverImage,
+                                loadingProgress:
+                                    state is FileUploadingCoverImage ? state.progress : null,
+                              ),
+                              // state is FileUploadCoverImageSuccess
+                              //     ? Image.network(
+                              //       '$baseUrl/public/${state.file.resizedFiles?.small}',
+                              //       fit: BoxFit.cover,
+                              //     )
+                              //     : Center(
+                              //       child:
+                              //           state is FileUploadingCoverImage
+                              //               ? SizedBox(
+                              //                 height: 25,
+                              //                 width: 25,
+                              //                 child: CircularProgressIndicator(
+                              //                   value: state.progress,
+                              //                   color: Colors.blue,
+                              //                 ),
+                              //               )
+                              //               : Icon(Icons.camera_alt_outlined),
+                              //     ),
                             ),
                           ),
-                        ),
-                        Box(w: 14),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text("Аватар вашего продукта"),
-                            Text(
-                              'Нажмите, чтобы изменить',
-                              style: TextStyle(fontSize: 12, color: Color(0xFF969696)),
-                            ),
-                          ],
-                        ),
-                      ],
+                          Box(w: 14),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Аватар вашего продукта"),
+                              Text(
+                                'Нажмите, чтобы изменить',
+                                style: TextStyle(fontSize: 12, color: Color(0xFF969696)),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -292,7 +342,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                         style: TextStyle(color: Color(0xFF969696)),
                       ),
                       Box(h: 10),
-                      GestureDetector(
+                      InkWell(
                         onTap: () {
                           Go.to(
                             Routes.productParametersPage,
@@ -411,35 +461,45 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                 ),
 
                 Box(h: 30),
-                GestureDetector(
-                  onTap: () {
-                    Go.to(
-                      Routes.categoriesSelectingPage,
-                      argument: {
-                        "selectionKey": CategorySelectingCubit.product_creating_category,
-                        "singleSelection": false,
-                      },
-                    );
-                  },
-                  child: Container(
-                    height: 45,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Color(0xFF474747)),
-                    ),
-                    padding: EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        Expanded(child: Text("Выбрать категорию")),
-                        Icon(Icons.navigate_next),
-                      ],
+                Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    splashColor: Colors.black.withOpacity(0.08),
+                    highlightColor: Colors.black.withOpacity(0.04),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      Future.delayed(const Duration(milliseconds: 120), () {
+                        Go.to(
+                          Routes.categoriesSelectingPage,
+                          argument: {
+                            "selectionKey": CategorySelectingCubit.product_creating_category,
+                            "singleSelection": false,
+                          },
+                        );
+                      });
+                    },
+                    child: Ink(
+                      height: 45,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF474747)),
+                      ),
+                      child: Row(
+                        children: const [
+                          Expanded(child: Text("Выбрать категорию")),
+                          Icon(Icons.navigate_next),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 Box(h: 10),
                 Wrap(
                   children: List.generate(selectedSubCategories.length, (index) {
-                    return GestureDetector(
+                    return InkWell(
                       onTap: () {
                         context.read<CategorySelectingCubit>().selectCategory(
                           key: CategorySelectingCubit.product_creating_category,
@@ -466,26 +526,40 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                   }),
                 ),
                 Box(h: 30),
-                GestureDetector(
-                  onTap: () {
-                    Go.to(Routes.brandSelectingPage);
-                  },
-                  child: Container(
-                    height: 45,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Color(0xFF474747)),
-                    ),
-                    padding: EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            selectedBrand == null ? "Выбрать Brand" : selectedBrand!.name,
+                Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    splashColor: Colors.black.withOpacity(0.08),
+                    highlightColor: Colors.black.withOpacity(0.04),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      Future.delayed(const Duration(milliseconds: 120), () {
+                        Go.to(Routes.brandSelectingPage);
+                      });
+                    },
+                    child: Ink(
+                      height: 45,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF474747)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              selectedBrand == null ? "Выбрать Brand" : selectedBrand!.name,
+                              style: const TextStyle(
+                                color: Color(0xFF474747),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
-                        ),
-                        Icon(Icons.navigate_next),
-                      ],
+                          const Icon(Icons.navigate_next),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -523,9 +597,9 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                                       color: Color(0xFF969696),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: MeninkiNetworkImage(
-                                      file: photo,
-                                      networkImageType: NetworkImageType.small,
+                                    child: UploadingCoverImage(
+                                      coverImage: photo,
+                                      loadingProgress: null,
                                     ),
                                   ),
                                   Align(
@@ -566,46 +640,59 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                             },
                           );
                         }),
-                        GestureDetector(
-                          onTap: () async {
-                            if (state is! FileUploading) {
-                              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                type: FileType.image,
-                                lockParentWindow: true,
-                                allowMultiple: true,
-                              );
+                        Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(30),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(30),
+                            splashColor: Colors.black.withOpacity(0.15),
+                            highlightColor: Colors.black.withOpacity(0.08),
+                            onTap: () async {
+                              HapticFeedback.mediumImpact();
 
-                              if (result != null) {
-                                List<File> files =
-                                    result.paths
-                                        .where((path) => path != null)
-                                        .map((path) => File(path!))
-                                        .toList();
-                                context.read<FileUplBloc>().add(
-                                  UploadFiles(files, UploadingFileTypes.productPhotos),
+                              // Give ripple time to show
+                              await Future.delayed(const Duration(milliseconds: 120));
+
+                              if (state is! FileUploading) {
+                                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                  type: FileType.image,
+                                  lockParentWindow: true,
+                                  allowMultiple: true,
                                 );
+
+                                if (result != null) {
+                                  List<File> files =
+                                      result.paths
+                                          .where((path) => path != null)
+                                          .map((path) => File(path!))
+                                          .toList();
+                                  context.read<FileUplBloc>().add(
+                                    UploadFiles(files, UploadingFileTypes.productPhotos),
+                                  );
+                                }
                               }
-                            }
-                          },
-                          child: Container(
-                            height: 106,
-                            width: 106,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(30),
-                              color: Color(0xFFEAEAEA),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.add_circle, color: Colors.black),
-                                  Text(
-                                    "Добавить еще медиа",
-                                    style: TextStyle(fontSize: 12),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
+                            },
+                            child: Ink(
+                              height: 106,
+                              width: 106,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                color: const Color(0xFFEAEAEA),
+                              ),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: const [
+                                    Icon(Icons.add_circle, color: Colors.black),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      "Добавить еще медиа",
+                                      style: TextStyle(fontSize: 12),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),

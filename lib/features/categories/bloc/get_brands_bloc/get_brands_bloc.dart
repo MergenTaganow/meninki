@@ -42,8 +42,8 @@ class GetBrandsBloc extends Bloc<GetBrandsEvent, GetBrandsState> {
       (event.query ?? Query()).copyWith(
         offset: page,
         limit: limit,
-        sortAs: event.query?.orderDirection ?? 'asc',
-        sortBy: event.query?.orderBy ?? 'id',
+        orderDirection: event.query?.orderDirection ?? 'asc',
+        orderBy: event.query?.orderBy ?? 'id',
       ),
     );
 
@@ -61,8 +61,8 @@ class GetBrandsBloc extends Bloc<GetBrandsEvent, GetBrandsState> {
       (event.query ?? Query()).copyWith(
         offset: page,
         limit: limit,
-        sortAs: event.query?.orderDirection ?? 'asc',
-        sortBy: event.query?.orderBy ?? 'id',
+        orderDirection: event.query?.orderDirection ?? 'asc',
+        orderBy: event.query?.orderBy ?? 'id',
       ),
     );
 

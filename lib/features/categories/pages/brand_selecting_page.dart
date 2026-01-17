@@ -74,7 +74,7 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
                                   ),
                                   Box(w: 14),
                                   if (selectedIndex != -1)
-                                    Icon(Icons.check, color: Color(0xFF969696)),
+                                    Icon(Icons.check, color: Color(0xFF969696), size: 20),
                                 ],
                               ),
                             ),
@@ -86,17 +86,26 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
                     itemCount: brands.length,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Go.pop();
-                  },
-                  child: Container(
-                    height: 45,
-                    decoration: BoxDecoration(
-                      color: Col.primary,
-                      borderRadius: BorderRadius.circular(14),
+                Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    splashColor: Colors.white.withOpacity(0.22),
+                    highlightColor: Colors.white.withOpacity(0.10),
+                    onTap: () {
+                      Go.pop();
+                    },
+                    child: Ink(
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: Col.primary,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text('Сохранить', style: TextStyle(color: Colors.white)),
+                      ),
                     ),
-                    child: Center(child: Text('Сохранить', style: TextStyle(color: Colors.white))),
                   ),
                 ),
               ],

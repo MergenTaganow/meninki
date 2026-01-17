@@ -21,31 +21,34 @@ class _HomeAddState extends State<HomeAdd> {
           Box(h: 20),
 
           ///filter
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                  Row(
-                    children: [
-                      Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
-                      Text("По дате - сначала новые", style: TextStyle(color: Color(0xFF969696))),
-                    ],
-                  ),
-                ],
-              ),
-              Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: Col.primary,
-                  borderRadius: BorderRadius.circular(14),
+          Padd(
+            hor: 10,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                    Row(
+                      children: [
+                        Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
+                        Text("По дате - сначала новые", style: TextStyle(color: Color(0xFF969696))),
+                      ],
+                    ),
+                  ],
                 ),
-                child: Center(child: Icon(Icons.add_circle, color: Colors.white)),
-              ),
-            ],
+                Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Col.primary,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(child: Icon(Icons.add_circle, color: Colors.white)),
+                ),
+              ],
+            ),
           ),
           Box(h: 10),
 
@@ -56,7 +59,7 @@ class _HomeAddState extends State<HomeAdd> {
               scrollDirection: Axis.horizontal,
               itemBuilder: (context, index) {
                 if (index == 0) {
-                  return Svvg.asset('home', color: Colors.black);
+                  return Padd(left: 10, child: Svvg.asset('home', color: Colors.black));
                 }
                 return Container(
                   decoration: BoxDecoration(
@@ -77,35 +80,38 @@ class _HomeAddState extends State<HomeAdd> {
 
           Box(h: 20),
 
-          MasonryGridView.count(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 14,
-            crossAxisSpacing: 8,
-            itemCount: 19,
-            itemBuilder: (context, index) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    height: 168,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFEAEAEA),
-                      borderRadius: BorderRadius.circular(10),
+          Padd(
+            hor: 10,
+            child: MasonryGridView.count(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 14,
+              crossAxisSpacing: 8,
+              itemCount: 19,
+              itemBuilder: (context, index) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: 168,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFEAEAEA),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                  ),
-                  Text(
-                    "Pellentesque mauris cras feugiat lectus quam cras",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text("1313 TMT", style: TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              );
-            },
+                    Text(
+                      "Pellentesque mauris cras feugiat lectus quam cras",
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text("1313 TMT", style: TextStyle(fontWeight: FontWeight.w600)),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),

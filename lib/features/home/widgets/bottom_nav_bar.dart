@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../core/helpers.dart';
 
@@ -34,20 +35,39 @@ class _BottomNavBarState extends State<BottomNavBar> {
         mainAxisSize: MainAxisSize.min,
         children: List.generate(4, (index) {
           var icons = ['home', 'search', 'add_card', 'profile'];
-          return GestureDetector(
+          return InkWell(
             onTap: () {
+              HapticFeedback.selectionClick();
               widget.controller.animateTo(index);
             },
-            child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 3),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
               height: 50,
               width: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.controller.index == index ? Colors.black : Color(0xFFF3F3F3),
+                color: widget.controller.index == index
+                    ? Colors.black
+                    : const Color(0xFFF3F3F3),
               ),
-              child: Center(child: Svvg.asset(icons[index],color: widget.controller.index == index ?Colors.white:Colors.black,)),
-            ),
+              child: Center(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: Svvg.asset(
+                    icons[index],
+                    key: ValueKey(widget.controller.index == index),
+                    color: widget.controller.index == index
+                        ? Colors.white
+                        : Colors.black,
+                  ),
+                ),
+              ),
+            )
           );
         }),
       ),

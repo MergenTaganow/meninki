@@ -98,7 +98,7 @@ class _CustomImageViewerState extends State<CustomImageViewer> {
                 Padd(
                   top: 50,
                   bot: 80,
-                  child: GestureDetector(
+                  child: InkWell(
                     onTap: () {
                       setState(() {
                         dataVisible = !dataVisible;

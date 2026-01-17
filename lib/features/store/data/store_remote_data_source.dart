@@ -19,10 +19,8 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   @override
   Future<Either<Failure, Success>> storeCreate(Map map) async {
     try {
-      print(map);
       var response = await api.dio.post('v1/market', data: map);
 
-      print(response.data);
       return Right(Success());
     } catch (e) {
       return Left(handleError(e));
@@ -34,7 +32,6 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
     try {
       var response = await api.dio.get('v1/market/$id', queryParameters: {"lang": "tk"});
 
-      print(response.data);
       return Right(Market.fromJson(response.data['payload']));
     } catch (e) {
       return Left(handleError(e));
@@ -60,15 +57,12 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   Future<Either<Failure, List<Market>>> getStoresProducts(Query query) async {
     // try {
     ///Todo later need to add language
-    print({...query.toMap(), "order_direction": "asc"});
     var response = await api.dio.get(
       'v1/market/product',
       queryParameters: {...query.toMap(), "order_direction": "asc"},
     );
 
-    print(response.data);
     var list = (response.data['payload'] as List).map((e) => Market.fromJson(e)).toList();
-    print(list.length);
     return Right(list);
     // } catch (e) {
     //   return Left(handleError(e));

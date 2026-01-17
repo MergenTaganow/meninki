@@ -15,6 +15,7 @@ import '../model/query.dart';
 
 abstract class ReelsRemoteDataSource {
   Future<Either<Failure, List<Reel>>> getReels(Query? query);
+  Future<Either<Failure, List<Reel>>> getFilteredReels(Query? query);
   Future<Either<Failure, List<Reel>>> getMyReels(Query? query);
   Stream<(double, MeninkiFile?)> uploadFile(File file);
   Future<Either<Failure, List<int>>> getLikedReels();
@@ -25,6 +26,7 @@ abstract class ReelsRemoteDataSource {
   Future<Either<Failure, List<Comment>>> getComments({required int reelId, Query? query});
   Future<Either<Failure, Comment>> sendComment(Map<String, dynamic> map);
   Future<Either<Failure, Comment>> commentById(int id);
+  Future<Either<Failure, MeninkiFile>> getFileById(int id);
 }
 
 class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
@@ -35,7 +37,19 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
   Future<Either<Failure, List<Reel>>> getReels(Query? query) async {
     try {
       ///Todo later need to control verified and other urls
-      print(query?.toMap());
+      var response = await api.dio.get('v1/reels/verified', queryParameters: query?.toMap());
+
+      List<Reel> reels = (response.data['payload'] as List).map((e) => Reel.fromJson(e)).toList();
+      return Right(reels);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Reel>>> getFilteredReels(Query? query) async {
+    try {
+      ///Todo later need to control verified and other urls
       var response = await api.dio.get('v1/reels/verified', queryParameters: query?.toMap());
 
       List<Reel> reels = (response.data['payload'] as List).map((e) => Reel.fromJson(e)).toList();
@@ -131,7 +145,6 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
     // try {
     var response = await api.dio.get('v1/categories', queryParameters: {"lang": "tk"});
 
-    print(response.data['payload']);
     final payload = response.data['payload'];
 
     final List<Category> list =
@@ -212,7 +225,6 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
   Future<Either<Failure, List<Reel>>> getMyReels(Query? query) async {
     try {
       ///Todo later need to control verified and other urls
-      print(query?.toMap());
       var response = await api.dio.get('v1/reels', queryParameters: query?.toMap());
 
       List<Reel> reels = (response.data['payload'] as List).map((e) => Reel.fromJson(e)).toList();
@@ -220,5 +232,19 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
     } catch (e) {
       return Left(handleError(e));
     }
+  }
+
+  @override
+  Future<Either<Failure, MeninkiFile>> getFileById(int id) async {
+    // try {
+    var response = await api.dio.get('media/v1/files/$id');
+
+    print(response.data);
+    final files = (response.data as List).map((e) => MeninkiFile.fromJson(e)).toList();
+
+    return Right(files.first);
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 }

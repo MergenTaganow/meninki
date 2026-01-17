@@ -1,4 +1,5 @@
 import 'package:meninki/features/auth/models/user.dart';
+import 'package:meninki/features/global/model/name.dart';
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 
@@ -7,7 +8,7 @@ import '../pages/select_location_page.dart';
 
 class Market {
   int id;
-  String name;
+  Name name;
   MeninkiFile? cover_image;
   String? address;
   LatLng? location;
@@ -47,7 +48,7 @@ class Market {
   factory Market.fromJson(Map<String, dynamic> json) {
     return Market(
       id: (json["id"]),
-      name: json["name"],
+      name: Name.fromJson(json["name"]),
       cover_image: json["cover_image"] != null ? MeninkiFile.fromJson(json["cover_image"]) : null,
       address: json["address"],
       location: json["location"] != null ? LatLng.fromJson(json["location"]) : null,

@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     // DynamicLocalization.init(appLocale);
     // getLang();
-    checkForUpdate();
+    // checkForUpdate();
     super.initState();
   }
 
@@ -58,13 +58,20 @@ class _MyAppState extends State<MyApp> {
           scaffoldBackgroundColor: Color(0xFFFBFBFB),
           appBarTheme: AppBarTheme.of(context).copyWith(
             backgroundColor: Color(0xFFFBFBFB),
-            titleTextStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w500,color: Colors.black),
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
+            titleTextStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.black,
+            ),
           ),
         ),
         navigatorKey: Routes.mainNavKey,
         onGenerateRoute: Routes.onGenerateRoute,
         // supportedLocales: AppLocalizations.supportedLocales,
         // localizationsDelegates: AppLocalizations.localizationsDelegates,
+        scrollBehavior: MyScrollBehavior(),
         locale: appLocale,
         home: SafeArea(
           child: BlocBuilder<AuthBloc, AuthState>(
@@ -125,4 +132,11 @@ class _MyAppState extends State<MyApp> {
 getVersion() async {
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   version = packageInfo.version;
+}
+
+class MyScrollBehavior extends ScrollBehavior {
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics();
+  }
 }

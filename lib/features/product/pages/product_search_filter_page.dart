@@ -4,13 +4,11 @@ import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import 'package:meninki/features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
-import 'package:meninki/features/province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import '../../../core/colors.dart';
 import '../../../core/injector.dart';
 import '../../categories/widgets/category_selection.dart';
 import '../../global/blocs/sort_cubit/sort_cubit.dart';
 import '../../global/widgets/sort_selection.dart';
-import '../../province/widgets/province_selection.dart';
 
 class ProductSearchFilterPage extends StatefulWidget {
   final void Function()? onFilter;
@@ -116,7 +114,7 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    GestureDetector(
+                    InkWell(
                       onTap: () {
                         clearProductSearchFilters();
                       },
@@ -137,7 +135,7 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
                     Box(h: 10),
 
                     ///save and go
-                    GestureDetector(
+                    InkWell(
                       onTap: () {
                         Go.pop();
                         if (widget.onFilter != null) {

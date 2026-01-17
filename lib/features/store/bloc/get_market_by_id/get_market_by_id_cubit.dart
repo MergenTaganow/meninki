@@ -11,10 +11,15 @@ class GetMarketByIdCubit extends Cubit<GetMarketByIdState> {
   GetMarketByIdCubit(this.ds) : super(GetMarketByIdInitial());
 
   getStoreById(int id) async {
+    emit.call(GetMarketByIdLoading());
     var failOrNot = await ds.getStoreByID(id);
     failOrNot.fold(
       (l) => emit.call(GetMarketByIdFailed(l)),
       (r) => emit.call(GetMarketByIdSuccess(r)),
     );
+  }
+
+  clear() {
+    emit(GetMarketByIdInitial());
   }
 }

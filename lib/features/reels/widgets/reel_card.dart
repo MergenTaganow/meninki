@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/global/widgets/meninki_network_image.dart';
+import 'package:meninki/features/store/pages/store_create_page.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../../core/api.dart';
 import '../../../core/helpers.dart';
@@ -24,55 +26,78 @@ class ReelCard extends StatelessWidget {
       builder: (context, state) {
         if (state is ReelPlaying) {
           final controller = state.controllers[reel.id];
-          return InkWell(
-            onTap: () {
-              Go.to(Routes.reelScreen, argument: {"reel": reel, "reels": allReels});
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: VisibilityDetector(
-                    onVisibilityChanged: (VisibilityInfo info) {
-                      if (controller?.isPlaying() ?? false) {
-                        final visiblePercent = info.visibleFraction * 100;
-                        if (visiblePercent < 15) {
-                          context.read<ReelPlayingQueueCubit>().playNext();
-                        }
-                      }
-                    },
-                    key: visibilityKey,
-                    child: Container(
-                      height: 240,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color:
-                            (controller?.isVideoInitialized() ?? false)
-                                ? Colors.black
-                                : Colors.grey.withOpacity(0.5),
-                      ),
-                      child: Center(
-                        child:
-                            (controller != null &&
-                                    (controller.isVideoInitialized() ?? false) &&
-                                    (controller.isPlaying() ?? false))
-                                ? BetterPlayer(controller: controller)
-                                : CachedNetworkImage(
-                                  imageUrl: '$baseUrl/public/${reel.file.resizedFiles?.small}',
-                                  placeholder:
-                                      (context, url) =>
-                                          (reel.file.blurhash?.isNotEmpty ?? false)
-                                              ? BlurHash(hash: reel.file.blurhash ?? "")
-                                              : Container(),
-                                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                                ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Ink(
+                height: 240,
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: VisibilityDetector(
+                        onVisibilityChanged: (VisibilityInfo info) {
+                          if (controller?.isPlaying() ?? false) {
+                            final visiblePercent = info.visibleFraction * 100;
+                            if (visiblePercent < 15) {
+                              context.read<ReelPlayingQueueCubit>().playNext();
+                            }
+                          }
+                        },
+                        key: visibilityKey,
+                        child: Container(
+                          height: 240,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color:
+                                (controller?.isVideoInitialized() ?? false)
+                                    ? Colors.black
+                                    : Colors.grey.withOpacity(0.5),
+                          ),
+                          child: Center(
+                            child:
+                                (controller != null &&
+                                        (controller.isVideoInitialized() ?? false) &&
+                                        (controller.isPlaying() ?? false))
+                                    ? BetterPlayer(controller: controller)
+                                    : IgnorePointer(
+                                      ignoring: true,
+                                      child:
+                                      // UploadingCoverImage(
+                                      //   coverImage: reel.file,
+                                      //   loadingProgress: null,
+                                      // ),
+                                      MeninkiNetworkImage(
+                                        file: reel.file,
+                                        networkImageType: NetworkImageType.small,
+                                      ),
+                                    ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(16),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        splashColor: Colors.black.withOpacity(0.15),
+                        highlightColor: Colors.black.withOpacity(0.08),
+                        onTap: () async {
+                          await Future.delayed(const Duration(milliseconds: 120));
+                          Go.to(Routes.reelScreen, argument: {"reel": reel, "reels": allReels});
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                Row(
+              ),
+              GestureDetector(
+                onTap: () {
+                  Go.to(Routes.reelScreen, argument: {"reel": reel, "reels": allReels});
+                },
+                child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
@@ -87,8 +112,8 @@ class ReelCard extends StatelessWidget {
                     Icon(Icons.more_horiz, color: Color(0xFF969696)),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         }
         return Container();

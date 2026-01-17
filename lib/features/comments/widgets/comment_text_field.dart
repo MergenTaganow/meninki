@@ -99,7 +99,7 @@ class CommentTextField extends StatelessWidget {
                   Box(w: 12),
                   BlocBuilder<SendCommentCubit, SendCommentState>(
                     builder: (context, state) {
-                      return GestureDetector(
+                      return InkWell(
                         onTap: () {
                           if (state is! SendCommentLoading && controller.text.trim().isNotEmpty) {
                             context.read<SendCommentCubit>().sendComment({

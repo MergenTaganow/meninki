@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:meninki/core/failure.dart';
+import 'package:meninki/features/reels/blocs/file_processing_cubit/file_processing_cubit.dart';
 import 'package:meninki/features/reels/data/reels_remote_data_source.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../core/api.dart';
+import '../../../../core/injector.dart';
 import '../../model/meninki_file.dart';
 
 part 'file_upl_cover_image_event.dart';
@@ -36,10 +38,19 @@ class FileUplCoverImageBloc extends Bloc<FileUplCoverImageEvent, FileUplCoverIma
 
         if (file != null) {
           emit(FileUploadCoverImageSuccess(file));
+
+          if (file.status == 'pending' || file.status == 'processing') {
+            sl<FileProcessingCubit>().trackFile(file);
+          }
         }
       }
     } catch (e) {
       emit(FileUploadCoverImageFailure(handleError(e)));
     }
   }
+
+  //ready
+  //failed
+  //pending
+  //processing
 }

@@ -10,6 +10,7 @@ class MeninkiFile {
   String? search_column;
   String? video_master_playlist;
   String? thumbnail_url;
+  String? status;
   ResizedFiles? resizedFiles;
 
   MeninkiFile({
@@ -25,6 +26,7 @@ class MeninkiFile {
     this.video_master_playlist,
     this.thumbnail_url,
     this.resizedFiles,
+    this.status,
   });
 
   factory MeninkiFile.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,7 @@ class MeninkiFile {
       search_column: json["search_column"],
       video_master_playlist: json["video_master_playlist"],
       thumbnail_url: json["thumbnail_url"],
+      status: json["status"],
       resizedFiles:
           json['resized_files'] != null ? ResizedFiles.fromJson(json['resized_files']) : null,
     );
