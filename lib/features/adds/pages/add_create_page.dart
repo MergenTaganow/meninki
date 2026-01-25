@@ -14,7 +14,7 @@ import '../../../core/colors.dart';
 import '../../../core/failure.dart';
 import '../../../core/helpers.dart';
 import '../../global/widgets/meninki_network_image.dart';
-import '../../product/pages/product_create_page.dart';
+import '../../product/widgets/uploading_file.dart';
 import '../../province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import '../../province/widgets/province_selection.dart';
 import '../../reels/blocs/file_processing_cubit/file_processing_cubit.dart';
@@ -43,6 +43,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return MultiBlocListener(
       listeners: [
         BlocListener<AddCreateCubit, AddCreateState>(
@@ -50,7 +51,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
             if (state is AddCreateSuccess) {
               CustomSnackBar.showSnackBar(
                 context: context,
-                title: 'После проверки будет опубликирован',
+                title: lg.addPublishedAfterReview,
               );
               Go.pop();
             }
@@ -156,7 +157,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                   child:
                       state is AddCreateLoading
                           ? CircularProgressIndicator()
-                          : Text("Опубликовать", style: TextStyle(color: Colors.white)),
+                          : Text(lg.publish, style: TextStyle(color: Colors.white)),
                 ),
               ),
             );
@@ -181,6 +182,13 @@ class _AddCreatePageState extends State<AddCreatePage> {
 
                           if (result != null) {
                             File file = File(result.files.single.path!);
+                            if (isVideo(file)) {
+                              CustomSnackBar.showYellowSnackBar(
+                                context: context,
+                                title: 'вуберите фотографию',
+                              );
+                              return;
+                            }
                             context.read<FileUplCoverImageBloc>().add(UploadFile(file));
                           }
                         }
@@ -237,9 +245,9 @@ class _AddCreatePageState extends State<AddCreatePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text("Аватар вашего объявления"),
+                              Text(lg.adAvatar),
                               Text(
-                                'Нажмите, чтобы изменить',
+                                lg.tapToChange,
                                 style: TextStyle(fontSize: 12, color: Color(0xFF969696)),
                               ),
                             ],
@@ -254,13 +262,13 @@ class _AddCreatePageState extends State<AddCreatePage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Заголовок"),
+                    Text(lg.adTitle),
                     TexField(
                       ctx: context,
                       cont: title,
                       border: true,
                       borderRadius: 14,
-                      hint: "Обязательно",
+                      hint: lg.required,
                       hintCol: Color(0xFF969696),
                       borderColor: Colors.black,
                     ),
@@ -271,7 +279,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Box(h: 20),
-                    Text("Описание"),
+                    Text(lg.description),
                     TexField(
                       ctx: context,
                       border: true,
@@ -279,7 +287,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                       borderRadius: 14,
                       borderColor: Colors.black,
                       hintCol: Color(0xFF969696),
-                      hint: "Необязательно",
+                      hint: lg.optional,
                       minLine: 5,
                       maxLine: 5,
                     ),
@@ -290,13 +298,13 @@ class _AddCreatePageState extends State<AddCreatePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Box(h: 20),
-                    Text("Стоимость"),
+                    Text(lg.price),
                     TexField(
                       ctx: context,
                       cont: price,
                       border: true,
                       borderRadius: 14,
-                      hint: "Обязательно",
+                      hint: lg.required,
                       hintCol: Color(0xFF969696),
                       borderColor: Colors.black,
                       keyboard: TextInputType.number,
@@ -305,7 +313,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                 ),
                 Box(h: 20),
                 Center(
-                  child: Text("Media", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  child: Text(lg.media, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                 ),
                 Box(h: 20),
                 BlocBuilder<FileUplBloc, FileUplState>(
@@ -399,7 +407,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
 
                               if (state is! FileUploading) {
                                 FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                  type: FileType.image,
+                                  type: FileType.media,
                                   lockParentWindow: true,
                                   allowMultiple: true,
                                 );
@@ -450,7 +458,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Box(h: 20),
-                    Text("Контактный номер"),
+                    Text(lg.contactNumber),
                     TexField(
                       ctx: context,
                       cont: numberController,
@@ -472,6 +480,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                 CategorySelection(
                   selectionKey: CategorySelectingCubit.add_creating_category,
                   singleSelection: true,
+                  rootCategorySelection: true,
                 ),
 
                 Box(h: 120),

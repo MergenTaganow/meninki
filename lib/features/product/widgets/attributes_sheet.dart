@@ -44,8 +44,8 @@ class _AttributesSheetState extends State<AttributesSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(width: double.infinity),
-          Text("Новый аттрибуте", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          Text("Выберите тип"),
+          Text(AppLocalizations.of(context)!.newAttribute, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.selectType),
           Box(h: 20),
           Expanded(
             child: BlocBuilder<GetProductAttributesBloc, GetProductAttributesState>(
@@ -56,7 +56,7 @@ class _AttributesSheetState extends State<AttributesSheet> {
                   );
                 }
                 if (state is GetProductAttributeFailed) {
-                  return Text(state.message ?? "error");
+                  return Text(state.message ?? AppLocalizations.of(context)!.error);
                 }
 
                 List<ProductAttribute> list =
@@ -86,7 +86,7 @@ class _AttributesSheetState extends State<AttributesSheet> {
                         ),
                         padding: EdgeInsets.all(14),
                         child: Text(
-                          list[index].name,
+                          list[index].name.trans(context),
                           style: TextStyle(fontWeight: FontWeight.w500),
                         ),
                       ),

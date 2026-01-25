@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:meninki/core/go.dart';
-import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../core/go.dart';
 import '../../../core/helpers.dart';
-import '../../global/widgets/meninki_network_image.dart';
+import '../../../core/routes.dart';
+import '../../global/blocs/sort_cubit/sort_cubit.dart';
 import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import '../../reels/model/meninki_file.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
-import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
-import '../../store/bloc/get_stores_bloc/get_stores_bloc.dart';
-import '../../store/models/market.dart';
 import '../../store/widgets/store_card.dart';
 
 class HomeLenta extends StatefulWidget {
@@ -25,10 +23,15 @@ class HomeLenta extends StatefulWidget {
 
 class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixin {
   List<Reel> reels = [];
-  List<Market> stores = [];
+  List<ReelMarket> stores = [];
 
   @override
   void initState() {
+    context.read<SortCubit>().selectSort(
+      key: SortCubit.reelsSearchSort,
+      newSort: Sort(orderBy: 'id', orderDirection: "desc", text: "По дате - сначала новые"),
+    );
+    context.read<GetReelMarketsBloc>().add(GetReelMarkets());
     context.read<GetVerifiedReelsBloc>().add(GetReel());
     super.initState();
   }
@@ -36,31 +39,32 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    var selectedSort = context.watch<SortCubit>().sortMap[SortCubit.reelsSearchSort];
 
     return RefreshIndicator(
       backgroundColor: Colors.white,
       onRefresh: () async {
         context.read<GetVerifiedReelsBloc>().add(GetReel());
-        context.read<GetStoresBloc>().add(GetStores());
+        context.read<GetReelMarketsBloc>().add(GetReelMarkets());
       },
       child: SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
             Box(h: 20),
-            BlocBuilder<GetStoresBloc, GetStoresState>(
+            BlocBuilder<GetReelMarketsBloc, GetReelMarketsState>(
               builder: (context, state) {
-                if (state is GetStoresSuccess) {
+                if (state is GetReelMarketsSuccess) {
                   WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                     if (mounted) {
                       setState(() {
-                        stores = state.stores;
+                        stores = state.reelMarkets;
                       });
                     }
                   });
                 }
 
-                final isLoading = state is GetStoresLoading;
+                final isLoading = state is GetReelMarketsLoading;
                 final itemCount = isLoading ? 5 : stores.length;
 
                 return Column(
@@ -75,7 +79,10 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
                           itemBuilder: (context, index) {
                             // Use dummy store when loading to avoid index errors
                             final store = isLoading ? null : stores[index];
-                            return Padd(left: index == 0 ? 10 : 0, child: StoreCard(store: store));
+                            return Padd(
+                              left: index == 0 ? 10 : 0,
+                              child: ReelMarketCard(store: store),
+                            );
                           },
                           separatorBuilder: (context, index) => Box(w: 8),
                           itemCount: itemCount,
@@ -88,28 +95,41 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
             ),
 
             Box(h: 20),
-            Padd(
-              hor: 10,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                      Row(
-                        children: [
-                          Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
-                          Text(
-                            "По дате - сначала новые",
-                            style: TextStyle(color: Color(0xFF969696)),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Svvg.asset("sort"),
-                ],
+            InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: () {
+                Go.to(
+                  Routes.reelsFilterPage,
+                  argument: {
+                    "onFilter": () {
+                      context.read<GetVerifiedReelsBloc>().add(GetReel());
+                    },
+                  },
+                );
+              },
+              child: Padd(
+                hor: 10,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                        Row(
+                          children: [
+                            Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
+                            Text(
+                              "${selectedSort?.text}",
+                              style: TextStyle(color: Color(0xFF969696)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Svvg.asset("sort"),
+                  ],
+                ),
               ),
             ),
             Box(h: 20),

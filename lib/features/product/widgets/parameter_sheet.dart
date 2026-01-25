@@ -38,8 +38,9 @@ class _ParametersSheetState extends State<ParametersSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(width: double.infinity),
-          Text("Новая характеристикa", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          Text("Выберите тип"),
+          Container(width: double.infinity),
+          Text(AppLocalizations.of(context)!.newCharacteristic, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(AppLocalizations.of(context)!.selectType),
           Box(h: 20),
           Expanded(
             child: BlocBuilder<GetProductParametersBloc, GetProductParametersState>(
@@ -50,7 +51,7 @@ class _ParametersSheetState extends State<ParametersSheet> {
                   );
                 }
                 if (state is GetProductParameterFailed) {
-                  return Text(state.message ?? "error");
+                  return Text(state.message ?? AppLocalizations.of(context)!.error);
                 }
 
                 List<ProductParameter> list =
@@ -77,7 +78,7 @@ class _ParametersSheetState extends State<ParametersSheet> {
                         ),
                         padding: EdgeInsets.all(14),
                         child: Text(
-                          list[index].name,
+                          list[index].name.trans(context),
                           style: TextStyle(fontWeight: FontWeight.w500),
                         ),
                       ),

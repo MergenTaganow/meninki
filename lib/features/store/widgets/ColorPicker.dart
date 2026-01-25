@@ -1,25 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:meninki/features/store/widgets/store_background_color_selection.dart';
 
 class ColorPicker extends StatelessWidget {
-  final List<Color> colors = [
-    Colors.white,
-    Colors.red,
-    Colors.orange,
-    Colors.yellow,
-    Colors.green,
-    Colors.cyan,
-    Colors.lightBlue,
-    Colors.blue,
-    Colors.purple,
-    Colors.deepPurple,
-    Colors.pink,
-    Colors.brown,
-  ];
-
   final Color selectedColor;
   final ValueChanged<Color> onColorSelected;
 
-  ColorPicker({required this.selectedColor, required this.onColorSelected});
+  ColorPicker({super.key, required this.selectedColor, required this.onColorSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -27,33 +13,40 @@ class ColorPicker extends StatelessWidget {
       spacing: 12,
       runSpacing: 12,
       children:
-          colors.map((color) {
+          MarketColorScheme.backgroundColors.map((color) {
             final isSelected = color == selectedColor;
-            return InkWell(
-              onTap: () => onColorSelected(color),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border:
-                      color == Colors.white
-                          ? Border.all(color: Colors.black)
-                          : isSelected
-                          ? Border.all(
+            return Material(
+              color: Colors.transparent, // make material transparent to show the color
+              shape: CircleBorder(),
+              child: InkWell(
+                customBorder: CircleBorder(), // ensures ripple stays circular
+                onTap: () => onColorSelected(color),
+                splashColor: Colors.white.withOpacity(0.3), // adjust for nice effect
+                highlightColor: Colors.white.withOpacity(0.1),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                    border:
+                        color == Colors.white
+                            ? Border.all(color: Colors.black)
+                            : isSelected
+                            ? Border.all(
+                              color: color == Colors.white ? Colors.black : Colors.white,
+                              width: 1,
+                            )
+                            : null,
+                  ),
+                  child:
+                      isSelected
+                          ? Icon(
+                            Icons.check,
                             color: color == Colors.white ? Colors.black : Colors.white,
-                            width: 1,
                           )
                           : null,
                 ),
-                child:
-                    isSelected
-                        ? Icon(
-                          Icons.check,
-                          color: color == Colors.white ? Colors.black : Colors.white,
-                        )
-                        : null,
               ),
             );
           }).toList(),

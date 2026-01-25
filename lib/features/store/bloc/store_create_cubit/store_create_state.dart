@@ -13,3 +13,5 @@ final class StoreCreateFailed extends StoreCreateState {
 }
 
 final class StoreCreateSuccess extends StoreCreateState {}
+
+final class StoreEditSuccess extends StoreCreateState {}

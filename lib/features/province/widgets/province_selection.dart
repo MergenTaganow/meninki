@@ -22,7 +22,7 @@ class ProvinceSelection extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Велаят"),
+              Text(AppLocalizations.of(context)!.province),
               const SizedBox(height: 6),
 
               Material(
@@ -58,7 +58,7 @@ class ProvinceSelection extends StatelessWidget {
                         Expanded(
                           child: Text(
                             selecteds.isEmpty
-                                ? 'Выбери Велаят'
+                                ? AppLocalizations.of(context)!.selectProvince
                                 : selecteds.map((e) => e.name.tk).join(', '),
                             style: const TextStyle(color: Color(0xFF969696)),
                             maxLines: 1,

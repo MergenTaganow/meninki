@@ -24,6 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return BlocListener<RegisterCubit, RegisterState>(
       listener: (context, state) {
         if (state is RegisterFailed && (state.failure.message?.isNotEmpty ?? false)) {
@@ -41,7 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           title: Text(
-            "Расскажи о себе",
+            lg.tellAboutYourself,
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
           ),
 
@@ -55,17 +56,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Достаточно только имени. Фотографию и подробные данные о себе вы сможете добавить позже.",
+                  lg.registerDescription,
                   style: TextStyle(color: Color(0xFF969696)),
                 ),
                 Box(h: 20),
-                TitleAndTextField(title: "Имя", controller: nameController, hint: 'Введи свое имя'),
+                TitleAndTextField(title: lg.firstName, controller: nameController, hint: lg.enterFirstName),
                 TitleAndTextField(
-                  title: "Фамилия",
+                  title: lg.lastName,
                   controller: surnameController,
-                  hint: 'Введи свою фамилию',
+                  hint: lg.enterLastName,
                 ),
-                Text('Юзернейм', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(lg.username, style: TextStyle(fontWeight: FontWeight.w500)),
                 Box(h: 6),
                 TexField(
                   ctx: context,
@@ -76,12 +77,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hintCol: Color(0xFFAFA8B4),
                   borderColor: usernameError ? Color(0xFFB71764) : Col.primary,
                   preTex: "@  ",
-                  hint: 'юзернейм',
+                  hint: lg.enterUsername,
                 ),
                 Padd(
                   top: 4,
                   child: Text(
-                    error ?? "Только латинские буквы и цифры",
+                    error ?? lg.usernameRequirements,
                     style: TextStyle(
                       color: error != null ? Color(0xFFB71764) : Color(0xFF969696),
                       fontSize: 12,
@@ -118,7 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   child: CircularProgressIndicator(color: Colors.white),
                                 )
                                 : Text(
-                                  "Готово",
+                                  lg.done,
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,

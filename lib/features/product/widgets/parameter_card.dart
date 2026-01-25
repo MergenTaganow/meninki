@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/features/product/widgets/attributes_sheet.dart';
 import '../../../core/helpers.dart';
+import '../bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import '../models/product_atribute.dart';
 import '../models/product_parameters.dart';
 
@@ -31,17 +33,22 @@ class ParameterCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                  child: Text(parameter.name, style: TextStyle(fontWeight: FontWeight.w500)),
+                  child: Text(parameter.name.trans(context), style: TextStyle(fontWeight: FontWeight.w500)),
                 ),
               ),
               Box(w: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
+              GestureDetector(
+                onTap: () {
+                  context.read<CompositionsCreatCubit>().selectParameter(parameter);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  padding: EdgeInsets.all(8),
+                  child: Icon(Icons.delete_outline, color: Colors.red),
                 ),
-                padding: EdgeInsets.all(8),
-                child: Icon(Icons.delete_outline, color: Colors.red),
               ),
             ],
           ),
@@ -77,7 +84,10 @@ class ParameterCard extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text("Добавить вариант", style: TextStyle(fontWeight: FontWeight.w500)),
+                          Text(
+                            AppLocalizations.of(context)!.addVariant,
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
                           Box(w: 6),
                           Icon(Icons.add_circle, color: Colors.black),
                         ],
@@ -85,20 +95,31 @@ class ParameterCard extends StatelessWidget {
                     ),
                   );
                 } else {
-                  return Container(
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Color(0xFFEAEAEA),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(attributes[index].name, style: TextStyle(fontWeight: FontWeight.w500)),
-                        Box(w: 6),
-                        Icon(Icons.clear, color: Colors.red),
-                      ],
+                  return GestureDetector(
+                    onTap: () {
+                      context.read<CompositionsCreatCubit>().selectAttribute(
+                        parameter,
+                        attributes[index],
+                      );
+                    },
+                    child: Container(
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Color(0xFFEAEAEA),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            attributes[index].name.trans(context),
+                            style: TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          Box(w: 6),
+                          Icon(Icons.clear, color: Colors.red),
+                        ],
+                      ),
                     ),
                   );
                 }

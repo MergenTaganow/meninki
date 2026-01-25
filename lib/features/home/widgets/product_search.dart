@@ -71,7 +71,11 @@ class ProductSearch extends StatelessWidget {
               Expanded(
                 child: MasonryGridView.count(
                   itemBuilder: (context, index) {
-                    return ProductCard(product: state.products[index], height: 340);
+                    return ProductCard(
+                      product: state.products[index],
+                      height: 340,
+                      width: MediaQuery.of(context).size.width / 2,
+                    );
                   },
                   itemCount: state.products.length,
                   crossAxisCount: 2,
@@ -88,4 +92,3 @@ class ProductSearch extends StatelessWidget {
     );
   }
 }
-

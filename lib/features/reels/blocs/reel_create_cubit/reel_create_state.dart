@@ -18,3 +18,5 @@ final class LaterCreateReel extends ReelCreateState {
 }
 
 final class ReelCreateSuccess extends ReelCreateState {}
+
+final class ReelRepostSuccess extends ReelCreateState {}

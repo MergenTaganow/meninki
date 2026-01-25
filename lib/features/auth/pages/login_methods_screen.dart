@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/auth/bloc/otp_cubit/otp_cubit.dart';
@@ -17,7 +18,7 @@ class LoginMethodsScreen extends StatefulWidget {
 
 class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
   TextEditingController numberController = TextEditingController();
-
+  final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
     numberController.addListener(() {
@@ -29,7 +30,7 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // AppLocalizations lg = AppLocalizations.of(context)!;
+    AppLocalizations lg = AppLocalizations.of(context)!;
 
     return MultiBlocListener(
       listeners: [
@@ -44,8 +45,8 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
                 context: context,
                 title:
                     state.failure.statusCode == 400
-                        ? "lg.usernameAndPasswordWrong"
-                        : state.failure.message ?? "lg.smthWentWrong",
+                        ? lg.usernameAndPasswordWrong
+                        : state.failure.message ?? lg.smthWentWrong,
                 isError: true,
               );
             }
@@ -57,7 +58,7 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          title: Text("Авторизация", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          title: Text(lg.authorization, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
           actions: [Padd(right: 20, child: EditLang())],
         ),
         body: Padd(
@@ -77,7 +78,7 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
                         Svvg.asset('app_logo'),
                         Box(h: MediaQuery.of(context).size.height * 0.03),
                         Text(
-                          'Чтобы пользоваться Meniñki, необходимо авторизоваться.',
+                          lg.authTitle,
                           style: TextStyle(fontSize: 16),
                           textAlign: TextAlign.center,
                         ),
@@ -87,20 +88,26 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Введите свой номер:",
+                              lg.enterNumber,
                               style: TextStyle(fontWeight: FontWeight.w500),
                             ),
                             Box(h: 6),
-                            TexField(
-                              ctx: context,
-                              cont: numberController,
-                              border: true,
-                              borderColor: Col.primary,
-                              borderRadius: 14,
-                              preTex: "+993  ",
-                              hint: "XX XXXXXX",
-                              keyboard: TextInputType.number,
-                              textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            Form(
+                              key: _formKey,
+                              child: TexField(
+                                ctx: context,
+                                cont: numberController,
+                                border: true,
+                                borderColor: Col.primary,
+                                borderRadius: 14,
+                                preTex: "+993  ",
+                                hint: "XX XXXXXX",
+                                keyboard: TextInputType.number,
+                                textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                validate: (text) {
+                                  return text?.length != 8 ? lg.enterCorrectNumber : null;
+                                },
+                              ),
                             ),
                           ],
                         ),
@@ -110,34 +117,53 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
                             return SizedBox(
                               height: 45,
                               width: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Col.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                              child: Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(14),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  splashColor: Colors.white.withOpacity(0.22),
+                                  highlightColor: Colors.white.withOpacity(0.12),
+                                  onTap: () {
+                                    final isValid = _formKey.currentState!.validate();
+
+                                    if (!isValid) {
+                                      // ❌ invalid → border becomes red automatically
+                                      return;
+                                    }
+
+                                    if (state is! OtpLoading) {
+                                      HapticFeedback.mediumImpact();
+
+                                      context.read<OtpCubit>().sendOtp(numberController.text);
+                                    }
+                                  },
+                                  child: Ink(
+                                    decoration: BoxDecoration(
+                                      color: Col.primary,
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: Center(
+                                      child:
+                                          state is OtpLoading
+                                              ? const SizedBox(
+                                                height: 24,
+                                                width: 24,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2.4,
+                                                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                                                ),
+                                              )
+                                              : Text(
+                                                lg.sendSmsCode,
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                    ),
                                   ),
                                 ),
-                                onPressed: () {
-                                  if (numberController.text.length == 8 && state is! OtpLoading) {
-                                    context.read<OtpCubit>().sendOtp(numberController.text);
-                                  }
-                                },
-                                child:
-                                    state is OtpLoading
-                                        ? Center(
-                                          child: SizedBox(
-                                            height: 30,
-                                            width: 30,
-                                            child: CircularProgressIndicator(color: Colors.white),
-                                          ),
-                                        )
-                                        : Text(
-                                          "Отправить СМС-код",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
                               ),
                             );
                           },
@@ -145,21 +171,21 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
                         Spacer(),
                         Column(
                           children: [
-                            signWithButton(withGoogle: true),
+                            signWithButton(withGoogle: true, lg: lg),
                             Box(h: 10),
-                            signWithButton(withGoogle: false),
+                            signWithButton(withGoogle: false, lg: lg),
                             Box(h: 20),
                             RichText(
                               textAlign: TextAlign.center,
                               text: TextSpan(
-                                text: "Продолжая, вы принимаете условия конфиденциальности и ",
+                                text: lg.termsConditionPrefix,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   color: Color(0xFFAFA8B4),
                                 ),
                                 children: [
                                   TextSpan(
-                                    text: "пользовательское соглашение",
+                                    text: lg.termsConditionSuffix,
                                     style: TextStyle(
                                       color: Color(0xFF3B353F),
                                       fontWeight: FontWeight.w500,
@@ -182,7 +208,7 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
     );
   }
 
-  Widget signWithButton({required bool withGoogle}) {
+  Widget signWithButton({required bool withGoogle, required AppLocalizations lg}) {
     return Container(
       height: 45,
       width: double.infinity,
@@ -192,7 +218,7 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            withGoogle ? "Войти с Google" : "Войти с Apple ID",
+            withGoogle ? lg.signInWithGoogle : lg.signInWithApple,
             style: TextStyle(color: Color(0xFF3B353F), fontWeight: FontWeight.w500),
           ),
           Svvg.asset(withGoogle ? 'google' : 'apple'),

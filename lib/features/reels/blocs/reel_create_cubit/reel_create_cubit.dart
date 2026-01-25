@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:meninki/core/failure.dart';
 import 'package:meninki/features/reels/data/reels_remote_data_source.dart';
+import 'package:meninki/features/reels/model/reels.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../core/injector.dart';
@@ -33,5 +34,11 @@ class ReelCreateCubit extends Cubit<ReelCreateState> {
     failOrNot.fold((l) => emit.call(ReelCreateFailed(l)), (r) => emit.call(ReelCreateSuccess()));
     laterCreateReel = null;
     sl<FileUplCoverImageBloc>().add(Clear());
+  }
+
+  repostReel(Reel reel) async {
+    emit.call(ReelCreateLoading());
+    var failOrNot = await ds.repostReel(reel.id);
+    failOrNot.fold((l) => emit.call(ReelCreateFailed(l)), (r) => emit.call(ReelRepostSuccess()));
   }
 }

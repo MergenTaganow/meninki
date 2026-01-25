@@ -21,6 +21,7 @@ abstract class AuthRemoteDataSource {
   Future<Either<Failure, User>> checkOtp({required String phoneNumber, required int otp});
   Future<Either<Failure, User>> register(Map<String, dynamic> data);
   Future<Either<Failure, Profile>> getMyProfile();
+  Future<Either<Failure, Success>> updateUser({required Map<String, dynamic> data});
 }
 
 class AuthRemoteDataImpl extends AuthRemoteDataSource {
@@ -117,7 +118,7 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
 
   @override
   Future<Either<Failure, User>> checkOtp({required String phoneNumber, required int otp}) async {
-    // try {
+    try {
       var response = await api.dio.post(
         'v1/authentications/validate-otp',
         data: {'phonenumber': phoneNumber, "otp": otp},
@@ -129,9 +130,9 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
         user = User.fromJson(response.data['payload']);
       }
       return Right(user);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
@@ -156,5 +157,16 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
     } catch (e) {
       return Left(handleError(e));
     }
+  }
+
+  @override
+  Future<Either<Failure, Success>> updateUser({required Map<String, dynamic> data}) async {
+    // try {
+    await api.dio.patch('v1/profiles', data: data);
+
+    return Right(Success());
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 }

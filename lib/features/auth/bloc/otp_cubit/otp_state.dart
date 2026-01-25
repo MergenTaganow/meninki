@@ -15,7 +15,8 @@ final class OtpFailed extends OtpState {
 final class OtpSend extends OtpState {
   final int retrySeconds;
   final bool navigate;
-  OtpSend(this.retrySeconds, [this.navigate = false]);
+  final bool checkLoading;
+  OtpSend({required this.retrySeconds, this.navigate = false, required this.checkLoading});
 }
 
 final class OtpSuccess extends OtpState {

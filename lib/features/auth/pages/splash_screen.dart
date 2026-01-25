@@ -6,6 +6,7 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return Scaffold(
       body: Stack(
         children: [
@@ -15,7 +16,7 @@ class SplashScreen extends StatelessWidget {
             children: [
               Svvg.asset("meninki_big_transparent"),
               Text(
-                "Высокотехнологичная онлайн торговая платформа",
+                lg.splashTitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),

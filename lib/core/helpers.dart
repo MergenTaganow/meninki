@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'colors.dart';
 
+export 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class Svvg extends SvgPicture {
   Svvg.asset(
     String iconName, {

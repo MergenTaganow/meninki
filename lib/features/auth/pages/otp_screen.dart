@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
@@ -18,15 +19,17 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   TextEditingController otpController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return BlocListener<OtpCubit, OtpState>(
       listener: (context, state) {
         if (state is OtpFailed) {
           CustomSnackBar.showSnackBar(
             context: context,
-            title: state.failure.message ?? "lg.smthWentWrong",
+            title: state.failure.message ?? lg.smthWentWrong,
             isError: true,
           );
         }
@@ -39,7 +42,7 @@ class _OtpScreenState extends State<OtpScreen> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          title: Text("Авторизация", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          title: Text(lg.authorization, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         ),
         body: Padd(
           pad: 30,
@@ -49,7 +52,7 @@ class _OtpScreenState extends State<OtpScreen> {
               Box(h: MediaQuery.of(context).size.height * 0.1),
               RichText(
                 text: TextSpan(
-                  text: "Введите код, отправленный на номер ",
+                  text: lg.otpEnterCode, // TODO: verify if need space or not
                   style: TextStyle(fontSize: 16, color: Colors.black),
                   children: [
                     TextSpan(
@@ -64,16 +67,20 @@ class _OtpScreenState extends State<OtpScreen> {
                 ),
               ),
               Box(h: 20),
-              TexField(
-                ctx: context,
-                cont: otpController,
-                border: true,
-                borderColor: Col.primary,
-                borderRadius: 14,
-                keyboard: TextInputType.number,
-                textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                maxLen: 4,
-                textAlign: TextAlign.center,
+              Form(
+                key: _formKey,
+                child: TexField(
+                  ctx: context,
+                  cont: otpController,
+                  border: true,
+                  borderColor: Col.primary,
+                  borderRadius: 14,
+                  keyboard: TextInputType.number,
+                  textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  maxLen: 4,
+                  textAlign: TextAlign.center,
+                  validate: (text) => text?.length != 4 ? lg.otpMustBe4Digits : null,
+                ),
               ),
               Box(h: 10),
               BlocBuilder<OtpCubit, OtpState>(
@@ -81,55 +88,70 @@ class _OtpScreenState extends State<OtpScreen> {
                   return SizedBox(
                     height: 45,
                     width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Col.primary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      onPressed: () {
-                        if (otpController.text.length == 4) {
-                          var otp = int.parse(otpController.text);
-                          context.read<OtpCubit>().checkOtp(
-                            otp: otp,
-                            phoneNumber: widget.phoneNumber.replaceAll("+993 ", ''),
-                          );
-                        }
-                      },
-                      child: Text(
-                        "Отправить СМС-код",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        splashColor: Colors.white.withOpacity(0.25),
+                        highlightColor: Colors.white.withOpacity(0.15),
+                        onTap:
+                            (state is OtpSend && state.checkLoading)
+                                ? null
+                                : () {
+                                  final isValid = _formKey.currentState!.validate();
+
+                                  if (!isValid) {
+                                    // ❌ invalid → border becomes red automatically
+                                    return;
+                                  }
+                                  if (otpController.text.length == 4) {
+                                    HapticFeedback.mediumImpact();
+
+                                    final otp = int.parse(otpController.text);
+                                    context.read<OtpCubit>().checkOtp(
+                                      otp: otp,
+                                      phoneNumber: widget.phoneNumber.replaceAll("+993 ", ''),
+                                    );
+                                  }
+                                },
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            color: Col.primary,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Center(
+                            child:
+                                (state is OtpSend && state.checkLoading)
+                                    ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.4,
+                                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                                      ),
+                                    )
+                                    : Text(
+                                      lg.sendSmsCode,
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                          ),
+                        ),
                       ),
                     ),
                   );
                 },
               ),
-
-              // Pinput(
-              //   length: 4,
-              //   showCursor: true,
-              //   defaultPinTheme: PinTheme(
-              //     width: 40,
-              //     height: 50,
-              //     textStyle: TextStyle(fontSize: 20, color: Colors.black),
-              //     decoration: BoxDecoration(
-              //       border: Border(bottom: BorderSide(width: 2, color: Colors.grey)),
-              //     ),
-              //   ),
-              //   onCompleted: (value) {
-              //     var otp = int.parse(value);
-              //     context.read<OtpCubit>().checkOtp(
-              //       otp: otp,
-              //       phoneNumber: widget.phoneNumber.replaceAll("+993 ", ''),
-              //     );
-              //   },
-              // ),
               Box(h: 40),
               BlocBuilder<OtpCubit, OtpState>(
                 builder: (context, state) {
                   if (state is OtpSend) {
                     if (state.retrySeconds > 0) {
                       return Text(
-                        "Переотправить через: ${formatSeconds(state.retrySeconds)}",
+                        "${lg.otpResendIn}${formatSeconds(state.retrySeconds)}",
                         style: TextStyle(color: Color(0xFFA0A0A0)),
                       );
                     } else {
@@ -139,7 +161,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             widget.phoneNumber.replaceAll("+993 ", ''),
                           );
                         },
-                        child: Text("Отправить смс еще раз", style: TextStyle(color: Col.primary)),
+                        child: Text(lg.otpResend, style: TextStyle(color: Col.primary)),
                       );
                     }
                   }

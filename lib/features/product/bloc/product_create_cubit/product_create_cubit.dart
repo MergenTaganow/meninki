@@ -12,10 +12,20 @@ class ProductCreateCubit extends Cubit<ProductCreateState> {
   ProductCreateCubit(this.ds) : super(ProductCreateInitial());
 
   createProduct(Map<String, dynamic> data) async {
+    emit.call(ProductCreateLoading());
     var failOrNot = await ds.createProduct(data);
     failOrNot.fold(
       (l) => emit.call(ProductCreateFailed(l)),
       (r) => emit.call(ProductCreateSuccess(r)),
+    );
+  }
+
+  editProduct(int id, Map<String, dynamic> data) async {
+    emit.call(ProductCreateLoading());
+    var failOrNot = await ds.editProduct(id, data);
+    failOrNot.fold(
+      (l) => emit.call(ProductCreateFailed(l)),
+      (r) => emit.call(ProductEditSuccess()),
     );
   }
 }

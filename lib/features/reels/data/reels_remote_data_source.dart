@@ -7,6 +7,7 @@ import 'package:meninki/core/success.dart';
 import 'package:meninki/features/categories/models/brand.dart';
 import 'package:meninki/features/categories/models/category.dart';
 import 'package:meninki/features/comments/models/comment.dart';
+import 'package:meninki/features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import '../../../core/api.dart';
@@ -27,6 +28,8 @@ abstract class ReelsRemoteDataSource {
   Future<Either<Failure, Comment>> sendComment(Map<String, dynamic> map);
   Future<Either<Failure, Comment>> commentById(int id);
   Future<Either<Failure, MeninkiFile>> getFileById(int id);
+  Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query);
+  Future<Either<Failure, Success>> repostReel(int reelId);
 }
 
 class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
@@ -142,20 +145,20 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
 
   @override
   Future<Either<Failure, List<Category>>> getCategories() async {
-    // try {
-    var response = await api.dio.get('v1/categories', queryParameters: {"lang": "tk"});
+    try {
+      var response = await api.dio.get('v1/categories', queryParameters: {"lang": "tk"});
 
-    final payload = response.data['payload'];
+      final payload = response.data['payload'];
 
-    final List<Category> list =
-        (payload is List ? payload : [payload])
-            .map((e) => Category.fromJson(e as Map<String, dynamic>))
-            .toList();
+      final List<Category> list =
+          (payload is List ? payload : [payload])
+              .map((e) => Category.fromJson(e as Map<String, dynamic>))
+              .toList();
 
-    return Right(list);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      return Right(list);
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
@@ -183,48 +186,47 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
 
   @override
   Future<Either<Failure, List<Comment>>> getComments({required int reelId, Query? query}) async {
-    // try {
-    var response = await api.dio.get(
-      'v1/reel-comments',
-      queryParameters: {"reel_id": reelId, ...?query?.toMap()},
-    );
+    try {
+      var response = await api.dio.get(
+        'v1/reel-comments',
+        queryParameters: {"reel_id": reelId, ...?query?.toMap()},
+      );
 
-    List<Comment> comments =
-        (response.data['payload'] as List).map((e) => Comment.fromJson(e)).toList();
-    return Right(comments);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      List<Comment> comments =
+          (response.data['payload'] as List).map((e) => Comment.fromJson(e)).toList();
+      return Right(comments);
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, Comment>> sendComment(Map<String, dynamic> map) async {
-    // try {
-    var response = await api.dio.post('v1/reel-comments', data: map);
+    try {
+      var response = await api.dio.post('v1/reel-comments', data: map);
 
-    var comment = Comment.fromJson(response.data['payload']);
-    return Right(comment);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      var comment = Comment.fromJson(response.data['payload']);
+      return Right(comment);
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, Comment>> commentById(int id) async {
-    // try {
-    var response = await api.dio.get('v1/reel-comments/$id');
+    try {
+      var response = await api.dio.get('v1/reel-comments/$id');
 
-    Comment comment = Comment.fromJson(response.data['payload']);
-    return Right(comment);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      Comment comment = Comment.fromJson(response.data['payload']);
+      return Right(comment);
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, List<Reel>>> getMyReels(Query? query) async {
     try {
-      ///Todo later need to control verified and other urls
       var response = await api.dio.get('v1/reels', queryParameters: query?.toMap());
 
       List<Reel> reels = (response.data['payload'] as List).map((e) => Reel.fromJson(e)).toList();
@@ -236,13 +238,36 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
 
   @override
   Future<Either<Failure, MeninkiFile>> getFileById(int id) async {
+    try {
+      var response = await api.dio.get('media/v1/files/$id');
+
+      final files = (response.data as List).map((e) => MeninkiFile.fromJson(e)).toList();
+
+      return Right(files.first);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query) async {
+    try {
+      var response = await api.dio.get('v1/reels/market/count', queryParameters: query?.toMap());
+
+      List<ReelMarket> reels =
+          (response.data['payload'] as List).map((e) => ReelMarket.fromJson(e)).toList();
+      return Right(reels);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> repostReel(int reelId) async {
     // try {
-    var response = await api.dio.get('media/v1/files/$id');
+    var response = await api.dio.post('v1/reels/repost/$reelId');
 
-    print(response.data);
-    final files = (response.data as List).map((e) => MeninkiFile.fromJson(e)).toList();
-
-    return Right(files.first);
+    return Right(Success());
     // } catch (e) {
     //   return Left(handleError(e));
     // }

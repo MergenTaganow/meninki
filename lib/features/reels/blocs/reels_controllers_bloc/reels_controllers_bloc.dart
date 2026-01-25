@@ -13,68 +13,90 @@ part 'reels_controllers_state.dart';
 
 class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersState> {
   Map<int, BetterPlayerController> controllersMap = {};
+  final Set<int> _initializingIds = {};
+
   ReelsControllersBloc() : super(ReelsControllersLoading({})) {
-    on<ReelsControllersEvent>((event, emit) {
-      if (event is NewReels) {
-        for (var i in event.reels) {
-          ///Todo later need to control image reels
-          if (controllersMap.containsKey(i.id) == false &&
-              (!(i.file.mimetype ?? '').contains('image')) &&
-              i.file.status == 'ready') {
-            _initController(i);
-          }
-        }
-      }
-    });
+    on<NewReels>(_onNewReels);
+    on<ReelsControllersEvent>((event, emit) {});
   }
+
+  Future<void> _onNewReels(NewReels event, Emitter<ReelsControllersState> emit) async {
+    print("new Reels event called");
+    for (final reel in event.reels) {
+      final isImage = (reel.file.mimetype ?? '').contains('image');
+
+      if (isImage) continue;
+
+      if (controllersMap.containsKey(reel.id)) continue;
+      if (_initializingIds.contains(reel.id)) continue;
+
+      _initializingIds.add(reel.id);
+      _initController(reel);
+    }
+  }
+
   Future<void> _initController(Reel reel) async {
-    final dataSource = BetterPlayerDataSource(
-      BetterPlayerDataSourceType.network,
-      "$baseUrl/public/${reel.file.video_chunks?.first}",
-      useAsmsAudioTracks: false,
-      useAsmsSubtitles: false,
-      useAsmsTracks: false,
-      bufferingConfiguration: BetterPlayerBufferingConfiguration(
-        minBufferMs: 2000, // lower → faster start
-        maxBufferMs: 10000, // enough for stability
-        bufferForPlaybackMs: 300, // super fast start
-        bufferForPlaybackAfterRebufferMs: 1000,
-      ),
-      cacheConfiguration: BetterPlayerCacheConfiguration(
-        useCache: true,
-        maxCacheSize: 500 * 1024 * 1024, // 50 MB
-        maxCacheFileSize: 50 * 1024 * 1024, // 10 MB per file
-      ),
-    );
+    try {
+      final previewIndex = (reel.file.playlists ?? []).indexWhere((e) => e.contains('preview'));
 
-    final betterPlayerConfiguration = BetterPlayerConfiguration(
-      looping: false,
-      allowedScreenSleep: false,
-      // fit: BoxFit.cover,
-      controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
-      // fit: BoxFit.cover,
-    );
+      if (previewIndex == -1) return;
 
-    final controller = BetterPlayerController(
-      betterPlayerConfiguration,
-      betterPlayerDataSource: dataSource,
-    );
-    // Save immediately
-    controllersMap[reel.id] = controller;
+      final url = reel.file.playlists![previewIndex];
 
-    // Wait until ready
-    await controller.setVolume(0);
+      final dataSource = BetterPlayerDataSource(
+        BetterPlayerDataSourceType.network,
+        "$baseUrl/public/$url",
+        useAsmsAudioTracks: false,
+        useAsmsSubtitles: false,
+        useAsmsTracks: false,
+        bufferingConfiguration: const BetterPlayerBufferingConfiguration(
+          minBufferMs: 2000,
+          maxBufferMs: 10000,
+          bufferForPlaybackMs: 300,
+          bufferForPlaybackAfterRebufferMs: 1000,
+        ),
+        cacheConfiguration: const BetterPlayerCacheConfiguration(
+          useCache: true,
+          maxCacheSize: 500 * 1024 * 1024,
+          maxCacheFileSize: 50 * 1024 * 1024,
+        ),
+      );
 
-    sl<ReelPlayingQueueCubit>().addReady({reel.id: controller});
+      final controller = BetterPlayerController(
+        const BetterPlayerConfiguration(
+          fit: BoxFit.cover,
+          looping: false,
+          allowedScreenSleep: false,
+          controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
+        ),
+        betterPlayerDataSource: dataSource,
+      );
 
-    emit.call(ReelsControllersLoading(controllersMap));
+      await controller.setVolume(0);
+
+      controllersMap[reel.id] = controller;
+
+      // ✅ emit ONCE per controller
+      emit(ReelsControllersReady(Map<int, BetterPlayerController>.from(controllersMap)));
+
+      // 🔑 notify queue with ID only
+      sl<ReelPlayingQueueCubit>().addReadyId(reel.id);
+    } catch (e, s) {
+      controllersMap.remove(reel.id);
+      _initializingIds.remove(reel.id);
+      debugPrint('Failed to init reel ${reel.id}: $e');
+    } finally {
+      controllersMap.remove(reel.id);
+      _initializingIds.remove(reel.id);
+    }
   }
 
   @override
   Future<void> close() async {
-    for (final c in controllersMap.values) {
-      c.dispose(forceDispose: true);
+    for (final controller in controllersMap.values) {
+      controller.dispose(forceDispose: true);
     }
+    controllersMap.clear();
     return super.close();
   }
 }

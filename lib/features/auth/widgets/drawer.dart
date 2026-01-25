@@ -8,7 +8,7 @@ class MainDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // AppLocalizations lg = AppLocalizations.of(context)!;
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return SafeArea(
       top: false,
       child: Container(
@@ -68,7 +68,7 @@ class MainDrawer extends StatelessWidget {
                 child: Column(
                   children: [
                       drawerRo(
-                        title: "lg.dashboard",
+                        title: lg.dashboard,
                         icon: '_scan',
                         onTap: () {
                           // if (Go.currentRoute == Routes.dashboard) {
@@ -82,7 +82,7 @@ class MainDrawer extends StatelessWidget {
                         },
                       ),
                     drawerRo(
-                      title: "lg.orders",
+                      title: lg.orders,
                       icon: 'orders',
                       onTap: () {
                         // if (Go.currentRoute == Routes.ordersPage) {
@@ -96,7 +96,7 @@ class MainDrawer extends StatelessWidget {
                       },
                     ),
                     drawerRo(
-                      title: "lg.employee_kpi",
+                      title: lg.employeeKpi,
                       icon: 'employee_kpi',
                       onTap: () {
                         // if (Go.currentRoute == Routes.employeeKpiPage) {

@@ -148,7 +148,7 @@ class BannerListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (list.isEmpty) {
-      return const SizedBox(height: 220); // keeps animation smooth
+      return const SizedBox(height: 0); // keeps animation smooth
     }
 
     final type = list.first.size_type;
@@ -210,7 +210,7 @@ class BannerListWidget extends StatelessWidget {
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           } else if (list[index].type == "product") {
                             Go.to(
-                              Routes.productDetailPage,
+                              Routes.publicProductDetailPage,
                               argument: {'productId': int.parse(list[index].link_id ?? '')},
                             );
                           } else if (list[index].type == "store") {

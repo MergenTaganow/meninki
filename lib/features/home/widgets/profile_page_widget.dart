@@ -31,6 +31,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return BlocBuilder<GetProfileCubit, GetProfileState>(
       builder: (context, state) {
         if (state is GetProfileLoading) {
@@ -62,7 +63,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                               pad: 10,
                               child: Row(
                                 children: [
-                                  Text("Уведомления"),
+                                  Text(lg.notifications),
                                   Spacer(),
                                   Text("13"),
                                   Box(w: 10),
@@ -83,7 +84,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text("Подписчики"),
+                                    Text(lg.followers),
                                     Text(
                                       state.profile.followers_coun.toString(),
                                       style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
@@ -101,7 +102,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text("Подписки"),
+                                    Text(lg.following),
                                     Text(
                                       state.profile.following_count.toString(),
                                       style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
@@ -116,11 +117,25 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                       Box(h: 10),
                       Row(
                         children: [
-                          iconTextCardButton(icon: "bookMark", text: "Избранное"),
+                          iconTextCardButton(
+                            icon: "bookMark",
+                            text: lg.favorites,
+                            onTap: () async {
+                              await Future.delayed(const Duration(milliseconds: 120));
+                              Go.to(Routes.favoritesPage);
+                            },
+                          ),
                           Box(w: 10),
-                          iconTextCardButton(icon: "messages", text: "Сообщения"),
+                          iconTextCardButton(icon: "messages", text: lg.messages),
                           Box(w: 10),
-                          iconTextCardButton(icon: "news", text: "Объявления"),
+                          iconTextCardButton(
+                            icon: "news",
+                            text: lg.ads,
+                            onTap: () async {
+                              await Future.delayed(const Duration(milliseconds: 120));
+                              Go.to(Routes.myAddsPage);
+                            },
+                          ),
                         ],
                       ),
                       Padd(
@@ -159,7 +174,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                         Box(h: 10),
                                         Expanded(
                                           child: Text(
-                                            "Добавить магазин",
+                                            lg.addStore,
                                             style: TextStyle(fontSize: 12),
                                             maxLines: 2,
                                             textAlign: TextAlign.center,
@@ -217,7 +232,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
             Box(h: 10),
             Expanded(
               child: Text(
-                market.name.trans(context),
+                market.name,
                 style: TextStyle(fontSize: 12),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -232,19 +247,17 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
 
   Widget iconTextCardButton({required String icon, required String text, void Function()? onTap}) {
     return Expanded(
-      child: InkWell(
+      child: card(
         onTap: onTap,
-        child: card(
-          child: Padd(
-            ver: 10,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Svvg.asset(icon),
-                Box(h: 4),
-                Text(text, style: TextStyle(color: Col.primary, fontSize: 12)),
-              ],
-            ),
+        child: Padd(
+          ver: 10,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Svvg.asset(icon),
+              Box(h: 4),
+              Text(text, style: TextStyle(color: Col.primary, fontSize: 12)),
+            ],
           ),
         ),
       ),
@@ -276,10 +289,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
           ),
           InkWell(
             onTap: () {
-              Go.to(Routes.productDetailPage, argument: {"productId": 1});
-            },
-            onLongPress: () {
-              context.read<AuthBloc>().add(LogoutEvent());
+              Go.to(Routes.settingsPage);
             },
             child: Icon(Icons.settings, color: Col.primary),
           ),
@@ -288,14 +298,23 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
     );
   }
 
-  Widget card({required Widget child}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFFFFFFF),
+  Widget card({required Widget child, VoidCallback? onTap}) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Color(0xFFF3F3F3)),
+        splashColor: Colors.black.withOpacity(0.08),
+        highlightColor: Colors.black.withOpacity(0.04),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Color(0xFFF3F3F3)),
+          ),
+          child: child,
+        ),
       ),
-      child: child,
     );
   }
 }

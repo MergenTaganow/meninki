@@ -1,32 +1,33 @@
+import 'dart:io';
+import 'package:mime/mime.dart';
+
 class MeninkiFile {
   int id;
-  String name;
+  String? name;
   num? size;
   String? blurhash;
   String? mimetype;
-  List<String>? video_chunks;
   String? original_file;
   int? user_id;
   String? search_column;
-  String? video_master_playlist;
+  List<String>? playlists;
   String? thumbnail_url;
   String? status;
   ResizedFiles? resizedFiles;
 
   MeninkiFile({
     required this.id,
-    required this.name,
+    this.name,
     this.size,
     this.blurhash,
     this.mimetype,
-    this.video_chunks,
-     this.original_file,
+    this.original_file,
     this.user_id,
     this.search_column,
-    this.video_master_playlist,
     this.thumbnail_url,
     this.resizedFiles,
     this.status,
+    this.playlists,
   });
 
   factory MeninkiFile.fromJson(Map<String, dynamic> json) {
@@ -36,17 +37,45 @@ class MeninkiFile {
       size: (json["size"]),
       blurhash: json["blurhash"],
       mimetype: json["mimetype"],
-      video_chunks: json['video_chunks'] != null ? List<String>.from(json['video_chunks']) : null,
+      playlists: json['playlists'] != null ? List<String>.from(json['playlists']) : null,
       original_file: json["original_file"],
       user_id: json["user_id"],
       search_column: json["search_column"],
-      video_master_playlist: json["video_master_playlist"],
       thumbnail_url: json["thumbnail_url"],
       status: json["status"],
       resizedFiles:
           json['resized_files'] != null ? ResizedFiles.fromJson(json['resized_files']) : null,
     );
   }
+
+  MeninkiFile copyWith({
+    String? name,
+    num? size,
+    String? blurhash,
+    String? mimetype,
+    List<String>? video_chunks,
+    String? original_file,
+    int? user_id,
+    String? search_column,
+    String? thumbnail_url,
+    String? status,
+    ResizedFiles? resizedFiles,
+  }) {
+    return MeninkiFile(
+      name: name ?? this.name,
+      size: size ?? this.size,
+      blurhash: blurhash ?? this.blurhash,
+      mimetype: mimetype ?? this.mimetype,
+      original_file: original_file ?? this.original_file,
+      user_id: user_id ?? this.user_id,
+      search_column: search_column ?? this.search_column,
+      thumbnail_url: thumbnail_url ?? this.thumbnail_url,
+      status: status ?? this.status,
+      resizedFiles: resizedFiles ?? this.resizedFiles,
+      id: id,
+    );
+  }
+
   //
 }
 
@@ -66,4 +95,9 @@ class ResizedFiles {
   }
 
   //
+}
+
+bool isVideo(File file) {
+  final mimeType = lookupMimeType(file.path);
+  return mimeType != null && mimeType.startsWith('video/');
 }

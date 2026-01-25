@@ -7,6 +7,7 @@ import '../../../core/colors.dart';
 import '../../../core/go.dart';
 import '../../../core/routes.dart';
 import '../../global/widgets/custom_snack_bar.dart';
+import '../../store/widgets/store_sheet.dart';
 import '../bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import '../bloc/get_products_bloc/get_products_bloc.dart';
 import '../models/product_atribute.dart';
@@ -49,23 +50,35 @@ class _CompositionsPageState extends State<CompositionsPage> {
     return BlocListener<CompositionsSendCubit, CompositionsSendState>(
       listener: (context, state) {
         if (state is CompositionsSendSuccess) {
-          CustomSnackBar.showSnackBar(context: context, title: "Успешно", isError: false);
+          CustomSnackBar.showSnackBar(
+            context: context,
+            title: AppLocalizations.of(context)!.success,
+            isError: false,
+          );
           Navigator.popUntil(context, (route) => route.isFirst);
-          Go.popGo(Routes.productDetailPage, argument: {'productId': widget.product.id});
+          Go.popGo(Routes.publicProductDetailPage, argument: {'productId': widget.product.id});
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text("Compositions")),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.compositions)),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: BlocBuilder<CompositionsSendCubit, CompositionsSendState>(
           builder: (context, state) {
             return InkWell(
               onTap: () {
-                context.read<CompositionsSendCubit>().send(
-                  productId: widget.product.id,
-                  compositions: compositions,
-                  counts: getCountsFromControllers(controllers),
-                );
+                if (widget.product.compositions?.isNotEmpty ?? false) {
+                  context.read<CompositionsSendCubit>().edit(
+                    product: widget.product,
+                    compositions: compositions,
+                    counts: getCountsFromControllers(controllers),
+                  );
+                } else {
+                  context.read<CompositionsSendCubit>().send(
+                    productId: widget.product.id,
+                    compositions: compositions,
+                    counts: getCountsFromControllers(controllers),
+                  );
+                }
               },
               child: Container(
                 height: 45,
@@ -78,7 +91,10 @@ class _CompositionsPageState extends State<CompositionsPage> {
                   child:
                       state is CompositionsSendLoading
                           ? CircularProgressIndicator(color: Col.white)
-                          : Text("Сохранить", style: TextStyle(color: Colors.white)),
+                          : Text(
+                            AppLocalizations.of(context)!.save,
+                            style: TextStyle(color: Colors.white),
+                          ),
                 ),
               ),
             );
@@ -87,20 +103,22 @@ class _CompositionsPageState extends State<CompositionsPage> {
         body: Padd(
           hor: 10,
           ver: 20,
-          child: Column(
-            children: [
-              Text(
-                "Укажите цены до скидки. Указывайте стоимость до скидки в том случае если хотите показать скидку на карточке товара.",
-                textAlign: TextAlign.center,
-              ),
-              Box(h: 20),
-              Text(
-                "Вариаций товара  -  ${compositions.length}",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-              Box(h: 10),
-              Expanded(
-                child: ListView.separated(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.specifyPricesBeforeDiscount,
+                  textAlign: TextAlign.center,
+                ),
+                Box(h: 20),
+                Text(
+                  "${AppLocalizations.of(context)!.productVariations}  -  ${compositions.length}",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Box(h: 10),
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, compositionIndex) {
                     return Container(
                       decoration: BoxDecoration(
@@ -114,23 +132,50 @@ class _CompositionsPageState extends State<CompositionsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: List.generate(compositions[compositionIndex].length, (index) {
-                              var list = compositions[compositionIndex];
-                              return Container(
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFF3F3F3),
-                                  borderRadius: BorderRadius.circular(14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 10,
+                                  runSpacing: 10,
+                                  children: List.generate(compositions[compositionIndex].length, (
+                                    index,
+                                  ) {
+                                    var list = compositions[compositionIndex];
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFFF3F3F3),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                                      child: Text(
+                                        list[index].name.trans(context),
+                                        style: TextStyle(fontWeight: FontWeight.w500),
+                                      ),
+                                    );
+                                  }),
                                 ),
-                                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                                child: Text(
-                                  list[index].name,
-                                  style: TextStyle(fontWeight: FontWeight.w500),
-                                ),
-                              );
-                            }),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (context) {
+                                      return AreYouSureSheet(
+                                        title: "Хотите удалить етот композитион?",
+                                        onYes: () {
+                                          setState(() {
+                                            compositions.removeAt(compositionIndex);
+                                            controllers.removeAt(compositionIndex);
+                                          });
+                                        },
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Svvg.asset('delete', size: 25),
+                              ),
+                            ],
                           ),
                           Box(h: 10),
                           SizedBox(
@@ -142,7 +187,7 @@ class _CompositionsPageState extends State<CompositionsPage> {
                               borderColor: Color(0xFF474747),
                               borderRadius: 14,
                               textAlign: TextAlign.center,
-                              hint: "Şu harytdan sizde näçesi bar",
+                              hint: AppLocalizations.of(context)!.howManyItems,
                               keyboard: TextInputType.numberWithOptions(decimal: true),
                             ),
                           ),
@@ -153,8 +198,8 @@ class _CompositionsPageState extends State<CompositionsPage> {
                   itemCount: compositions.length,
                   separatorBuilder: (BuildContext context, int index) => Box(h: 10),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

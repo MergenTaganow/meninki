@@ -11,3 +11,8 @@ class SetUser extends AuthEvent {
   final User user;
   SetUser(this.user);
 }
+
+class SetLanguage extends AuthEvent {
+  final String lang;
+  SetLanguage(this.lang);
+}

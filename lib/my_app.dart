@@ -7,6 +7,7 @@ import 'core/go.dart';
 import 'core/routes.dart';
 import 'features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'features/auth/pages/splash_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 String version = '';
 
@@ -28,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     // DynamicLocalization.init(appLocale);
-    // getLang();
+    getLang();
     // checkForUpdate();
     super.initState();
   }
@@ -69,8 +70,12 @@ class _MyAppState extends State<MyApp> {
         ),
         navigatorKey: Routes.mainNavKey,
         onGenerateRoute: Routes.onGenerateRoute,
-        // supportedLocales: AppLocalizations.supportedLocales,
-        // localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: [
+          Locale('tr'),
+          Locale('ru'),
+          Locale('en'),
+        ],
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         scrollBehavior: MyScrollBehavior(),
         locale: appLocale,
         home: SafeArea(

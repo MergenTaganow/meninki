@@ -16,8 +16,8 @@ import '../../banner/widgets/banner_list.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../../product/models/product.dart';
 import '../../product/widgets/product_card.dart';
+import '../../reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
-import '../../store/bloc/get_stores_bloc/get_stores_bloc.dart';
 import '../../store/models/market.dart';
 
 class HomeMain extends StatefulWidget {
@@ -28,17 +28,22 @@ class HomeMain extends StatefulWidget {
 }
 
 class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin {
-  List<Market> stores = [];
+  List<ReelMarket> stores = [];
   List<Market> storesProducts = [];
   ScrollController scrollController = ScrollController();
 
-  ///Todo later need to change to discount orderby
-  Query discountProductsQuery = Query(orderDirection: 'desc', orderBy: /*'discount'*/ 'price');
-
   @override
   void initState() {
+    context.read<GetReelMarketsBloc>().add(GetReelMarkets());
     context.read<GetBannersBloc>().add(GetBanner(Query(current_page: BannerPageTypes.home_main)));
-    context.read<GetDiscountProducts>().add(GetProduct());
+
+    context.read<GetDiscountProducts>().add(
+      GetProduct(Query(orderDirection: 'desc', orderBy: 'discount')),
+    );
+    context.read<GetNewProducts>().add(GetProduct(Query(orderBy: 'id', orderDirection: 'desc')));
+    context.read<GetRaitedProducts>().add(
+      GetProduct(Query(/*orderBy: 'rate', orderDirection: 'desc'*/)),
+    );
     context.read<GetStoreProductsBloc>().add(GetProductStores());
     scrollController.addListener(() {
       if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
@@ -51,11 +56,21 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return RefreshIndicator(
       backgroundColor: Colors.white,
       onRefresh: () async {
-        context.read<GetStoresBloc>().add(GetStores());
-        context.read<GetDiscountProducts>().add(GetProduct());
+        context.read<GetReelMarketsBloc>().add(GetReelMarkets());
+
+        context.read<GetDiscountProducts>().add(
+          GetProduct(Query(orderDirection: 'desc', orderBy: 'discount')),
+        );
+        context.read<GetNewProducts>().add(
+          GetProduct(Query(orderBy: 'id', orderDirection: 'desc')),
+        );
+        context.read<GetRaitedProducts>().add(
+          GetProduct(/*Query(orderBy: 'rate', orderDirection: 'desc')*/),
+        );
         context.read<GetStoreProductsBloc>().add(GetProductStores());
         context.read<GetBannersBloc>().add(
           GetBanner(Query(current_page: BannerPageTypes.home_main)),
@@ -101,7 +116,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
             isLoading
                 ? List.generate(
                   3,
-                  (_) => Market(id: 9999, name: Name()), // lightweight model or mock
+                  (_) => Market(id: 9999, name: ''), // lightweight model or mock
                 )
                 : storesProducts;
         return Skeletonizer(
@@ -130,7 +145,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                       GestureDetector(
                         onTap: () {
                           context.read<GetMarketByIdCubit>().getStoreById(storesProducts[index].id);
-                          Go.to(Routes.publicStoreDetail);
+                          Go.to(Routes.publicStoreDetail, argument: {'navigatedTab': 'product'});
                         },
                         child: Padd(
                           hor: 10,
@@ -163,14 +178,12 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                                   ),
                                   Box(w: 10),
                                   Text(
-                                    isLoading
-                                        ? 'Store name'
-                                        : storesProducts[index].name.trans(context),
+                                    isLoading ? 'Store name' : storesProducts[index].name,
                                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                                   ),
                                 ],
                               ),
-                              Text('все', style: TextStyle(fontSize: 14, color: Colors.blueAccent)),
+                              Icon(Icons.navigate_next),
                             ],
                           ),
                         ),
@@ -211,56 +224,147 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
     );
   }
 
-  BlocBuilder<GetDiscountProducts, GetProductsState> products() {
-    return BlocBuilder<GetDiscountProducts, GetProductsState>(
-      builder: (context, state) {
-        final isLoading = state is GetProductLoading;
-        final products =
-            state is GetProductSuccess
-                ? state.products
-                : List.generate(5, (_) => Product(id: 999, name: Name())); // 👈 fake model
-        return Skeletonizer(
-          enabled: isLoading,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Скитки", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-              Box(h: 10),
-              SizedBox(
-                height: 240,
-                child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    return Padd(
-                      left: index == 0 ? 10 : 0,
-                      child: ProductCard(product: products[index]),
-                    );
-                  },
-                  itemCount: products.length,
-                  scrollDirection: Axis.horizontal,
-                  separatorBuilder: (BuildContext context, int index) => Box(w: 4),
-                ),
+  Widget products() {
+    AppLocalizations lg = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        BlocBuilder<GetNewProducts, GetProductsState>(
+          builder: (context, state) {
+            final isLoading = state is GetProductLoading;
+            final products =
+                state is GetProductSuccess
+                    ? state.products
+                    : List.generate(5, (_) => Product(id: 999, name: Name())); // 👈 fake model
+            return Skeletonizer(
+              enabled: isLoading,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padd(
+                    left: 10,
+                    child: Text(
+                      lg.newItems,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  Box(h: 10),
+                  SizedBox(
+                    height: 240,
+                    child: ListView.separated(
+                      itemBuilder: (context, index) {
+                        return Padd(
+                          left: index == 0 ? 10 : 0,
+                          child: ProductCard(product: products[index]),
+                        );
+                      },
+                      itemCount: products.length,
+                      scrollDirection: Axis.horizontal,
+                      separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            );
+          },
+        ),
+        BlocBuilder<GetRaitedProducts, GetProductsState>(
+          builder: (context, state) {
+            final isLoading = state is GetProductLoading;
+            final products =
+                state is GetProductSuccess
+                    ? state.products
+                    : List.generate(5, (_) => Product(id: 999, name: Name())); // 👈 fake model
+            return Skeletonizer(
+              enabled: isLoading,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padd(
+                    left: 10,
+                    child: Text(
+                      lg.bestRated,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  Box(h: 10),
+                  SizedBox(
+                    height: 240,
+                    child: ListView.separated(
+                      itemBuilder: (context, index) {
+                        return Padd(
+                          left: index == 0 ? 10 : 0,
+                          child: ProductCard(product: products[index]),
+                        );
+                      },
+                      itemCount: products.length,
+                      scrollDirection: Axis.horizontal,
+                      separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        BlocBuilder<GetDiscountProducts, GetProductsState>(
+          builder: (context, state) {
+            final isLoading = state is GetProductLoading;
+            final products =
+                state is GetProductSuccess
+                    ? state.products
+                    : List.generate(5, (_) => Product(id: 999, name: Name())); // 👈 fake model
+            return Skeletonizer(
+              enabled: isLoading,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padd(
+                    left: 10,
+                    child: Text(
+                      lg.discounts,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  Box(h: 10),
+                  SizedBox(
+                    height: 240,
+                    child: ListView.separated(
+                      itemBuilder: (context, index) {
+                        return Padd(
+                          left: index == 0 ? 10 : 0,
+                          child: ProductCard(product: products[index]),
+                        );
+                      },
+                      itemCount: products.length,
+                      scrollDirection: Axis.horizontal,
+                      separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
-  BlocBuilder<GetStoresBloc, GetStoresState> markets() {
-    return BlocBuilder<GetStoresBloc, GetStoresState>(
+  BlocBuilder<GetReelMarketsBloc, GetReelMarketsState> markets() {
+    return BlocBuilder<GetReelMarketsBloc, GetReelMarketsState>(
       builder: (context, state) {
-        if (state is GetStoresSuccess) {
+        if (state is GetReelMarketsSuccess) {
           WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
             if (mounted) {
               setState(() {
-                stores = state.stores;
+                stores = state.reelMarkets;
               });
             }
           });
         }
 
-        final isLoading = state is GetStoresLoading;
+        final isLoading = state is GetReelMarketsLoading;
         final itemCount = isLoading ? 5 : stores.length;
 
         return Column(
@@ -275,7 +379,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                   itemBuilder: (context, index) {
                     // Use dummy store when loading to avoid index errors
                     final store = isLoading ? null : stores[index];
-                    return Padd(left: index == 0 ? 10 : 0, child: StoreCard(store: store));
+                    return Padd(left: index == 0 ? 10 : 0, child: ReelMarketCard(store: store));
                   },
                   separatorBuilder: (context, index) => Box(w: 8),
                   itemCount: itemCount,

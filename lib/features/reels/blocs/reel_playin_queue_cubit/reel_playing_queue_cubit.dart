@@ -2,65 +2,110 @@ import 'package:better_player/better_player.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
+import '../../../../core/injector.dart';
+import '../reels_controllers_bloc/reels_controllers_bloc.dart';
+
 part 'reel_playing_queue_state.dart';
 
 class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
   Map<int, BetterPlayerController> controllers = {};
-  List<int> readyQueue = [];
+  final List<int> readyQueue = [];
   int? currentPlayingId;
-  int currentIndex = -1;
-  ReelPlayingQueueCubit() : super(ReelPlaying({}));
+  int _currentIndex = -1;
+  bool _isSwitching = false;
 
-  void addReady(Map<int, BetterPlayerController> item) {
-    controllers.addAll(item);
-    readyQueue.addAll(item.keys);
+  ReelPlayingQueueCubit() : super(ReelPlaying());
 
-    // If nothing is playing, start first one automatically
+  void addReadyId(int reelId) {
+    if (readyQueue.contains(reelId)) return;
+
+    readyQueue.add(reelId);
+
     if (currentPlayingId == null) {
-      playNext();
+      _playNextInternal();
     } else {
-      emit(ReelPlaying(controllers, currentPlayingId: currentPlayingId));
+      emit(ReelPlaying(currentPlayingId: currentPlayingId));
     }
   }
 
-  void playNext() async {
+  Future<void> playNext() async {
+    if (_isSwitching) return;
+    _isSwitching = true;
+    await _playNextInternal();
+    _isSwitching = false;
+  }
+
+  Future<void> _playNextInternal() async {
     if (readyQueue.isEmpty) return;
 
-    // Pause current
+    final controllersBloc = sl<ReelsControllersBloc>();
+
+    // stop previous
     if (currentPlayingId != null) {
-      final prev = controllers[currentPlayingId];
+      final prev = controllersBloc.controllersMap[currentPlayingId];
       await prev?.pause();
-      if (prev?.isVideoInitialized() ?? false) {
-        await prev?.seekTo(Duration.zero);
-      }
+      // await prev?.seekTo(Duration.zero);
+      prev?.removeEventsListener(_onPlayerEvent);
     }
 
-    // Move to next (loop back to start)
-    currentIndex = (currentIndex + 1) % readyQueue.length;
-    currentPlayingId = readyQueue[currentIndex];
-    final controller = controllers[currentPlayingId];
+    _currentIndex = (_currentIndex + 1) % readyQueue.length;
+    currentPlayingId = readyQueue[_currentIndex];
+
+    final controller = controllersBloc.controllersMap[currentPlayingId];
 
     if (controller == null) {
-      controllers.remove(currentPlayingId);
-      readyQueue.remove(currentIndex);
-      playNext();
-      return;
+      readyQueue.removeAt(_currentIndex);
+      _currentIndex--;
+      return _playNextInternal();
     }
 
-    await controller.play();
-    emit(ReelPlaying(controllers, currentPlayingId: currentPlayingId));
+    controller.addEventsListener(_onPlayerEvent);
 
-    // Listen for when this short ends
-    controller.removeEventsListener((_) {});
-    controller.addEventsListener((event) async {
-      if (event.betterPlayerEventType == BetterPlayerEventType.initialized) {
-        controller.setOverriddenAspectRatio(controller.videoPlayerController!.value.aspectRatio);
-      }
-      if (event.betterPlayerEventType == BetterPlayerEventType.finished) {
-        controller.removeEventsListener((event) {});
+    await controller.play();
+
+    emit(ReelPlaying(currentPlayingId: currentPlayingId));
+  }
+
+  void _onPlayerEvent(BetterPlayerEvent event) {
+    final controller = sl<ReelsControllersBloc>().controllersMap[currentPlayingId];
+
+    switch (event.betterPlayerEventType) {
+      case BetterPlayerEventType.initialized:
+        controller?.setOverriddenAspectRatio(controller.videoPlayerController!.value.aspectRatio);
+        break;
+
+      case BetterPlayerEventType.finished:
         playNext();
-      }
-    });
+        break;
+
+      case BetterPlayerEventType.exception:
+      case BetterPlayerEventType.play:
+      case BetterPlayerEventType.bufferingStart:
+        // optional logging
+        break;
+
+      case BetterPlayerEventType.exception:
+        // 🚨 THIS IS CRITICAL
+        _handleFailedController(currentPlayingId!);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  void _handleFailedController(int reelId) {
+    final controller = sl<ReelsControllersBloc>().controllersMap[currentPlayingId];
+    controller?.dispose(forceDispose: true);
+
+    readyQueue.remove(reelId);
+
+    if (currentPlayingId == reelId) {
+      currentPlayingId = null;
+      playNext();
+    }
+
+    emit(ReelPlaying(currentPlayingId: currentPlayingId));
   }
 
   /// Dispose all controllers when closing

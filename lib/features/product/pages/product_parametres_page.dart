@@ -25,9 +25,34 @@ class _ProductParametresPageState extends State<ProductParametresPage> {
   List<ProductParameter> parameters = [];
 
   @override
+  void initState() {
+    Set<ProductParameter> params = {};
+    Set<ProductAttribute> attributes = {};
+    if (widget.product.compositions?.isNotEmpty ?? false) {
+      for (var i in widget.product.compositions!) {
+        for (var j in i.attributes ?? <ProductAttribute>[]) {
+          if (j.parameter != null) {
+            params.add(j.parameter!);
+            attributes.add(j);
+          }
+        }
+      }
+    }
+
+    for (var i in params) {
+      context.read<CompositionsCreatCubit>().selectParameter(i);
+    }
+    for (var i in attributes) {
+      context.read<CompositionsCreatCubit>().selectAttribute(i.parameter!, i);
+    }
+
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Характеристики")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.characteristics)),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: InkWell(
         onTap: () {
@@ -37,7 +62,12 @@ class _ProductParametresPageState extends State<ProductParametresPage> {
           height: 45,
           decoration: BoxDecoration(color: Col.primary, borderRadius: BorderRadius.circular(14)),
           margin: EdgeInsets.symmetric(horizontal: 14),
-          child: Center(child: Text("See compositions", style: TextStyle(color: Colors.white))),
+          child: Center(
+            child: Text(
+              AppLocalizations.of(context)!.seeCompositions,
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
         ),
       ),
       body: Padd(
@@ -52,7 +82,7 @@ class _ProductParametresPageState extends State<ProductParametresPage> {
               child: Column(
                 children: [
                   Text(
-                    "Здесь вы сможете добавить характеристики к вашему товару и создать вариации к каждой характеристике товара.",
+                    AppLocalizations.of(context)!.hereYouCanAddCharacteristics,
                     textAlign: TextAlign.center,
                   ),
                   Box(h: 20),
@@ -90,7 +120,7 @@ class _ProductParametresPageState extends State<ProductParametresPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Новая характеристикa",
+                            AppLocalizations.of(context)!.newCharacteristic,
                             style: TextStyle(color: Color(0xFF474747), fontWeight: FontWeight.w500),
                           ),
                           Icon(Icons.add_circle_outline),

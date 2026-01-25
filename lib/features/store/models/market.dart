@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:meninki/features/auth/models/user.dart';
 import 'package:meninki/features/global/model/name.dart';
 import 'package:meninki/features/product/models/product.dart';
@@ -8,13 +10,13 @@ import '../pages/select_location_page.dart';
 
 class Market {
   int id;
-  Name name;
+  String name;
   MeninkiFile? cover_image;
-  String? address;
+  Name? address;
   LatLng? location;
   String? username;
-  String? description;
-  String? profile_color;
+  Name? description;
+  Color? profile_color;
   int? rate_count;
   int? user_rate_count;
   int? user_favorite_count;
@@ -24,6 +26,8 @@ class Market {
   User? user;
   int? product_verified_count;
   int? reel_verified_count;
+  Map<String, dynamic>? contact_info;
+  DateTime? created_at;
 
   Market({
     required this.id,
@@ -43,18 +47,20 @@ class Market {
     this.user,
     this.product_verified_count,
     this.reel_verified_count,
+    this.contact_info,
+    this.created_at,
   });
 
   factory Market.fromJson(Map<String, dynamic> json) {
     return Market(
       id: (json["id"]),
-      name: Name.fromJson(json["name"]),
+      name: (json["name"]),
       cover_image: json["cover_image"] != null ? MeninkiFile.fromJson(json["cover_image"]) : null,
-      address: json["address"],
+      address: json["address"] != null ? Name.fromJson(json["address"]) : null,
       location: json["location"] != null ? LatLng.fromJson(json["location"]) : null,
       username: json["username"],
-      description: json["description"],
-      profile_color: json["profile_color"],
+      description: json["description"] != null ? Name.fromJson(json["description"]) : null,
+      profile_color: json["profile_color"] != null ? hexToColor(json["profile_color"]) : null,
       rate_count: json["rate_count"],
       user_rate_count: json["user_rate_count"],
       user_favorite_count: json["user_favorite_count"],
@@ -70,9 +76,25 @@ class Market {
               : null,
       province: json["province"] != null ? Province.fromJson(json["province"]) : null,
       user: json["user"] != null ? User.fromJson(json["user"]) : null,
+      contact_info: json["contact_info"],
+      created_at:
+          json["created_at"] != null
+              ? DateTime.fromMillisecondsSinceEpoch(int.parse(json["created_at"])).toLocal()
+              : null,
     );
   }
   //
+  static Color hexToColor(String hexString) {
+    // Remove # if present
+    hexString = hexString.replaceAll('#', '');
+
+    // Add FF for full opacity if needed
+    if (hexString.length == 6) {
+      hexString = 'FF$hexString';
+    }
+
+    return Color(int.parse(hexString, radix: 16));
+  }
 
   //
 }

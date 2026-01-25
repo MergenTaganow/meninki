@@ -34,7 +34,12 @@ class _ProvinceSelectingPageState extends State<ProvinceSelectingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Велаят", style: TextStyle(fontWeight: FontWeight.w500))),
+      appBar: AppBar(
+        title: Text(
+          AppLocalizations.of(context)!.province,
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
+      ),
       body: Padd(
         pad: 10,
         child: BlocBuilder<GetProvincesCubit, GetProvincesState>(
@@ -43,7 +48,9 @@ class _ProvinceSelectingPageState extends State<ProvinceSelectingPage> {
               return Center(child: CircularProgressIndicator());
             }
             if (state is GetProvincesFailed) {
-              return Center(child: Text(state.failure.message ?? "Ошибка"));
+              return Center(
+                child: Text(state.failure.message ?? AppLocalizations.of(context)!.error),
+              );
             }
             if (state is GetProvincesSuccess) {
               final provinces = state.provinces;
@@ -79,8 +86,8 @@ class _ProvinceSelectingPageState extends State<ProvinceSelectingPage> {
                                   },
                                   child: Ink(
                                     padding: const EdgeInsets.all(14),
-                                    child: const Text(
-                                      'все',
+                                    child: Text(
+                                      AppLocalizations.of(context)!.all,
                                       style: TextStyle(fontWeight: FontWeight.w500),
                                     ),
                                   ),
@@ -145,8 +152,11 @@ class _ProvinceSelectingPageState extends State<ProvinceSelectingPage> {
                               color: Col.primary,
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: const Center(
-                              child: Text('Сохранить', style: TextStyle(color: Colors.white)),
+                            child: Center(
+                              child: Text(
+                                AppLocalizations.of(context)!.save,
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                         ),

@@ -39,9 +39,9 @@ class FilterWidget extends StatelessWidget {
                 children: [
                   Svvg.asset('sort', size: 20),
                   const SizedBox(width: 4),
-                  const Text(
-                    "Фильтр и сортировка",
-                    style: TextStyle(color: Color(0xFF474747)),
+                  Text(
+                    AppLocalizations.of(context)!.filterAndSort,
+                    style: const TextStyle(color: Color(0xFF474747)),
                   ),
                 ],
               ),

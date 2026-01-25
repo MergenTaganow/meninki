@@ -50,6 +50,7 @@ class ProvinceSelectingCubit extends Cubit<ProvinceSelectingState> {
 
   // Example keys
   static String product_creating_province = 'product_creating_province';
+  static String store_creating_province = 'store_creating_province';
   static String product_searching_province = 'product_searching_province';
   static String add_creating_province = 'add_creating_province';
 }

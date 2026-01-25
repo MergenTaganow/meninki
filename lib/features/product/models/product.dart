@@ -1,6 +1,7 @@
 import 'package:meninki/features/categories/models/brand.dart';
 import 'package:meninki/features/categories/models/category.dart';
 import 'package:meninki/features/global/model/name.dart';
+import 'package:meninki/features/product/widgets/composition.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/store/models/market.dart';
 
@@ -13,7 +14,7 @@ class Product {
   num? price;
   num? discount;
   Market? market;
-  String? created_at;
+  DateTime? created_at;
   int? user_rate_count;
   int? user_favorite_count;
   int? rate_count;
@@ -21,6 +22,7 @@ class Product {
   List<Category>? categories;
   List<MeninkiFile>? product_files;
   MeninkiFile? cover_image;
+  List<Composition>? compositions;
 
   Product({
     required this.id,
@@ -39,6 +41,7 @@ class Product {
     this.categories,
     this.product_files,
     this.cover_image,
+    this.compositions,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -51,7 +54,10 @@ class Product {
       price: (json["price"] is String) ? num.parse(json["price"]) : json["price"],
       discount: (json["discount"]),
       market: json["market"] != null ? Market.fromJson(json["market"]) : null,
-      created_at: json["created_at"],
+      created_at:
+          json["created_at"] != null
+              ? DateTime.fromMillisecondsSinceEpoch(int.parse(json["created_at"])).toLocal()
+              : null,
       user_rate_count: (json["user_rate_count"]),
       user_favorite_count: (json["user_favorite_count"]),
       rate_count: (json["rate_count"]),
@@ -64,6 +70,10 @@ class Product {
       product_files:
           json["product_files"] != null
               ? (json["product_files"] as List).map((e) => MeninkiFile.fromJson(e)).toList()
+              : null,
+      compositions:
+          json["compositions"] != null
+              ? (json["compositions"] as List).map((e) => Composition.fromJson(e)).toList()
               : null,
     );
   }

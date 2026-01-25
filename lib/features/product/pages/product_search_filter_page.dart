@@ -32,15 +32,16 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     var listSort = [
-      Sort(text: "Sonky gosulanlar", orderBy: 'id', orderDirection: 'desc'),
-      Sort(text: "Ilki gosulanlar", orderBy: 'id', orderDirection: 'asc'),
-      Sort(text: "Bahasy Arzanlar", orderBy: 'price', orderDirection: 'asc'),
-      Sort(text: "Bahasy gymmatlar", orderBy: 'price', orderDirection: 'desc'),
+      Sort(text: lg.sortNewest, orderBy: 'id', orderDirection: 'desc'),
+      Sort(text: lg.sortOldest, orderBy: 'id', orderDirection: 'asc'),
+      Sort(text: lg.sortCheap, orderBy: 'price', orderDirection: 'asc'),
+      Sort(text: lg.sortExpensive, orderBy: 'price', orderDirection: 'desc'),
     ];
     return Scaffold(
       appBar: AppBar(
-        title: Text("Фильтр и сортировка", style: TextStyle(fontWeight: FontWeight.w500)),
+        title: Text(lg.filter, style: TextStyle(fontWeight: FontWeight.w500)),
       ),
       body: SingleChildScrollView(
         child: ConstrainedBox(
@@ -63,19 +64,20 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
                 CategorySelection(
                   selectionKey: CategorySelectingCubit.product_searching_category,
                   singleSelection: false,
+                  rootCategorySelection: false,
                 ),
                 Box(h: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Минимальная цена"),
+                    Text(lg.minPrice),
                     Box(h: 6),
                     TexField(
                       ctx: context,
                       cont: minPrice,
                       filCol: Color(0xFFF3F3F3),
                       borderRadius: 14,
-                      hint: "Цена от",
+                      hint: lg.priceFrom,
                       hintCol: Color(0xFF969696),
                       onChange: (text) {
                         context.read<KeyFilterCubit>().select(
@@ -90,14 +92,14 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Максимальная цена"),
+                    Text(lg.maxPrice),
                     Box(h: 6),
                     TexField(
                       ctx: context,
                       cont: maxPrice,
                       filCol: Color(0xFFF3F3F3),
                       borderRadius: 14,
-                      hint: "Цена до",
+                      hint: lg.priceTo,
                       hintCol: Color(0xFF969696),
                       onChange: (text) {
                         context.read<KeyFilterCubit>().select(
@@ -126,7 +128,7 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
                         ),
                         child: Center(
                           child: Text(
-                            "Очистить фильтр",
+                            lg.clearFilter,
                             style: TextStyle(color: Color(0xFF474747)),
                           ),
                         ),
@@ -149,7 +151,7 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
-                          child: Text("Сохранить", style: TextStyle(color: Colors.white)),
+                          child: Text(lg.save, style: TextStyle(color: Colors.white)),
                         ),
                       ),
                     ),

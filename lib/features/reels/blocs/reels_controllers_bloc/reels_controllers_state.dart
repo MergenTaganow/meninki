@@ -1,9 +1,15 @@
 part of 'reels_controllers_bloc.dart';
 
 @immutable
-sealed class ReelsControllersState {}
+abstract class ReelsControllersState {
+  final Map<int, BetterPlayerController> controllers;
+  const ReelsControllersState(this.controllers);
+}
 
-final class ReelsControllersLoading extends ReelsControllersState {
-  final Map<int, BetterPlayerController> controllersMap;
-  ReelsControllersLoading(this.controllersMap);
+class ReelsControllersLoading extends ReelsControllersState {
+  const ReelsControllersLoading(super.controllers);
+}
+
+class ReelsControllersReady extends ReelsControllersState {
+  const ReelsControllersReady(super.controllers);
 }

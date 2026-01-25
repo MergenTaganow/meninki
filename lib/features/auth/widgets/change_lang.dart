@@ -21,8 +21,9 @@ class EditLang extends StatelessWidget {
       },
       itemBuilder:
           (BuildContext? contextt) => <PopupMenuEntry<String>>[
-            const PopupMenuItem<String>(value: 'tr', child: Text("turkmen")),
-            const PopupMenuItem<String>(value: 'ru', child: Text("russian")),
+            const PopupMenuItem<String>(value: 'tk', child: Text("Turkmen")),
+            const PopupMenuItem<String>(value: 'ru', child: Text("Russian")),
+            const PopupMenuItem<String>(value: 'en', child: Text("English")),
           ],
     );
   }

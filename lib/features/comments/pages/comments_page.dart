@@ -12,92 +12,91 @@ import '../widgets/message_card.dart';
 
 class CommentsPage extends StatefulWidget {
   final Reel reel;
+  final ScrollController scrollController;
 
-  const CommentsPage({required this.reel, super.key});
+  const CommentsPage({required this.reel, required this.scrollController, super.key});
 
   @override
   State<CommentsPage> createState() => _CommentsPageState();
 }
 
 class _CommentsPageState extends State<CommentsPage> {
-  TextEditingController commentController = TextEditingController();
-  ScrollController scrollController = ScrollController();
+  final TextEditingController commentController = TextEditingController();
   List<Comment> comments = [];
 
   @override
   void initState() {
-    context.read<GetCommentsBloc>().add(GetComment(widget.reel.id));
-    scrollController.addListener(() {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
-        context.read<GetCommentsBloc>().add(CommentPag(widget.reel.id));
-      }
-    });
     super.initState();
+    context.read<GetCommentsBloc>().add(GetComment(widget.reel.id));
+    widget.scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!widget.scrollController.hasClients) return;
+
+    if (widget.scrollController.position.pixels >=
+        widget.scrollController.position.maxScrollExtent - 50) {
+      context.read<GetCommentsBloc>().add(CommentPag(widget.reel.id));
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.scrollController.removeListener(_onScroll);
+    commentController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    var me = sl<EmployeeLocalDataSource>().user;
-    return BlocListener<SendCommentCubit, SendCommentState>(
-      listener: (context, state) {
-        if (state is SendCommentSuccess) {
-          commentController.clear();
-          if (state.comment.reply_to_comment_id == null) {
-            context.read<GetCommentsBloc>().add(
-              AddSentComment(state.comment.copyWith(creator: me)),
-            );
-          } else {
-            var index = comments.indexWhere((e) => e.id == state.comment.reply_to_comment_id);
-            if (index != -1) {
-              comments[index] = comments[index].copyWith(
-                reply_count: (comments[index].reply_count ?? 0) + 1,
-              );
-            }
-          }
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(title: Text("Комментарии")),
-        body: Column(
-          children: [
-            Expanded(
-              child: Padd(
-                hor: 10,
-                child: BlocBuilder<GetCommentsBloc, GetCommentsState>(
-                  builder: (context, state) {
-                    if (state is GetCommentsLoading) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-                    if (state is GetCommentsFailed) {
-                      return Center(child: Text(state.message ?? 'error'));
-                    }
-                    if (state is GetCommentsSuccess) {
-                      comments = state.comments;
-                    }
-                    return RefreshIndicator(
-                      onRefresh: () async {
-                        context.read<GetCommentsBloc>().add(GetComment(widget.reel.id));
-                      },
-                      child: ListView.separated(
-                        controller: scrollController,
-                        itemCount: comments.length,
-                        itemBuilder: (context, index) {
-                          return Padd(
-                            top: index == 0 ? 10 : 0,
-                            child: MessageCard(comment: comments[index]),
-                          );
-                        },
-                        separatorBuilder: (context, index) => Box(h: 10),
-                      ),
+    return Column(
+      children: [
+        /// HEADER
+        const Padding(
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Text('Комментарии', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        ),
+
+        /// LIST (THIS controls the draggable sheet)
+        Expanded(
+          child: BlocBuilder<GetCommentsBloc, GetCommentsState>(
+            builder: (context, state) {
+              if (state is GetCommentsLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (state is GetCommentsFailed) {
+                return Center(child: Text(state.message ?? AppLocalizations.of(context)!.error));
+              }
+
+              if (state is GetCommentsSuccess) {
+                comments = state.comments;
+              }
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<GetCommentsBloc>().add(GetComment(widget.reel.id));
+                },
+                child: ListView.separated(
+                  controller: widget.scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: EdgeInsets.only(top: index == 0 ? 10 : 0),
+                      child: MessageCard(comment: comments[index]),
                     );
                   },
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
                 ),
-              ),
-            ),
-            CommentTextField(controller: commentController, reelId: widget.reel.id),
-          ],
+              );
+            },
+          ),
         ),
-      ),
+
+        /// FIXED INPUT
+        CommentTextField(controller: commentController, reelId: widget.reel.id),
+      ],
     );
   }
 }

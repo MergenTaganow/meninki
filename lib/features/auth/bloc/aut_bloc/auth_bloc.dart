@@ -38,6 +38,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         repo.saveUser(u: event.user);
         emit.call(AuthSuccess(event.user));
       }
+      if (event is SetLanguage) {
+        await ds.updateUser(data: {"lang": event.lang});
+        repo.user?.lang = event.lang;
+      }
     });
   }
 }

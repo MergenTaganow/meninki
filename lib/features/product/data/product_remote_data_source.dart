@@ -17,13 +17,18 @@ import '../../../core/injector.dart';
 
 abstract class ProductRemoteDataSource {
   Future<Either<Failure, Product>> createProduct(Map<String, dynamic> data);
+  Future<Either<Failure, Success>> editProduct(int productId, Map<String, dynamic> data);
   Future<Either<Failure, Product>> getProductById(int id);
   Future<Either<Failure, List<Product>>> getProducts(Query query);
   Future<Either<Failure, List<ProductParameter>>> getParameters(Query query);
   Future<Either<Failure, List<ProductAttribute>>> getAttributes(Query query);
   Future<Either<Failure, Success>> sendComposition(Map<String, dynamic> data);
+  Future<Either<Failure, Success>> editComposition(Map<String, dynamic> data);
   Future<Either<Failure, List<Province>>> getProvinces();
   Future<Either<Failure, List<Banner>>> getBanners(Query query);
+  Future<Either<Failure, List<int>>> getFavoriteIds();
+  Future<Either<Failure, Success>> addFavoriteProduct(int productId);
+  Future<Either<Failure, Success>> removeFavoriteProduct(int productId);
 }
 
 class ProductRemoteDataImpl extends ProductRemoteDataSource {
@@ -33,7 +38,7 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Product>> createProduct(Map<String, dynamic> data) async {
     try {
-      var response = await api.dio.post('v1/manager/products', data: data);
+      var response = await api.dio.post('v1/products/client', data: data);
 
       return Right(Product.fromJson(response.data['payload']));
     } catch (e) {
@@ -43,13 +48,13 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
 
   @override
   Future<Either<Failure, Product>> getProductById(int id) async {
-    try {
-      var response = await api.dio.get('v1/products/$id', queryParameters: {"lang": "tk"});
+    // try {
+      var response = await api.dio.get('v1/products/client/$id');
 
       return Right(Product.fromJson(response.data['payload']));
-    } catch (e) {
-      return Left(handleError(e));
-    }
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 
   @override
@@ -87,7 +92,8 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Success>> sendComposition(Map<String, dynamic> data) async {
     try {
-      var response = await api.dio.post('v1/compositions', data: data);
+      //Todo need change url
+      var response = await api.dio.post('v1/compositions/client', data: data);
 
       return Right(Success());
     } catch (e) {
@@ -97,66 +103,130 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
 
   @override
   Future<Either<Failure, List<Product>>> getProducts(Query query) async {
-    // try {
-    var sort = sl<SortCubit>().sortMap[SortCubit.productSearchSort];
-    var provinces =
-        sl<ProvinceSelectingCubit>().selectedMap[ProvinceSelectingCubit
-            .product_searching_province] ??
-        [];
-    var categories =
-        sl<CategorySelectingCubit>().selectedMap[CategorySelectingCubit
-            .product_searching_category] ??
-        [];
-    var keyFilters = sl<KeyFilterCubit>().selectedMap;
+    try {
+      var sort = sl<SortCubit>().sortMap[SortCubit.productSearchSort];
+      var provinces =
+          sl<ProvinceSelectingCubit>().selectedMap[ProvinceSelectingCubit
+              .product_searching_province] ??
+          [];
+      var categories =
+          sl<CategorySelectingCubit>().selectedMap[CategorySelectingCubit
+              .product_searching_category] ??
+          [];
+      var keyFilters = sl<KeyFilterCubit>().selectedMap;
 
-    var map = {
-      ...query.toMap(),
-      "lang": "tk",
-      if (sort != null) ...sort.toMap() else ...{"order_direction": "asc", "order_by": "id"},
-      if (provinces.isNotEmpty) "province_ids": provinces.map((e) => e.id).toList(),
-      if (categories.isNotEmpty) "category_ids": categories.map((e) => e.id).toList(),
-      if (keyFilters[KeyFilterCubit.product_search_max_price] != null)
-        "max_price": keyFilters[KeyFilterCubit.product_search_max_price],
-      if (keyFilters[KeyFilterCubit.product_search_min_price] != null)
-        "min_price": keyFilters[KeyFilterCubit.product_search_min_price],
-    };
-    var response = await api.dio.get('v1/products', queryParameters: map);
+      var map = {
+        ...query.toMap(),
+        ...{
+          'order_by': sort?.orderBy ?? query.orderBy ?? 'id',
+          'order_direction': sort?.orderDirection ?? query.orderDirection ?? 'desc',
+        },
+        if (provinces.isNotEmpty) "province_ids": provinces.map((e) => e.id).toList(),
+        if (categories.isNotEmpty) "category_ids": categories.map((e) => e.id).toList(),
+        if (keyFilters[KeyFilterCubit.product_search_max_price] != null)
+          "max_price": keyFilters[KeyFilterCubit.product_search_max_price],
+        if (keyFilters[KeyFilterCubit.product_search_min_price] != null)
+          "min_price": keyFilters[KeyFilterCubit.product_search_min_price],
+      };
 
-    List<Product> product =
-        (response.data['payload'] as List).map((e) => Product.fromJson(e)).toList();
-    return Right(product);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      var response = await api.dio.get(
+        'v1/${query.extraUrl ?? 'products/public'}',
+        queryParameters: map,
+      );
+
+      List<Product> product =
+          (response.data['payload'] as List).map((e) => Product.fromJson(e)).toList();
+      return Right(product);
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, List<Province>>> getProvinces() async {
-    // try {
-    var response = await api.dio.get(
-      'v1/provinces',
-      queryParameters: {"page": 1, "limit": 100, "order_direction": "asc", "order_by": "id"},
-    );
+    try {
+      var response = await api.dio.get(
+        'v1/provinces',
+        queryParameters: {"page": 1, "limit": 100, "order_direction": "asc", "order_by": "id"},
+      );
 
-    List<Province> province =
-        (response.data['payload'] as List).map((e) => Province.fromJson(e)).toList();
-    return Right(province);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      List<Province> province =
+          (response.data['payload'] as List).map((e) => Province.fromJson(e)).toList();
+      return Right(province);
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, List<Banner>>> getBanners(Query query) async {
-    // try {
-    print(query.toMap());
-    var response = await api.dio.get('v1/banners', queryParameters: query.toMap());
+    try {
+      var response = await api.dio.get('v1/banners', queryParameters: query.toMap());
 
-    List<Banner> banners =
-        (response.data['payload'] as List).map((e) => Banner.fromJson(e)).toList();
-    return Right(banners);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      List<Banner> banners =
+          (response.data['payload'] as List).map((e) => Banner.fromJson(e)).toList();
+      return Right(banners);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> editProduct(int productId, Map<String, dynamic> data) async {
+    try {
+      await api.dio.patch('v1/products/client/$productId', data: data);
+
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<int>>> getFavoriteIds() async {
+    try {
+      var response = await api.dio.get('v1/product-favorites/ids');
+
+      List<int> list = (response.data['payload'] as List).map((e) => e as int).toList();
+
+      return Right(list);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> addFavoriteProduct(int productId) async {
+    try {
+      await api.dio.post('v1/product-favorites', data: {"product_id": productId});
+
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> removeFavoriteProduct(int productId) async {
+    try {
+      await api.dio.delete('v1/product-favorites', data: {"product_id": productId});
+
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> editComposition(Map<String, dynamic> data) async {
+    try {
+      //Todo need change url
+      var response = await api.dio.patch('v1/compositions/client', data: data);
+
+      print(response.data);
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 }

@@ -47,7 +47,7 @@ class _MessageCardState extends State<MessageCard> {
               ),
               if (me?.id == widget.comment.creator?.id)
                 Text(
-                  "Ваш комментарий",
+                  AppLocalizations.of(context)!.yourComment,
                   style: TextStyle(color: Col.primary, fontWeight: FontWeight.w500),
                 )
               else
@@ -61,7 +61,7 @@ class _MessageCardState extends State<MessageCard> {
                   child: Row(
                     children: [
                       Text(
-                        'Ответить',
+                        AppLocalizations.of(context)!.reply,
                         style: TextStyle(fontWeight: FontWeight.w500, color: Col.primary),
                       ),
                       Box(w: 6),
@@ -92,7 +92,7 @@ class _MessageCardState extends State<MessageCard> {
                       SizedBox(width: 20, child: Divider()),
                       Box(w: 2),
                       Text(
-                        "${showChildren ? "Скрытъ" : "Посмотретъ"} ${widget.comment.reply_count} ответа",
+                        "${showChildren ? AppLocalizations.of(context)!.hide : AppLocalizations.of(context)!.view} ${widget.comment.reply_count} ${AppLocalizations.of(context)!.answers}",
                       ),
                     ],
                   ),

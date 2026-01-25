@@ -1,3 +1,5 @@
+import 'package:meninki/features/auth/models/user.dart';
+import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 
 class Reel {
@@ -15,6 +17,8 @@ class Reel {
   num? comment_count;
   num? repost_count;
   MeninkiFile file;
+  Product? product;
+  User? user;
 
   Reel({
     required this.id,
@@ -31,6 +35,8 @@ class Reel {
     this.comment_count,
     this.repost_count,
     required this.file,
+    this.product,
+    this.user,
   });
 
   factory Reel.fromJson(Map<String, dynamic> json) {
@@ -47,8 +53,13 @@ class Reel {
       user_id: json["user_id"],
       comment_count: json["comment_count"],
       repost_count: json["repost_count"],
-      created_at: DateTime.tryParse(json["created_at"]),
+      created_at:
+          json["created_at"] != null
+              ? DateTime.fromMillisecondsSinceEpoch(int.parse(json["created_at"])).toLocal()
+              : null,
       file: MeninkiFile.fromJson(json["file"]),
+      product: json["product"] != null ? Product.fromJson(json["product"]) : null,
+      user: json["user"] != null ? User.fromJson(json["user"]) : null,
     );
   }
 

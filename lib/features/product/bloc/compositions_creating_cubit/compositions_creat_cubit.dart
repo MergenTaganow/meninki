@@ -15,6 +15,8 @@ class CompositionsCreatCubit extends Cubit<CompositionsCreatState> {
     var exist = selectedParameters.containsKey(param);
     if (!exist) {
       selectedParameters[param] = [];
+    } else {
+      selectedParameters.remove(param);
     }
     emit.call(CompositionsCreating(selectedParameters));
   }
@@ -24,6 +26,8 @@ class CompositionsCreatCubit extends Cubit<CompositionsCreatState> {
     var index = list.indexWhere((e) => e.id == attribute.id);
     if (index == -1) {
       list.add(attribute);
+    } else {
+      list.removeAt(index);
     }
     selectedParameters[param] = list;
 

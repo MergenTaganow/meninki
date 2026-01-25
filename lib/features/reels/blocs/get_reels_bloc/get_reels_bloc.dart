@@ -49,7 +49,7 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
               (event.query ?? Query()).copyWith(
                 offset: page,
                 limit: limit,
-                orderDirection: event.query?.orderDirection ?? 'asc',
+                orderDirection: event.query?.orderDirection ?? 'desc',
                 orderBy: event.query?.orderBy ?? 'created_at',
               ),
             )
@@ -57,7 +57,7 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
               (event.query ?? Query()).copyWith(
                 offset: page,
                 limit: limit,
-                orderDirection: event.query?.orderDirection ?? 'asc',
+                orderDirection: event.query?.orderDirection ?? 'desc',
                 orderBy: event.query?.orderBy ?? 'created_at',
               ),
             );
@@ -79,7 +79,7 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
               (event.query ?? Query()).copyWith(
                 offset: page,
                 limit: limit,
-                orderDirection: event.query?.orderDirection ?? 'asc',
+                orderDirection: event.query?.orderDirection ?? 'desc',
                 orderBy: event.query?.orderBy ?? 'created_at',
               ),
             )
@@ -87,7 +87,7 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
               (event.query ?? Query()).copyWith(
                 offset: page,
                 limit: limit,
-                orderDirection: event.query?.orderDirection ?? 'asc',
+                orderDirection: event.query?.orderDirection ?? 'desc',
                 orderBy: event.query?.orderBy ?? 'created_at',
               ),
             );

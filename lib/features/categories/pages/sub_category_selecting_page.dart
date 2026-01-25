@@ -21,8 +21,9 @@ class SubCategorySelectingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text("Категория", style: TextStyle(fontWeight: FontWeight.w500))),
+      appBar: AppBar(title: Text(lg.category, style: TextStyle(fontWeight: FontWeight.w500))),
       body: Padd(
         pad: 10,
         child: BlocBuilder<CategorySelectingCubit, CategorySelectingState>(
@@ -100,7 +101,7 @@ class SubCategorySelectingPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Center(
-                        child: Text('Сохранить', style: TextStyle(color: Colors.white)),
+                        child: Text(lg.save, style: TextStyle(color: Colors.white)),
                       ),
                     ),
                   ),

@@ -23,7 +23,7 @@ class ReelsFilterPage extends StatelessWidget {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: Text("Фильтр и сортировка", style: TextStyle(fontWeight: FontWeight.w500)),
+        title: Text(AppLocalizations.of(context)!.filterAndSort, style: TextStyle(fontWeight: FontWeight.w500)),
       ),
       body: SingleChildScrollView(
         child: ConstrainedBox(
@@ -42,6 +42,7 @@ class ReelsFilterPage extends StatelessWidget {
                 CategorySelection(
                   selectionKey: CategorySelectingCubit.reels_searching_category,
                   singleSelection: false,
+                  rootCategorySelection: false,
                 ),
                 Spacer(),
 
@@ -61,7 +62,7 @@ class ReelsFilterPage extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            "Очистить фильтр",
+                            AppLocalizations.of(context)!.clearFilter,
                             style: TextStyle(color: Color(0xFF474747)),
                           ),
                         ),
@@ -84,7 +85,7 @@ class ReelsFilterPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
-                          child: Text("Сохранить", style: TextStyle(color: Colors.white)),
+                          child: Text(AppLocalizations.of(context)!.save, style: TextStyle(color: Colors.white)),
                         ),
                       ),
                     ),

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:meninki/features/global/widgets/meninki_network_image.dart';
+
+import '../../auth/models/user.dart';
 
 class UsersProfile extends StatelessWidget {
-  const UsersProfile({super.key});
+  final User user;
+  const UsersProfile(this.user, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +17,7 @@ class UsersProfile extends StatelessWidget {
           height: 40,
           width: 40,
           decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+          // child: MeninkiNetworkImage(file: user., networkImageType: networkImageType),
         ),
         Positioned(bottom: -10, child: Icon(Icons.add_circle, color: Color(0xFFC7281F))),
       ],
@@ -42,7 +47,7 @@ class _ExpandableTextState extends State<ExpandableText> {
       onTap: _toggleExpanded,
       child: Text(
         widget.text,
-        style: widget.style ?? TextStyle(color: Colors.white, fontSize: 12),
+        style: widget.style ?? TextStyle(color: Colors.white, fontSize: 16),
         maxLines: _expanded ? null : widget.trimLines,
         overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
       ),

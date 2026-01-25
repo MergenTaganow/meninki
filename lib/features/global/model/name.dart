@@ -24,4 +24,11 @@ class Name {
   String trans(BuildContext context) {
     return tk ?? ru ?? en ?? '';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Name && other.tk == tk && other.ru == ru && other.en == en;
+
+  @override
+  int get hashCode => tk.hashCode;
 }

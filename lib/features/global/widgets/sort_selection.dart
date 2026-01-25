@@ -19,7 +19,7 @@ class SortSelection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Сортировка элементов"),
+        Text(AppLocalizations.of(context)!.sortElements),
         Box(h: 6),
         BlocBuilder<SortCubit, SortState>(
           builder: (context, state) {
@@ -38,8 +38,7 @@ class SortSelection extends StatelessWidget {
                   focusedBorder: border,
                   hintStyle: TextStyle(color: Color(0xFF969696)),
                 ),
-
-                hintText: "Yzygiderligi saýla",
+                hintText: AppLocalizations.of(context)!.selectSort,
                 // dropdownColor: Colors.white,
                 trailingIcon: Icon(Icons.keyboard_arrow_down_outlined),
                 selectedTrailingIcon: Icon(Icons.keyboard_arrow_up_outlined),

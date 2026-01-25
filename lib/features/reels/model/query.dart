@@ -27,6 +27,7 @@ class Query {
   int? priority;
   String? current_page;
   bool? filtered;
+  String? extraUrl;
 
   Query({
     this.keyword,
@@ -52,6 +53,7 @@ class Query {
     this.priority,
     this.current_page,
     this.filtered,
+    this.extraUrl,
   });
 
   Query copyWith({
@@ -106,6 +108,7 @@ class Query {
     int? priority,
     String? current_page,
     bool? filtered,
+    String? extraUrl,
   }) {
     return Query(
       keyword: keyword ?? this.keyword,
@@ -131,6 +134,7 @@ class Query {
       priority: priority ?? this.priority,
       current_page: current_page ?? this.current_page,
       filtered: filtered ?? this.filtered,
+      extraUrl: extraUrl ?? this.extraUrl,
     );
   }
 

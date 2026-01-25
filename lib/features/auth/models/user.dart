@@ -14,6 +14,7 @@ class User {
   String? role;
   bool? is_super_user;
   String? temporaryToken;
+  String? lang;
 
   User({
     this.token,
@@ -27,6 +28,7 @@ class User {
     this.role,
     this.is_super_user,
     this.temporaryToken,
+    this.lang,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,7 @@ class User {
       status: json["status"],
       role: json["role"],
       is_super_user: json["is_super_user"],
+      lang: json["lang"] == 'tk' ? 'tr' : json["lang"],
     );
   }
 
@@ -59,6 +62,7 @@ class User {
       "status": status,
       "role": role,
       "is_super_user": is_super_user,
+      "lang": lang,
     };
   }
 
@@ -74,6 +78,7 @@ class User {
     String? role,
     bool? is_super_user,
     String? temporaryToken,
+    String? lang,
   }) {
     return User(
       token: token ?? this.token,
@@ -87,6 +92,7 @@ class User {
       role: role ?? this.role,
       is_super_user: is_super_user ?? this.is_super_user,
       temporaryToken: temporaryToken ?? this.temporaryToken,
+      lang: lang ?? this.lang,
     );
   }
 

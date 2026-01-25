@@ -16,3 +16,7 @@ final class ProductCreateSuccess extends ProductCreateState {
   final Product product;
   ProductCreateSuccess(this.product);
 }
+
+final class ProductEditSuccess extends ProductCreateState {
+  ProductEditSuccess();
+}

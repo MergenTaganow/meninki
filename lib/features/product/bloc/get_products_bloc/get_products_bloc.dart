@@ -91,3 +91,15 @@ class GetOneStoresProducts extends GetProductsBloc {
 class GetDiscountProducts extends GetProductsBloc {
   GetDiscountProducts(super.ds);
 }
+
+class GetNewProducts extends GetProductsBloc {
+  GetNewProducts(super.ds);
+}
+
+class GetRaitedProducts extends GetProductsBloc {
+  GetRaitedProducts(super.ds);
+}
+
+class GetFavoriteProductsBloc extends GetProductsBloc {
+  GetFavoriteProductsBloc(super.ds);
+}

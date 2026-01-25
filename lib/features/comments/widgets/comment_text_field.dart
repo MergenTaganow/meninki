@@ -89,7 +89,7 @@ class CommentTextField extends StatelessWidget {
                       ctx: context,
                       cont: controller,
                       filCol: Color(0xFFF3F3F3),
-                      hint: 'Ваш комментарий',
+                      hint: AppLocalizations.of(context)!.yourComment,
                       hintCol: Color(0xFF969696),
                       borderRadius: 14,
                       horPad: 12,

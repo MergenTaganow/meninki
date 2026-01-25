@@ -10,10 +10,17 @@ import '../../../core/routes.dart';
 class CategorySelection extends StatelessWidget {
   final String selectionKey;
   final bool singleSelection;
-  const CategorySelection({super.key, required this.selectionKey, required this.singleSelection});
+  final bool rootCategorySelection;
+  const CategorySelection({
+    super.key,
+    required this.selectionKey,
+    required this.singleSelection,
+    required this.rootCategorySelection,
+  });
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return BlocBuilder<CategorySelectingCubit, CategorySelectingState>(
       builder: (context, state) {
         if (state is CategorySelectingSuccess) {
@@ -21,13 +28,17 @@ class CategorySelection extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Категория"),
+              Text(lg.category),
               Box(h: 6),
               InkWell(
                 onTap: () {
                   Go.to(
                     Routes.categoriesSelectingPage,
-                    argument: {'selectionKey': selectionKey, "singleSelection": singleSelection},
+                    argument: {
+                      'selectionKey': selectionKey,
+                      "singleSelection": singleSelection,
+                      'rootCategorySelection': rootCategorySelection,
+                    },
                   );
                 },
                 child: Container(
@@ -43,7 +54,7 @@ class CategorySelection extends StatelessWidget {
                       Expanded(
                         child: Text(
                           selecteds.isEmpty
-                              ? 'Выбери Категорию'
+                              ? lg.selectCategory
                               : selecteds.map((e) => e.name?.tk).join(', '),
                           style: TextStyle(color: Color(0xFF969696)),
                         ),

@@ -23,8 +23,10 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text("Бренды", style: TextStyle(fontWeight: FontWeight.w500))),
+      appBar: AppBar(title: Text(lg.
+      brands, style: TextStyle(fontWeight: FontWeight.w500))),
       body: Padd(
         pad: 10,
         child: BlocBuilder<GetBrandsBloc, GetBrandsState>(
@@ -33,7 +35,7 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
               return Center(child: CircularProgressIndicator());
             }
             if (state is GetBrandFailed) {
-              return Center(child: Text(state.message ?? "error"));
+              return Center(child: Text(state.message ?? lg.error));
             }
             var brands =
                 state is GetBrandSuccess
@@ -103,7 +105,7 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Center(
-                        child: Text('Сохранить', style: TextStyle(color: Colors.white)),
+                        child: Text(lg.save, style: TextStyle(color: Colors.white)),
                       ),
                     ),
                   ),

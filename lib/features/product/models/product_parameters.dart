@@ -1,7 +1,9 @@
+import 'package:meninki/features/global/model/name.dart';
+
 class ProductParameter {
   int id;
   String slug;
-  String name;
+  Name name;
   String? attribute_count;
 
   ProductParameter({
@@ -15,9 +17,20 @@ class ProductParameter {
     return ProductParameter(
       id: (json["id"]),
       slug: json["slug"],
-      name: json["name"],
+      name: Name.fromJson(json["name"]),
       attribute_count: json["attribute_count"],
     );
   }
-  //
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProductParameter &&
+          other.id == id &&
+          other.slug == slug &&
+          other.name == name &&
+          other.attribute_count == attribute_count;
+
+  @override
+  int get hashCode => id.hashCode;
 }
