@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
+import 'package:meninki/features/store/widgets/store_background_color_selection.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
 
 class StoreReelsList extends StatefulWidget {
   final Query query;
-  const StoreReelsList({required this.query, super.key});
+  final MarketColorScheme scheme;
+  const StoreReelsList({required this.query, required this.scheme, super.key});
 
   @override
   State<StoreReelsList> createState() => _StoreReelsListState();
@@ -48,7 +50,11 @@ class _StoreReelsListState extends State<StoreReelsList> {
           crossAxisSpacing: 8,
           itemCount: reels.length,
           itemBuilder: (context, index) {
-            return ReelCard(reel: reels[index], allReels: reels);
+            return ReelCard(
+              reel: reels[index],
+              allReels: reels,
+              primaryText: widget.scheme.textPrimary,
+            );
           },
         );
       },

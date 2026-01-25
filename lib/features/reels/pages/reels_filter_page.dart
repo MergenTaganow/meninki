@@ -42,6 +42,7 @@ class ReelsFilterPage extends StatelessWidget {
                 CategorySelection(
                   selectionKey: CategorySelectingCubit.reels_searching_category,
                   singleSelection: false,
+                  rootCategorySelection: false,
                 ),
                 Spacer(),
 

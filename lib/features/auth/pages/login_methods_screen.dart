@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/auth/bloc/otp_cubit/otp_cubit.dart';
@@ -17,7 +18,7 @@ class LoginMethodsScreen extends StatefulWidget {
 
 class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
   TextEditingController numberController = TextEditingController();
-
+  final _formKey = GlobalKey<FormState>();
   @override
   void initState() {
     numberController.addListener(() {
@@ -91,16 +92,22 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
                               style: TextStyle(fontWeight: FontWeight.w500),
                             ),
                             Box(h: 6),
-                            TexField(
-                              ctx: context,
-                              cont: numberController,
-                              border: true,
-                              borderColor: Col.primary,
-                              borderRadius: 14,
-                              preTex: "+993  ",
-                              hint: "XX XXXXXX",
-                              keyboard: TextInputType.number,
-                              textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                            Form(
+                              key: _formKey,
+                              child: TexField(
+                                ctx: context,
+                                cont: numberController,
+                                border: true,
+                                borderColor: Col.primary,
+                                borderRadius: 14,
+                                preTex: "+993  ",
+                                hint: "XX XXXXXX",
+                                keyboard: TextInputType.number,
+                                textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                validate: (text) {
+                                  return text?.length != 8 ? 'Пишите правилный номер' : null;
+                                },
+                              ),
                             ),
                           ],
                         ),
@@ -110,34 +117,53 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
                             return SizedBox(
                               height: 45,
                               width: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Col.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                              child: Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(14),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  splashColor: Colors.white.withOpacity(0.22),
+                                  highlightColor: Colors.white.withOpacity(0.12),
+                                  onTap: () {
+                                    final isValid = _formKey.currentState!.validate();
+
+                                    if (!isValid) {
+                                      // ❌ invalid → border becomes red automatically
+                                      return;
+                                    }
+
+                                    if (state is! OtpLoading) {
+                                      HapticFeedback.mediumImpact();
+
+                                      context.read<OtpCubit>().sendOtp(numberController.text);
+                                    }
+                                  },
+                                  child: Ink(
+                                    decoration: BoxDecoration(
+                                      color: Col.primary,
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    child: Center(
+                                      child:
+                                          state is OtpLoading
+                                              ? const SizedBox(
+                                                height: 24,
+                                                width: 24,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2.4,
+                                                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                                                ),
+                                              )
+                                              : const Text(
+                                                "Отправить СМС-код",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                    ),
                                   ),
                                 ),
-                                onPressed: () {
-                                  if (numberController.text.length == 8 && state is! OtpLoading) {
-                                    context.read<OtpCubit>().sendOtp(numberController.text);
-                                  }
-                                },
-                                child:
-                                    state is OtpLoading
-                                        ? Center(
-                                          child: SizedBox(
-                                            height: 30,
-                                            width: 30,
-                                            child: CircularProgressIndicator(color: Colors.white),
-                                          ),
-                                        )
-                                        : Text(
-                                          "Отправить СМС-код",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
                               ),
                             );
                           },

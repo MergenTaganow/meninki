@@ -18,18 +18,22 @@ class CompositionsSendCubit extends Cubit<CompositionsSendState> {
   }) async {
     emit.call(CompositionsSendLoading());
 
+    final List<Map<String, dynamic>> compositionsPayload = [];
+
     for (int i = 0; i < compositions.length; i++) {
-      var failOrNot = await ds.sendComposition({
-        "is_main": false,
-        "is_active": false,
+      compositionsPayload.add({
+        "is_main": i == 0, // or your own logic
+        "is_active": true,
         "quantity": counts[i],
         "product_id": productId,
         "attribute_ids": compositions[i].map((e) => e.id).toList(),
       });
-      failOrNot.fold(
-        (l) => emit.call(CompositionsSendFailed(l)),
-        (r) => emit.call(CompositionsSendSuccess()),
-      );
     }
+
+    final failOrNot = await ds.sendComposition({"compositions": compositionsPayload});
+    failOrNot.fold(
+      (l) => emit.call(CompositionsSendFailed(l)),
+      (r) => emit.call(CompositionsSendSuccess()),
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:buttons_tabbar/buttons_tabbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +10,7 @@ import 'package:meninki/features/global/widgets/images_back_button.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
+import 'package:meninki/features/store/widgets/store_background_color_selection.dart';
 import '../../home/widgets/store_reels_list.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../../product/pages/product_search_filter_page.dart';
@@ -24,6 +26,7 @@ class MyStoreDetail extends StatefulWidget {
 
 class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProviderStateMixin {
   late TabController tabController;
+  MarketColorScheme scheme = MarketColorScheme.fromBackground(Colors.white);
 
   @override
   void initState() {
@@ -43,7 +46,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFBFBFB),
+      backgroundColor: scheme.bgMain,
       body: BlocConsumer<GetMarketByIdCubit, GetMarketByIdState>(
         listener: (BuildContext context, GetMarketByIdState state) {
           if (state is GetMarketByIdSuccess) {
@@ -51,6 +54,10 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
               GetProduct(Query(market_ids: [state.market.id])),
             );
             context.read<GetStoreReelsBloc>().add(GetReel(Query(market_id: state.market.id)));
+            scheme = MarketColorScheme.fromBackground(
+              state.market.profile_color ?? Color(0xFFAFA8B4),
+            );
+            setState(() {});
           }
         },
         builder: (context, state) {
@@ -93,7 +100,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                               ],
                             ),
                           Container(
-                            color: Colors.white,
+                            color: scheme.bgSecondary,
                             padding: EdgeInsets.all(14),
                             child: Row(
                               children: [
@@ -118,7 +125,11 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                                     children: [
                                       Text(
                                         state.market.name.trans(context),
-                                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                          color: scheme.textPrimary,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -144,7 +155,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                                       width: 45,
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(14),
-                                        color: Col.primary,
+                                        color: scheme.button,
                                       ),
                                       child: const Center(
                                         child: Icon(Icons.add_circle, color: Colors.white),
@@ -173,12 +184,16 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text("Подписчики"),
+                                              Text(
+                                                "Подписчики",
+                                                style: TextStyle(color: scheme.textSecondary),
+                                              ),
                                               Text(
                                                 state.market.user_favorite_count.toString(),
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.w600,
                                                   fontSize: 16,
+                                                  color: scheme.textPrimary,
                                                 ),
                                               ),
                                             ],
@@ -194,12 +209,16 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Text("Место в рейтинге"),
+                                              Text(
+                                                "Место в рейтинге",
+                                                style: TextStyle(color: scheme.textSecondary),
+                                              ),
                                               Text(
                                                 state.market.rate_count.toString(),
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.w600,
                                                   fontSize: 16,
+                                                  color: scheme.textPrimary,
                                                 ),
                                               ),
                                             ],
@@ -222,57 +241,48 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                       floating: true,
                       snap: true, // optional but nice
                       automaticallyImplyLeading: false,
+                      backgroundColor: scheme.bgMain,
                       titleSpacing: 0,
-                      title: Padd(
-                        hor: 10,
-                        child: Row(
-                          children: List.generate(2, (index) {
-                            return Material(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(14),
-                              child: InkWell(
+                      title: Row(
+                        children: [
+                          Padd(
+                            hor: 10,
+                            child: ButtonsTabBar(
+                              // Customize the appearance and behavior of the tab bar
+                              controller: tabController,
+                              decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(14),
-                                splashColor: Colors.black.withOpacity(0.12),
-                                highlightColor: Colors.black.withOpacity(0.06),
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  Future.delayed(const Duration(milliseconds: 100), () {
-                                    tabController.animateTo(index);
-                                    setState(() {});
-                                  });
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  curve: Curves.easeOut,
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                                  margin: const EdgeInsets.only(right: 6),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        tabController.index == index
-                                            ? Col.primary
-                                            : const Color(0xFFF3F3F3),
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  child: AnimatedDefaultTextStyle(
-                                    duration: const Duration(milliseconds: 200),
-                                    curve: Curves.easeOut,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color:
-                                          tabController.index == index
-                                              ? Col.white
-                                              : const Color(0xFF474747),
-                                    ),
-                                    child: Text(
-                                      "${index == 0 ? "Обзоры" : "Товары"} • ${index == 0 ? state.market.reel_verified_count : state.market.product_verified_count}",
-                                    ),
-                                  ),
-                                ),
+                                color: scheme.button,
                               ),
-                            );
-                          }),
-                        ),
+                              unselectedDecoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                color: scheme.cardBackground,
+                              ),
+                              contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                              buttonMargin: EdgeInsets.only(right: 8),
+                              labelStyle: TextStyle(
+                                color: scheme.buttonText,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                              unselectedLabelStyle: TextStyle(
+                                color: scheme.textPrimary,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                              // Add your tabs here
+                              tabs:
+                                  ["Обзоры", "Товары"]
+                                      .map(
+                                        (e) => Tab(
+                                          text:
+                                              "$e • ${e == 'Обзоры' ? state.market.reel_verified_count : state.market.product_verified_count}",
+                                        ),
+                                      )
+                                      .toList(),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ];
@@ -282,8 +292,11 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                   child: TabBarView(
                     controller: tabController,
                     children: [
-                      StoreReelsList(query: Query(market_id: state.market.id)),
-                      StoreProductsList(query: Query(market_ids: [state.market.id])),
+                      StoreReelsList(query: Query(market_id: state.market.id), scheme: scheme),
+                      StoreProductsList(
+                        query: Query(market_ids: [state.market.id]),
+                        scheme: scheme,
+                      ),
                     ],
                   ),
                 ),
@@ -301,8 +314,8 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(fontSize: 12, color: Color(0xFF969696))),
-        Text(value),
+        Text(title, style: TextStyle(fontSize: 12, color: scheme.textSecondary)),
+        Text(value, style: TextStyle(color: scheme.textPrimary)),
         Box(h: 12),
       ],
     );
@@ -311,9 +324,8 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
   Widget card({required Widget child}) {
     return Container(
       decoration: BoxDecoration(
-        color: Color(0xFFFFFFFF),
+        color: scheme.cardBackground,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Color(0xFFF3F3F3)),
       ),
       child: child,
     );

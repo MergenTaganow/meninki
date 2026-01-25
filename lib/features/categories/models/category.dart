@@ -1,20 +1,20 @@
 import 'package:meninki/features/global/model/name.dart';
 
 class Category {
-  int id;
+  int? id;
   Name? name;
   int? parent_id;
-  bool is_active;
+  bool? is_active;
   String? icon;
   String? slug;
   int? level;
   List<Category>? children;
 
   Category({
-    required this.id,
-    required this.name,
+    this.id,
+    this.name,
     this.parent_id,
-    required this.is_active,
+    this.is_active,
     this.icon,
     this.slug,
     this.level,

@@ -7,6 +7,7 @@ import 'package:meninki/core/success.dart';
 import 'package:meninki/features/categories/models/brand.dart';
 import 'package:meninki/features/categories/models/category.dart';
 import 'package:meninki/features/comments/models/comment.dart';
+import 'package:meninki/features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import '../../../core/api.dart';
@@ -27,6 +28,7 @@ abstract class ReelsRemoteDataSource {
   Future<Either<Failure, Comment>> sendComment(Map<String, dynamic> map);
   Future<Either<Failure, Comment>> commentById(int id);
   Future<Either<Failure, MeninkiFile>> getFileById(int id);
+  Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query);
 }
 
 class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
@@ -243,6 +245,20 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
     final files = (response.data as List).map((e) => MeninkiFile.fromJson(e)).toList();
 
     return Right(files.first);
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
+  }
+
+  @override
+  Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query) async {
+    // try {
+      ///Todo later need to control verified and other urls
+      var response = await api.dio.get('v1/reels/market/count', queryParameters: query?.toMap());
+
+      List<ReelMarket> reels =
+          (response.data['payload'] as List).map((e) => ReelMarket.fromJson(e)).toList();
+      return Right(reels);
     // } catch (e) {
     //   return Left(handleError(e));
     // }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:better_player/better_player.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/auth/data/employee_local_data_source.dart';
@@ -12,6 +13,8 @@ import 'package:meninki/features/reels/blocs/file_upl_cover_image_bloc/file_upl_
 import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/reels/model/reels.dart';
+import 'package:meninki/features/store/bloc/get_my_stores_bloc/get_my_stores_bloc.dart';
+import 'package:meninki/features/store/models/market.dart';
 
 import '../../../core/api.dart';
 import '../../../core/colors.dart';
@@ -35,9 +38,11 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
   TextEditingController description = TextEditingController();
   File? file;
   BetterPlayerController? controller;
+  Market? uploadingFromMarket;
 
   @override
   void initState() {
+    context.read<GetMyStoresBloc>().add(GetMyStores());
     if (widget.laterCreateReel != null) {
       title.text = widget.laterCreateReel!['title'];
       description.text = widget.laterCreateReel!['description'];
@@ -92,52 +97,7 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
           title: Text("Новый обзор на товар", style: TextStyle(fontWeight: FontWeight.w500)),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: BlocBuilder<ReelCreateCubit, ReelCreateState>(
-          builder: (context, state) {
-            return InkWell(
-              onTap: () {
-                var map = {
-                  'title': title.text.trim(),
-                  'description': description.text.trim(),
-                  // if (file != null) 'file_id': file?.id,
-                  'link_id': widget.product.id,
-                  "link": "string",
-                  "type": "product",
-                  "is_active": true,
-                  "market_id": 1,
-                  "tags": ["string"],
-                };
-                if (file != null) {
-                  context.read<FileUplCoverImageBloc>().add(UploadFile(file!));
-                  CustomSnackBar.showSnackBar(
-                    context: context,
-                    title: 'reel will be created',
-                    isError: false,
-                  );
-                  context.read<ReelCreateCubit>().setReel(map);
-                  Go.pop();
-                  return;
-                } else {
-                  CustomSnackBar.showYellowSnackBar(context: context, title: "choose file");
-                }
-              },
-              child: Container(
-                height: 45,
-                decoration: BoxDecoration(
-                  color: Col.primary,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                margin: EdgeInsets.symmetric(horizontal: 14),
-                child: Center(
-                  child:
-                      state is ReelCreateLoading
-                          ? CircularProgressIndicator()
-                          : Text("Опубликовать", style: TextStyle(color: Colors.white)),
-                ),
-              ),
-            );
-          },
-        ),
+        floatingActionButton: createButton(),
         body: Padd(
           pad: 10,
           child: SingleChildScrollView(
@@ -159,33 +119,50 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                       ),
                       Box(h: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
+                      Material(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        child: InkWell(
                           borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: 36,
-                              width: 36,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFFF3F3F3),
-                                border: Border.all(color: Colors.black, width: 2),
-                              ),
+                          splashColor: Colors.black.withOpacity(0.08),
+                          highlightColor: Colors.black.withOpacity(0.04),
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              backgroundColor: const Color(0xFFF3F3F3),
+                              isScrollControlled: true,
+                              builder: (context) {
+                                return reelUploaderSelection();
+                              },
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Row(
+                              children: [
+                                Container(
+                                  height: 36,
+                                  width: 36,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(0xFFF3F3F3),
+                                    border: Border.all(color: Colors.black, width: 2),
+                                  ),
+                                ),
+                                Box(w: 10),
+                                Expanded(
+                                  child: Text(
+                                    uploadingFromMarket == null
+                                        ? "От своего аккаунта"
+                                        : uploadingFromMarket!.name.trans(context),
+                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                Box(w: 10),
+                                Icon(Icons.navigate_next),
+                              ],
                             ),
-                            Box(w: 10),
-                            Expanded(
-                              child: Text(
-                                "Магазин-название",
-                                style: TextStyle(fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                            Box(w: 10),
-                            Icon(Icons.navigate_next),
-                          ],
+                          ),
                         ),
                       ),
                     ],
@@ -278,127 +255,269 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                     ),
                   )
                 else
-                  InkWell(
-                    onTap: () async {
-                      FilePickerResult? result = await FilePicker.platform.pickFiles(
-                        type: FileType.video,
-                        lockParentWindow: true,
-                        allowMultiple: false,
-                      );
+                  Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(30),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(30),
+                      splashColor: Colors.black.withOpacity(0.15),
+                      highlightColor: Colors.black.withOpacity(0.08),
+                      onTap: () async {
+                        HapticFeedback.mediumImpact();
 
-                      if (result != null) {
-                        file = File(result.files.single.path!);
-                        controller = null;
-
-                        controller = BetterPlayerController(
-                          const BetterPlayerConfiguration(
-                            autoPlay: true,
-                            looping: true,
-                            fit: BoxFit.cover,
-
-                            controlsConfiguration: BetterPlayerControlsConfiguration(
-                              showControls: true,
-                            ),
-                          ),
-                          betterPlayerDataSource: BetterPlayerDataSource(
-                            BetterPlayerDataSourceType.file,
-                            file!.path,
-                          ),
+                        FilePickerResult? result = await FilePicker.platform.pickFiles(
+                          type: FileType.video,
+                          lockParentWindow: true,
+                          allowMultiple: false,
                         );
-                        controller?.setVolume(0);
-                        setState(() {});
-                        // context.read<FileUplCoverImageBloc>().add(UploadFile(file));
-                      }
-                    },
-                    child: Container(
-                      height: 106,
-                      width: 106,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: Color(0xFFEAEAEA),
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_circle, color: Colors.black),
-                            Text(
-                              "Добавить медиа",
-                              style: TextStyle(fontSize: 12),
-                              textAlign: TextAlign.center,
+
+                        if (result != null) {
+                          file = File(result.files.single.path!);
+                          controller = null;
+
+                          controller = BetterPlayerController(
+                            const BetterPlayerConfiguration(
+                              autoPlay: true,
+                              looping: true,
+                              fit: BoxFit.cover,
+
+                              controlsConfiguration: BetterPlayerControlsConfiguration(
+                                showControls: true,
+                              ),
                             ),
-                          ],
+                            betterPlayerDataSource: BetterPlayerDataSource(
+                              BetterPlayerDataSourceType.file,
+                              file!.path,
+                            ),
+                          );
+                          controller?.setVolume(0);
+                          setState(() {});
+                          // context.read<FileUplCoverImageBloc>().add(UploadFile(file));
+                        }
+                      },
+
+                      child: Ink(
+                        height: 106,
+                        width: 106,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          color: const Color(0xFFEAEAEA),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 6),
+                        child: Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: const [
+                              Icon(Icons.add_circle, color: Colors.black),
+                              SizedBox(height: 4),
+                              Text(
+                                "Добавить медиа",
+                                style: TextStyle(fontSize: 12),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                // BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
-                //   builder: (context, state) {
-                //     if (state is FileUploadCoverImageSuccess) {
-                //       return InkWell(
-                //         onTap: () {},
-                //         child: SizedBox(
-                //           width: MediaQuery.of(context).size.width / 2,
-                //           child: Column(
-                //             crossAxisAlignment: CrossAxisAlignment.start,
-                //             mainAxisSize: MainAxisSize.min,
-                //             children: [
-                //               ClipRRect(
-                //                 borderRadius: BorderRadius.circular(16),
-                //                 child: Container(
-                //                   height: 240,
-                //                   decoration: BoxDecoration(
-                //                     borderRadius: BorderRadius.circular(16),
-                //                     color:
-                //                         (controller?.isVideoInitialized() ?? false)
-                //                             ? Colors.black
-                //                             : Colors.grey.withOpacity(0.5),
-                //                   ),
-                //                   child: Center(
-                //                     child:
-                //                         (controller != null &&
-                //                                 (controller?.isVideoInitialized() ?? false) &&
-                //                                 (controller?.isPlaying() ?? false))
-                //                             ? BetterPlayer(controller: controller!)
-                //                             : MeninkiNetworkImage(
-                //                               file: state.file,
-                //                               networkImageType: NetworkImageType.small,
-                //                             ),
-                //                   ),
-                //                 ),
-                //               ),
-                //             ],
-                //           ),
-                //         ),
-                //       );
-                //     }
-                //     if (state is FileUploadingCoverImage) {
-                //       return Container(
-                //         height: 240,
-                //         width: MediaQuery.of(context).size.width / 2,
-                //         decoration: BoxDecoration(
-                //           borderRadius: BorderRadius.circular(10),
-                //           color: Colors.grey.withOpacity(0.3),
-                //         ),
-                //         child: Center(
-                //           child: CircularProgressIndicator(
-                //             value: state.progress,
-                //             color: Colors.white,
-                //           ),
-                //         ),
-                //       );
-                //     }
-                //
-                //     return ;
-                //   },
-                // ),
                 Box(h: 120),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  DraggableScrollableSheet reelUploaderSelection() {
+    return DraggableScrollableSheet(
+      minChildSize: 0.4,
+      maxChildSize: 0.8,
+      expand: false,
+      builder: (context, scrollController) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 25, 16, 16),
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text(
+                      'Обзор на товар',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    SizedBox(height: 6),
+                    Text('Выберите тип опубликования'),
+                    SizedBox(height: 20),
+                  ],
+                ),
+              ),
+
+              BlocBuilder<GetMyStoresBloc, GetMyStoresState>(
+                builder: (context, state) {
+                  if (state is GetMyStoresLoading) {
+                    return const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 40),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    );
+                  }
+                  if (state is GetMyStoresSuccess) {
+                    return SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        if (index == 0) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Material(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(14),
+                                onTap: () {
+                                  uploadingFromMarket = null;
+                                  setState(() {});
+                                  Navigator.pop(context);
+                                },
+                                child: SizedBox(
+                                  height: 46,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: const [
+                                        Text(
+                                          'От своего аккаунта',
+                                          style: TextStyle(fontWeight: FontWeight.w500),
+                                        ),
+                                        Icon(Icons.person),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          var store = state.stores[index - 1];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Material(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(14),
+                                onTap: () {
+                                  uploadingFromMarket = store;
+                                  setState(() {});
+                                  Navigator.pop(context);
+                                },
+                                child: SizedBox(
+                                  height: 46,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            store.name.trans(context),
+                                            style: TextStyle(fontWeight: FontWeight.w500),
+                                            maxLines: 2,
+                                          ),
+                                        ),
+                                        Icon(Icons.storefront_outlined),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      }, childCount: state.stores.length + 1),
+                    );
+                  }
+                  return const SliverToBoxAdapter(child: SizedBox.shrink());
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  BlocBuilder<ReelCreateCubit, ReelCreateState> createButton() {
+    return BlocBuilder<ReelCreateCubit, ReelCreateState>(
+      builder: (context, state) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              splashColor: Colors.white.withOpacity(0.25),
+              highlightColor: Colors.white.withOpacity(0.15),
+              onTap:
+                  state is ReelCreateLoading
+                      ? null
+                      : () {
+                        HapticFeedback.mediumImpact();
+
+                        final map = {
+                          'title': title.text.trim(),
+                          'description': description.text.trim(),
+                          'link_id': widget.product.id,
+                          "link": "string",
+                          "type": "product",
+                          "is_active": true,
+                          if (uploadingFromMarket != null) "market_id": uploadingFromMarket?.id,
+                          "tags": ["string"],
+                        };
+
+                        if (file != null) {
+                          context.read<FileUplCoverImageBloc>().add(UploadFile(file!));
+                          CustomSnackBar.showSnackBar(
+                            context: context,
+                            title: 'reel will be created',
+                            isError: false,
+                          );
+                          context.read<ReelCreateCubit>().setReel(map);
+                          Go.pop();
+                        } else {
+                          CustomSnackBar.showYellowSnackBar(context: context, title: "choose file");
+                        }
+                      },
+              child: Ink(
+                height: 45,
+                decoration: BoxDecoration(
+                  color: Col.primary,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Center(
+                  child:
+                      state is ReelCreateLoading
+                          ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                            ),
+                          )
+                          : const Text("Опубликовать", style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

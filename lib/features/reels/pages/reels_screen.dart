@@ -1,19 +1,17 @@
 import 'package:better_player/better_player.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/comments/pages/comments_page.dart';
 import 'package:meninki/features/global/widgets/images_back_button.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
-// import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import '../../../core/api.dart';
-import '../../../core/go.dart';
-import '../../../core/routes.dart';
+import '../widgets/custom_video_progress.dart';
+import '../widgets/reel_card.dart';
+import '../widgets/reel_sheet.dart';
 import '../widgets/users_profile.dart';
 
 class ReelPage extends StatefulWidget {
@@ -104,7 +102,9 @@ class _ReelWidgetState extends State<ReelWidget> {
     final betterPlayerConfiguration = BetterPlayerConfiguration(
       looping: true,
       allowedScreenSleep: false,
-      controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
+      controlsConfiguration: BetterPlayerControlsConfiguration(
+        showControls: false, // must be true for progress to appear
+      ),
     );
 
     controller = BetterPlayerController(
@@ -167,8 +167,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        (controller.isVideoInitialized() ?? false) &&
-                                (controller.isPlaying() ?? false)
+                        (controller.isVideoInitialized() ?? false)
                             ? BetterPlayer(controller: controller)
                             : IgnorePointer(
                               ignoring: true,
@@ -190,6 +189,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w500,
+                                    fontSize: 16,
                                   ),
                                 ),
                                 ExpandableText(text: widget.reel.description ?? ''),
@@ -197,30 +197,109 @@ class _ReelWidgetState extends State<ReelWidget> {
                             ),
                           ),
                         ),
+                        Positioned.fill(
+                          child: Row(
+                            children: [
+                              // LEFT — 2x
+                              Expanded(
+                                flex: 1,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.translucent,
+                                  onLongPressStart: (_) {
+                                    controller.setSpeed(2.0);
+                                  },
+                                  onLongPressEnd: (_) {
+                                    controller.setSpeed(1.0);
+                                  },
+                                  child: const SizedBox.expand(),
+                                ),
+                              ),
+
+                              // CENTER — pause
+                              Expanded(
+                                flex: 2,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.translucent,
+                                  onLongPressStart: (_) {
+                                    controller.pause();
+                                  },
+                                  onLongPressEnd: (_) {
+                                    controller.play();
+                                  },
+                                  child: const SizedBox.expand(),
+                                ),
+                              ),
+
+                              // RIGHT — 2x
+                              Expanded(
+                                flex: 1,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.translucent,
+                                  onLongPressStart: (_) {
+                                    controller.setSpeed(2.0);
+                                  },
+                                  onLongPressEnd: (_) {
+                                    controller.setSpeed(1.0);
+                                  },
+                                  child: const SizedBox.expand(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
+                  Padd(hor: 10, child: InstaProgressBar(controller: controller)),
                   Padd(
                     hor: 10,
                     ver: 14,
                     child: Row(
                       children: [
-                        Container(
-                          height: 30,
-                          width: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(4),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: Container(
+                            height: 30,
+                            width: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child:
+                                widget.reel.product?.cover_image != null
+                                    ? MeninkiNetworkImage(
+                                      file: widget.reel.product!.cover_image!,
+                                      networkImageType: NetworkImageType.small,
+                                      fit: BoxFit.cover,
+                                    )
+                                    : null,
                           ),
                         ),
                         Box(w: 10),
                         Expanded(
                           child: Text(
-                            widget.reel.title ?? '',
-                            style: TextStyle(fontSize: 12, color: Colors.white),
+                            widget.reel.product?.name.trans(context) ?? '',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Icon(Icons.more_horiz, color: Color(0xFF969696)),
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            showModalBottomSheet(
+                              backgroundColor: Color(0xFFF3F3F3),
+                              context: context,
+                              builder: (context) {
+                                return ReelsSheet(widget.reel);
+                              },
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.only(top: 4, bottom: 4, right: 4, left: 8),
+                            child: Icon(Icons.more_horiz, color: Color(0xFF969696)),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -256,23 +335,26 @@ class _ReelWidgetState extends State<ReelWidget> {
                     },
                   ),
                   InkWell(
-                    onTap: () async {
-                      await controller.videoPlayerController?.pause();
-                      // var position = await controller.videoPlayerController?.position;
-                      // controller.setVolume(0);
-
-                      // await Go.to(Routes.commentsPage, argument: {"reel": widget.reel})?
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => CommentsPage(reel: widget.reel)),
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        isScrollControlled: true,
+                        builder: (context) {
+                          return DraggableScrollableSheet(
+                            expand: false,
+                            initialChildSize: 0.5,
+                            minChildSize: 0.5,
+                            maxChildSize: 0.8,
+                            builder: (context, scrollController) {
+                              return CommentsPage(
+                                reel: widget.reel,
+                                scrollController: scrollController,
+                              );
+                            },
+                          );
+                        },
                       );
-
-                      // print(controller.isVideoInitialized());
-                      // controller.seekTo(position ?? Duration(seconds: 0));
-                      // controller.setVolume(100);
-
-                      // print("set reel colled again");
-                      // firstPlaying = true;
                     },
                     child: iconCount(
                       icon: "comment",

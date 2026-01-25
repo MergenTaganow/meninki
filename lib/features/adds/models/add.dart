@@ -6,9 +6,10 @@ import 'package:meninki/features/reels/model/meninki_file.dart';
 class Add {
   int? id;
   String? title;
+  String? description;
   bool? is_active;
   bool? is_verified;
-  String? created_at;
+  // String? created_at;
   String? link;
   String? link_type;
   num? price;
@@ -22,7 +23,7 @@ class Add {
     this.title,
     this.is_active,
     this.is_verified,
-    this.created_at,
+    // this.created_at,
     this.link,
     this.link_type,
     this.price,
@@ -30,6 +31,7 @@ class Add {
     this.province,
     this.user,
     this.cover_image,
+    this.description,
   });
 
   factory Add.fromJson(Map<String, dynamic> json) {
@@ -37,8 +39,9 @@ class Add {
       id: (json["id"]),
       title: json["title"],
       is_active: json["is_active"],
+      description: json["description"],
       is_verified: json["is_verified"],
-      created_at: json["created_at"],
+      // created_at: json["created_at"],
       link: json["link"],
       link_type: json["link_type"],
       price: (json["price"]),

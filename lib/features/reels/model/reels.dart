@@ -1,3 +1,4 @@
+import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 
 class Reel {
@@ -15,6 +16,7 @@ class Reel {
   num? comment_count;
   num? repost_count;
   MeninkiFile file;
+  Product? product;
 
   Reel({
     required this.id,
@@ -31,6 +33,7 @@ class Reel {
     this.comment_count,
     this.repost_count,
     required this.file,
+    this.product,
   });
 
   factory Reel.fromJson(Map<String, dynamic> json) {
@@ -49,6 +52,7 @@ class Reel {
       repost_count: json["repost_count"],
       created_at: DateTime.tryParse(json["created_at"]),
       file: MeninkiFile.fromJson(json["file"]),
+      product: json["product"] != null ? Product.fromJson(json["product"]) : null,
     );
   }
 

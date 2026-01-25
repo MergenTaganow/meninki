@@ -6,9 +6,12 @@ import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/product/widgets/product_card.dart';
 import 'package:meninki/features/reels/model/query.dart';
 
+import '../../store/widgets/store_background_color_selection.dart';
+
 class StoreProductsList extends StatefulWidget {
   final Query query;
-  const StoreProductsList({required this.query, super.key});
+  final MarketColorScheme scheme;
+  const StoreProductsList({required this.query, required this.scheme, super.key});
 
   @override
   State<StoreProductsList> createState() => _StoreProductsListState();
@@ -51,7 +54,12 @@ class _StoreProductsListState extends State<StoreProductsList> {
           crossAxisSpacing: 8,
           itemCount: products.length,
           itemBuilder: (context, index) {
-            return ProductCard(product: products[index]);
+            return ProductCard(
+              product: products[index],
+              height: 340,
+              width: MediaQuery.of(context).size.width / 2,
+              scheme: widget.scheme,
+            );
           },
         );
         // if (state is ReelPagLoading) const CircularProgressIndicator(),

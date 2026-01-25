@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Allow access to the app_flutter directory -->
+    <files-path
+        name="flutter_downloads"
+        path="." />
+</paths>

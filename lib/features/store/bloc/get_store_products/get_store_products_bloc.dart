@@ -39,7 +39,13 @@ class GetStoreProductsBloc extends Bloc<GetStoreProductsEvent, GetStoreProductsS
   Future<GetStoreProductsState> _getStores(GetProductStores event) async {
     page = 1;
     final failOrNot = await ds.getStoresProducts(
-      Query(limit: limit, offset: page, keyword: event.search ?? '', orderDirection: 'asc', orderBy: 'id'),
+      Query(
+        limit: limit,
+        offset: page,
+        keyword: event.search ?? '',
+        orderDirection: 'asc',
+        orderBy: 'id',
+      ),
     );
     return failOrNot.fold((l) => GetProductStoresFailed(l), (r) {
       if (r.length == limit) canPag = true;
@@ -52,7 +58,13 @@ class GetStoreProductsBloc extends Bloc<GetStoreProductsEvent, GetStoreProductsS
     await Future.delayed(const Duration(milliseconds: 400));
     page++;
     final failOrNot = await ds.getStoresProducts(
-      Query(offset: page, limit: limit, keyword: event.search, orderDirection: 'asc', orderBy: 'id'),
+      Query(
+        offset: page,
+        limit: limit,
+        keyword: event.search,
+        orderDirection: 'asc',
+        orderBy: 'id',
+      ),
     );
     return failOrNot.fold((l) => GetProductStoresFailed(l), (r) {
       if (r.length == limit) canPag = true;
@@ -60,4 +72,8 @@ class GetStoreProductsBloc extends Bloc<GetStoreProductsEvent, GetStoreProductsS
       return GetProductStoresSuccess(stores);
     });
   }
+}
+
+class GetStoreProductsSearch extends GetStoreProductsBloc {
+  GetStoreProductsSearch(super.ds);
 }

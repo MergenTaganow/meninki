@@ -148,7 +148,7 @@ class BannerListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (list.isEmpty) {
-      return const SizedBox(height: 220); // keeps animation smooth
+      return const SizedBox(height: 0); // keeps animation smooth
     }
 
     final type = list.first.size_type;

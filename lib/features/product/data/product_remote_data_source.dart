@@ -33,7 +33,7 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Product>> createProduct(Map<String, dynamic> data) async {
     try {
-      var response = await api.dio.post('v1/manager/products', data: data);
+      var response = await api.dio.post('v1/products/client', data: data);
 
       return Right(Product.fromJson(response.data['payload']));
     } catch (e) {
@@ -44,7 +44,7 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Product>> getProductById(int id) async {
     try {
-      var response = await api.dio.get('v1/products/$id', queryParameters: {"lang": "tk"});
+      var response = await api.dio.get('v1/products/client/$id', queryParameters: {"lang": "tk"});
 
       return Right(Product.fromJson(response.data['payload']));
     } catch (e) {
@@ -87,7 +87,8 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Success>> sendComposition(Map<String, dynamic> data) async {
     try {
-      var response = await api.dio.post('v1/compositions', data: data);
+      //Todo need change url
+      var response = await api.dio.post('v1/compositions/client', data: data);
 
       return Right(Success());
     } catch (e) {
@@ -112,7 +113,10 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
     var map = {
       ...query.toMap(),
       "lang": "tk",
-      if (sort != null) ...sort.toMap() else ...{"order_direction": "asc", "order_by": "id"},
+      ...{
+        'order_by': sort?.orderBy ?? query.orderBy ?? 'id',
+        'order_direction': sort?.orderDirection ?? query.orderDirection ?? 'desc',
+      },
       if (provinces.isNotEmpty) "province_ids": provinces.map((e) => e.id).toList(),
       if (categories.isNotEmpty) "category_ids": categories.map((e) => e.id).toList(),
       if (keyFilters[KeyFilterCubit.product_search_max_price] != null)
@@ -120,7 +124,9 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
       if (keyFilters[KeyFilterCubit.product_search_min_price] != null)
         "min_price": keyFilters[KeyFilterCubit.product_search_min_price],
     };
-    var response = await api.dio.get('v1/products', queryParameters: map);
+
+    print(map);
+    var response = await api.dio.get('v1/products/public', queryParameters: map);
 
     List<Product> product =
         (response.data['payload'] as List).map((e) => Product.fromJson(e)).toList();
@@ -149,7 +155,6 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, List<Banner>>> getBanners(Query query) async {
     // try {
-    print(query.toMap());
     var response = await api.dio.get('v1/banners', queryParameters: query.toMap());
 
     List<Banner> banners =

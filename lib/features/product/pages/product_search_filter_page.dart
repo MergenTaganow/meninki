@@ -63,6 +63,7 @@ class _ProductSearchFilterPageState extends State<ProductSearchFilterPage> {
                 CategorySelection(
                   selectionKey: CategorySelectingCubit.product_searching_category,
                   singleSelection: false,
+                  rootCategorySelection: false,
                 ),
                 Box(h: 10),
                 Column(

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:meninki/features/auth/models/user.dart';
 import 'package:meninki/features/global/model/name.dart';
 import 'package:meninki/features/product/models/product.dart';
@@ -10,11 +12,11 @@ class Market {
   int id;
   Name name;
   MeninkiFile? cover_image;
-  String? address;
+  Name? address;
   LatLng? location;
   String? username;
   String? description;
-  String? profile_color;
+  Color? profile_color;
   int? rate_count;
   int? user_rate_count;
   int? user_favorite_count;
@@ -50,11 +52,11 @@ class Market {
       id: (json["id"]),
       name: Name.fromJson(json["name"]),
       cover_image: json["cover_image"] != null ? MeninkiFile.fromJson(json["cover_image"]) : null,
-      address: json["address"],
+      address: json["address"] != null ? Name.fromJson(json["address"]) : null,
       location: json["location"] != null ? LatLng.fromJson(json["location"]) : null,
       username: json["username"],
       description: json["description"],
-      profile_color: json["profile_color"],
+      profile_color: json["profile_color"] != null ? hexToColor(json["profile_color"]) : null,
       rate_count: json["rate_count"],
       user_rate_count: json["user_rate_count"],
       user_favorite_count: json["user_favorite_count"],
@@ -73,6 +75,17 @@ class Market {
     );
   }
   //
+  static Color hexToColor(String hexString) {
+    // Remove # if present
+    hexString = hexString.replaceAll('#', '');
+
+    // Add FF for full opacity if needed
+    if (hexString.length == 6) {
+      hexString = 'FF$hexString';
+    }
+
+    return Color(int.parse(hexString, radix: 16));
+  }
 
   //
 }

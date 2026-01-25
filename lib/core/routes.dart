@@ -6,6 +6,7 @@ import 'package:meninki/features/auth/pages/register_screen.dart';
 import 'package:meninki/features/categories/pages/brand_selecting_page.dart';
 import 'package:meninki/features/reels/pages/reels_screen.dart';
 
+import '../features/adds/pages/add_detail_page.dart';
 import '../features/categories/pages/categories_selecting_page.dart';
 import '../features/categories/pages/sub_category_selecting_page.dart';
 import '../features/comments/pages/comments_page.dart';
@@ -56,11 +57,9 @@ class Routes {
   //province
   static const String provinceSelectingPage = '/provinceSelectingPage';
 
-  //comments
-  static const String commentsPage = '/commentsPage';
-
   //adds
   static const String addCreatePage = '/addCreatePage';
+  static const String addDetailPage = '/addDetailPage';
 
   static Route? onGenerateRoute(RouteSettings settings) {
     final Map? data = settings.arguments as Map?;
@@ -89,6 +88,7 @@ class Routes {
               (_) => CategoriesSelectingPage(
                 selectionKey: data?['selectionKey'],
                 singleSelection: data?['singleSelection'],
+                rootCategorySelection: data?['rootCategorySelection'],
               ),
         );
       case subCategoriesSelectingPage:
@@ -108,8 +108,6 @@ class Routes {
         return MaterialPageRoute(builder: (_) => ProductDetailPage(data?['productId']));
       case productParametersPage:
         return MaterialPageRoute(builder: (_) => ProductParametresPage(data?['product']));
-      case commentsPage:
-        return MaterialPageRoute(builder: (_) => CommentsPage(reel: data?['reel']));
       case provinceSelectingPage:
         return MaterialPageRoute(
           builder:
@@ -125,9 +123,13 @@ class Routes {
       case reelsFilterPage:
         return MaterialPageRoute(builder: (_) => ReelsFilterPage(onFilter: data?['onFilter']));
       case publicStoreDetail:
-        return MaterialPageRoute(builder: (_) => PublicStoreDetail());
+        return MaterialPageRoute(
+          builder: (_) => PublicStoreDetail(navigatedTab: data?['navigatedTab']),
+        );
       case addCreatePage:
         return MaterialPageRoute(builder: (_) => AddCreatePage());
+      case addDetailPage:
+        return MaterialPageRoute(builder: (_) => AddDetailPage(data?['add']));
       case reelCreatePage:
         return MaterialPageRoute(
           builder:

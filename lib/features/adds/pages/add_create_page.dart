@@ -181,6 +181,13 @@ class _AddCreatePageState extends State<AddCreatePage> {
 
                           if (result != null) {
                             File file = File(result.files.single.path!);
+                            if (isVideo(file)) {
+                              CustomSnackBar.showYellowSnackBar(
+                                context: context,
+                                title: 'вуберите фотографию',
+                              );
+                              return;
+                            }
                             context.read<FileUplCoverImageBloc>().add(UploadFile(file));
                           }
                         }
@@ -399,7 +406,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
 
                               if (state is! FileUploading) {
                                 FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                  type: FileType.image,
+                                  type: FileType.media,
                                   lockParentWindow: true,
                                   allowMultiple: true,
                                 );
@@ -472,6 +479,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                 CategorySelection(
                   selectionKey: CategorySelectingCubit.add_creating_category,
                   singleSelection: true,
+                  rootCategorySelection: true,
                 ),
 
                 Box(h: 120),

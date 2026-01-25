@@ -10,7 +10,13 @@ import '../../../core/routes.dart';
 class CategorySelection extends StatelessWidget {
   final String selectionKey;
   final bool singleSelection;
-  const CategorySelection({super.key, required this.selectionKey, required this.singleSelection});
+  final bool rootCategorySelection;
+  const CategorySelection({
+    super.key,
+    required this.selectionKey,
+    required this.singleSelection,
+    required this.rootCategorySelection,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +33,11 @@ class CategorySelection extends StatelessWidget {
                 onTap: () {
                   Go.to(
                     Routes.categoriesSelectingPage,
-                    argument: {'selectionKey': selectionKey, "singleSelection": singleSelection},
+                    argument: {
+                      'selectionKey': selectionKey,
+                      "singleSelection": singleSelection,
+                      'rootCategorySelection': rootCategorySelection,
+                    },
                   );
                 },
                 child: Container(

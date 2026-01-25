@@ -42,7 +42,7 @@ class _ExpandableTextState extends State<ExpandableText> {
       onTap: _toggleExpanded,
       child: Text(
         widget.text,
-        style: widget.style ?? TextStyle(color: Colors.white, fontSize: 12),
+        style: widget.style ?? TextStyle(color: Colors.white, fontSize: 16),
         maxLines: _expanded ? null : widget.trimLines,
         overflow: _expanded ? TextOverflow.visible : TextOverflow.ellipsis,
       ),

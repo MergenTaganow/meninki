@@ -19,5 +19,16 @@ class ProductParameter {
       attribute_count: json["attribute_count"],
     );
   }
-  //
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProductParameter &&
+          other.id == id &&
+          other.slug == slug &&
+          other.name == name &&
+          other.attribute_count == attribute_count;
+
+  @override
+  int get hashCode => id.hashCode;
 }

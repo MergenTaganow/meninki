@@ -45,4 +45,5 @@ class CategorySelectingCubit extends Cubit<CategorySelectingState> {
   static String product_searching_category = 'product_searching_category';
   static String reels_searching_category = 'reels_searching_category';
   static String add_creating_category = 'add_creating_category';
+  static String adds_page_category = 'adds_page_category';
 }

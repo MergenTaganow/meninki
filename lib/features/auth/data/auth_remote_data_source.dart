@@ -117,7 +117,7 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
 
   @override
   Future<Either<Failure, User>> checkOtp({required String phoneNumber, required int otp}) async {
-    // try {
+    try {
       var response = await api.dio.post(
         'v1/authentications/validate-otp',
         data: {'phonenumber': phoneNumber, "otp": otp},
@@ -129,9 +129,9 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
         user = User.fromJson(response.data['payload']);
       }
       return Right(user);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override

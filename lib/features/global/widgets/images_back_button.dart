@@ -15,15 +15,17 @@ class ImagesBackButton extends StatelessWidget {
         child: GestureDetector(
           onTap: onTap ?? () => Navigator.of(context).pop(),
           child: Container(
-            padding: const EdgeInsets.all(8),
+            height: 35,
+            width: 35,
             decoration: BoxDecoration(
               color: iconColor.withOpacity(0.28), // subtle background
               shape: BoxShape.circle,
             ),
+            alignment: Alignment.center, // center child exactly
             child: Icon(
-              Icons.arrow_back_ios, // iOS‑style chevron
+              Icons.navigate_before, // simpler icon, better centered
               color: iconColor,
-              size: 20,
+              size: 24,
             ),
           ),
         ),

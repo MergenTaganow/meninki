@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/features/home/widgets/home_widget.dart';
-import 'package:meninki/features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import 'package:meninki/features/store/bloc/get_stores_bloc/get_stores_bloc.dart';
-import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
+import '../../basket/bloc/my_basket_cubit/my_basket_cubit.dart';
+import '../../basket/pages/basket_page.dart';
+import '../../store/bloc/market_favorites_cubit/market_favorites_cubit.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/profile_page_widget.dart';
 import '../widgets/search_page.dart';
@@ -23,6 +24,8 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     context.read<GetStoresBloc>().add(GetStores());
+    context.read<MyBasketCubit>().getMyBasketProductIds();
+    context.read<MarketFavoritesCubit>().init();
     tabController = TabController(length: 4, vsync: this);
     super.initState();
   }
@@ -56,7 +59,7 @@ class _HomePageState extends State<HomePage>
               TabBarView(
                 physics: NeverScrollableScrollPhysics(),
                 controller: tabController,
-                children: [HomeWidget(), SearchPage(), Container(), ProfilePageWidget()],
+                children: [HomeWidget(), SearchPage(), BasketPage(), ProfilePageWidget()],
               ),
               BottomNavBar(tabController),
             ],

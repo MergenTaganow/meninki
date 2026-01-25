@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'package:mime/mime.dart';
+
 class MeninkiFile {
   int id;
-  String name;
+  String? name;
   num? size;
   String? blurhash;
   String? mimetype;
@@ -15,12 +18,12 @@ class MeninkiFile {
 
   MeninkiFile({
     required this.id,
-    required this.name,
+    this.name,
     this.size,
     this.blurhash,
     this.mimetype,
     this.video_chunks,
-     this.original_file,
+    this.original_file,
     this.user_id,
     this.search_column,
     this.video_master_playlist,
@@ -66,4 +69,9 @@ class ResizedFiles {
   }
 
   //
+}
+
+bool isVideo(File file) {
+  final mimeType = lookupMimeType(file.path);
+  return mimeType != null && mimeType.startsWith('video/');
 }

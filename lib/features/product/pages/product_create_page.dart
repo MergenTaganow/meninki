@@ -48,6 +48,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   final TextEditingController descriptionENController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final TextEditingController previousPriceController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   MeninkiFile? coverImage;
   List<MeninkiFile> productPhotos = [];
@@ -184,6 +185,58 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                           splashColor: Colors.white.withOpacity(0.22),
                           highlightColor: Colors.white.withOpacity(0.10),
                           onTap: () {
+                            var valid = _formKey.currentState?.validate();
+                            if (valid == false) return;
+
+                            if (coverImage == null) {
+                              CustomSnackBar.showYellowSnackBar(
+                                context: context,
+                                title: "Выберите обложку",
+                              );
+                              return;
+                            }
+                            if (productPhotos.isEmpty) {
+                              CustomSnackBar.showYellowSnackBar(
+                                context: context,
+                                title: "Добавьте фото",
+                              );
+                              return;
+                            }
+
+                            if (selectedBrand == null) {
+                              CustomSnackBar.showYellowSnackBar(
+                                context: context,
+                                title: "Выберите бренд",
+                              );
+                              return;
+                            }
+                            if (selectedSubCategories.isEmpty) {
+                              CustomSnackBar.showYellowSnackBar(
+                                context: context,
+                                title: "Выберите категорию",
+                              );
+                              return;
+                            }
+                            if (nameENController.text.isEmpty ||
+                                nameRuController.text.isEmpty ||
+                                nameTMController.text.isEmpty) {
+                              CustomSnackBar.showYellowSnackBar(
+                                context: context,
+                                title: "Заполните все поля",
+                              );
+                              return;
+                            }
+
+                            if (descriptionENController.text.isEmpty ||
+                                descriptionRuController.text.isEmpty ||
+                                descriptionTMController.text.isEmpty) {
+                              CustomSnackBar.showYellowSnackBar(
+                                context: context,
+                                title: "Заполните все поля",
+                              );
+                              return;
+                            }
+
                             if (state is! ProductCreateLoading) {
                               HapticFeedback.mediumImpact();
 
@@ -250,492 +303,506 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
           child: Padd(
             hor: 10,
             ver: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
-                  builder: (context, state) {
-                    return InkWell(
-                      onTap: () async {
-                        if (state is! FileUploadingCoverImage) {
-                          FilePickerResult? result = await FilePicker.platform.pickFiles(
-                            type: FileType.image,
-                            lockParentWindow: true,
-                          );
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
+                    builder: (context, state) {
+                      return InkWell(
+                        onTap: () async {
+                          if (state is! FileUploadingCoverImage) {
+                            FilePickerResult? result = await FilePicker.platform.pickFiles(
+                              type: FileType.image,
+                              lockParentWindow: true,
+                            );
 
-                          if (result != null) {
-                            File file = File(result.files.single.path!);
-                            context.read<FileUplCoverImageBloc>().add(UploadFile(file));
-                            coverLoadingImage = file;
+                            if (result != null) {
+                              File file = File(result.files.single.path!);
+                              context.read<FileUplCoverImageBloc>().add(UploadFile(file));
+                              coverLoadingImage = file;
+                            }
                           }
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(100),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(100),
-                            child: Container(
-                              height: 70,
-                              width: 70,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white,
-                                border: Border.all(color: Color(0xFFF3F3F3), width: 1),
+                        },
+                        borderRadius: BorderRadius.circular(100),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(100),
+                              child: Container(
+                                height: 70,
+                                width: 70,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white,
+                                  border: Border.all(color: Color(0xFFF3F3F3), width: 1),
+                                ),
+                                child:
+                                    coverImage?.status == 'ready'
+                                        ? MeninkiNetworkImage(
+                                          file: coverImage!,
+                                          networkImageType: NetworkImageType.small,
+                                          fit: BoxFit.cover,
+                                        )
+                                        : UploadingCoverImage(
+                                          coverImage: coverImage,
+                                          loadingProgress:
+                                              state is FileUploadingCoverImage
+                                                  ? state.progress
+                                                  : null,
+                                        ),
+                                // state is FileUploadCoverImageSuccess
+                                //     ? Image.network(
+                                //       '$baseUrl/public/${state.file.resizedFiles?.small}',
+                                //       fit: BoxFit.cover,
+                                //     )
+                                //     : Center(
+                                //       child:
+                                //           state is FileUploadingCoverImage
+                                //               ? SizedBox(
+                                //                 height: 25,
+                                //                 width: 25,
+                                //                 child: CircularProgressIndicator(
+                                //                   value: state.progress,
+                                //                   color: Colors.blue,
+                                //                 ),
+                                //               )
+                                //               : Icon(Icons.camera_alt_outlined),
+                                //     ),
                               ),
-                              child: UploadingCoverImage(
-                                coverImage: coverImage,
-                                loadingProgress:
-                                    state is FileUploadingCoverImage ? state.progress : null,
-                              ),
-                              // state is FileUploadCoverImageSuccess
-                              //     ? Image.network(
-                              //       '$baseUrl/public/${state.file.resizedFiles?.small}',
-                              //       fit: BoxFit.cover,
-                              //     )
-                              //     : Center(
-                              //       child:
-                              //           state is FileUploadingCoverImage
-                              //               ? SizedBox(
-                              //                 height: 25,
-                              //                 width: 25,
-                              //                 child: CircularProgressIndicator(
-                              //                   value: state.progress,
-                              //                   color: Colors.blue,
-                              //                 ),
-                              //               )
-                              //               : Icon(Icons.camera_alt_outlined),
-                              //     ),
+                            ),
+                            Box(w: 14),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text("Аватар вашего продукта"),
+                                Text(
+                                  'Нажмите, чтобы изменить',
+                                  style: TextStyle(fontSize: 12, color: Color(0xFF969696)),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  Box(h: 20),
+                  if (createdProduct != null)
+                    Column(
+                      children: [
+                        Center(
+                          child: Text(
+                            "Характеристики товара",
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+
+                        Text(
+                          "Здесь вы сможете добавить характеристики к вашему товару и создать вариации к каждой характеристике товара.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Color(0xFF969696)),
+                        ),
+                        Box(h: 10),
+                        InkWell(
+                          onTap: () {
+                            Go.to(
+                              Routes.productParametersPage,
+                              argument: {"product": createdProduct},
+                            );
+                          },
+                          child: Container(
+                            height: 55,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFF3F3F3),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: EdgeInsets.all(14),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Добавить характеристики",
+                                  style: TextStyle(
+                                    color: Color(0xFF474747),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Icon(Icons.add_circle_outline),
+                              ],
                             ),
                           ),
-                          Box(w: 14),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text("Аватар вашего продукта"),
-                              Text(
-                                'Нажмите, чтобы изменить',
-                                style: TextStyle(fontSize: 12, color: Color(0xFF969696)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                Box(h: 20),
-                if (createdProduct != null)
+                        ),
+                        Box(h: 20),
+                      ],
+                    ),
+
+                  //name
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Center(
-                        child: Text(
-                          "Характеристики товара",
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                      Text("Название"),
+                      TexField(
+                        ctx: context,
+                        cont: nameTMController,
+                        border: true,
+                        borderColor: Color(0xFF474747),
+                        borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
+                        preTex: "TM: ",
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.symmetric(
+                            vertical: BorderSide(color: Color(0xFF474747), width: 1),
+                          ),
+                        ),
+                        child: TexField(
+                          ctx: context,
+                          cont: nameRuController,
+                          border: false,
+                          borderColor: Color(0xFF474747),
+                          preTex: "RU: ",
                         ),
                       ),
-
-                      Text(
-                        "Здесь вы сможете добавить характеристики к вашему товару и создать вариации к каждой характеристике товара.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Color(0xFF969696)),
+                      TexField(
+                        ctx: context,
+                        cont: nameENController,
+                        border: true,
+                        borderColor: Color(0xFF474747),
+                        borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
+                        preTex: "EN: ",
                       ),
-                      Box(h: 10),
-                      InkWell(
-                        onTap: () {
+                    ],
+                  ),
+
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Box(h: 16),
+                      Text("Описание"),
+                      TexField(
+                        ctx: context,
+                        cont: descriptionTMController,
+                        border: true,
+                        borderColor: Color(0xFF474747),
+                        borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
+                        preTex: "TM: ",
+                        maxLine: 3,
+                        minLine: 1,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.symmetric(
+                            vertical: BorderSide(color: Color(0xFF474747), width: 1),
+                          ),
+                        ),
+                        child: TexField(
+                          ctx: context,
+                          cont: descriptionRuController,
+                          border: false,
+                          borderColor: Color(0xFF474747),
+                          preTex: "RU: ",
+                          maxLine: 3,
+                          minLine: 1,
+                        ),
+                      ),
+                      TexField(
+                        ctx: context,
+                        cont: descriptionENController,
+                        border: true,
+                        borderColor: Color(0xFF474747),
+                        borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
+                        preTex: "EN: ",
+                        maxLine: 3,
+                        minLine: 1,
+                      ),
+                    ],
+                  ),
+
+                  Box(h: 30),
+                  Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(14),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      splashColor: Colors.black.withOpacity(0.08),
+                      highlightColor: Colors.black.withOpacity(0.04),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        Future.delayed(const Duration(milliseconds: 120), () {
                           Go.to(
-                            Routes.productParametersPage,
-                            argument: {"product": createdProduct},
+                            Routes.categoriesSelectingPage,
+                            argument: {
+                              "selectionKey": CategorySelectingCubit.product_creating_category,
+                              "singleSelection": false,
+                            },
+                          );
+                        });
+                      },
+                      child: Ink(
+                        height: 45,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFF474747)),
+                        ),
+                        child: Row(
+                          children: const [
+                            Expanded(child: Text("Выбрать категорию")),
+                            Icon(Icons.navigate_next),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Box(h: 10),
+                  Wrap(
+                    children: List.generate(selectedSubCategories.length, (index) {
+                      return InkWell(
+                        onTap: () {
+                          context.read<CategorySelectingCubit>().selectCategory(
+                            key: CategorySelectingCubit.product_creating_category,
+                            category: selectedSubCategories[index],
                           );
                         },
                         child: Container(
-                          height: 55,
-                          width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Color(0xFFF3F3F3),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Col.passiveGreyQuick),
                           ),
-                          padding: EdgeInsets.all(14),
+                          margin: EdgeInsets.only(right: 8, bottom: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                "Добавить характеристики",
-                                style: TextStyle(
+                              Text(selectedSubCategories[index].name?.tk ?? ""),
+                              Box(w: 4),
+                              Icon(Icons.clear, size: 14, color: Color(0xFF474747)),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                  Box(h: 30),
+                  Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(14),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      splashColor: Colors.black.withOpacity(0.08),
+                      highlightColor: Colors.black.withOpacity(0.04),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        Future.delayed(const Duration(milliseconds: 120), () {
+                          Go.to(Routes.brandSelectingPage);
+                        });
+                      },
+                      child: Ink(
+                        height: 45,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFF474747)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                selectedBrand == null ? "Выбрать Brand" : selectedBrand!.name,
+                                style: const TextStyle(
                                   color: Color(0xFF474747),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              Icon(Icons.add_circle_outline),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Box(h: 20),
-                    ],
-                  ),
-
-                //name
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("Название"),
-                    TexField(
-                      ctx: context,
-                      cont: nameTMController,
-                      border: true,
-                      borderColor: Color(0xFF474747),
-                      borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
-                      preTex: "TM: ",
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.symmetric(
-                          vertical: BorderSide(color: Color(0xFF474747), width: 1),
-                        ),
-                      ),
-                      child: TexField(
-                        ctx: context,
-                        cont: nameRuController,
-                        border: false,
-                        borderColor: Color(0xFF474747),
-                        preTex: "RU: ",
-                      ),
-                    ),
-                    TexField(
-                      ctx: context,
-                      cont: nameENController,
-                      border: true,
-                      borderColor: Color(0xFF474747),
-                      borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
-                      preTex: "EN: ",
-                    ),
-                  ],
-                ),
-
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Box(h: 16),
-                    Text("Описание"),
-                    TexField(
-                      ctx: context,
-                      cont: descriptionTMController,
-                      border: true,
-                      borderColor: Color(0xFF474747),
-                      borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
-                      preTex: "TM: ",
-                      maxLine: 3,
-                      minLine: 1,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.symmetric(
-                          vertical: BorderSide(color: Color(0xFF474747), width: 1),
-                        ),
-                      ),
-                      child: TexField(
-                        ctx: context,
-                        cont: descriptionRuController,
-                        border: false,
-                        borderColor: Color(0xFF474747),
-                        preTex: "RU: ",
-                        maxLine: 3,
-                        minLine: 1,
-                      ),
-                    ),
-                    TexField(
-                      ctx: context,
-                      cont: descriptionENController,
-                      border: true,
-                      borderColor: Color(0xFF474747),
-                      borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
-                      preTex: "EN: ",
-                      maxLine: 3,
-                      minLine: 1,
-                    ),
-                  ],
-                ),
-
-                Box(h: 30),
-                Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    splashColor: Colors.black.withOpacity(0.08),
-                    highlightColor: Colors.black.withOpacity(0.04),
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      Future.delayed(const Duration(milliseconds: 120), () {
-                        Go.to(
-                          Routes.categoriesSelectingPage,
-                          argument: {
-                            "selectionKey": CategorySelectingCubit.product_creating_category,
-                            "singleSelection": false,
-                          },
-                        );
-                      });
-                    },
-                    child: Ink(
-                      height: 45,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFF474747)),
-                      ),
-                      child: Row(
-                        children: const [
-                          Expanded(child: Text("Выбрать категорию")),
-                          Icon(Icons.navigate_next),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Box(h: 10),
-                Wrap(
-                  children: List.generate(selectedSubCategories.length, (index) {
-                    return InkWell(
-                      onTap: () {
-                        context.read<CategorySelectingCubit>().selectCategory(
-                          key: CategorySelectingCubit.product_creating_category,
-                          category: selectedSubCategories[index],
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Col.passiveGreyQuick),
-                        ),
-                        margin: EdgeInsets.only(right: 8, bottom: 4),
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(selectedSubCategories[index].name?.tk ?? ""),
-                            Box(w: 4),
-                            Icon(Icons.clear, size: 14, color: Color(0xFF474747)),
+                            ),
+                            const Icon(Icons.navigate_next),
                           ],
                         ),
                       ),
-                    );
-                  }),
-                ),
-                Box(h: 30),
-                Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    splashColor: Colors.black.withOpacity(0.08),
-                    highlightColor: Colors.black.withOpacity(0.04),
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      Future.delayed(const Duration(milliseconds: 120), () {
-                        Go.to(Routes.brandSelectingPage);
-                      });
-                    },
-                    child: Ink(
-                      height: 45,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFF474747)),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              selectedBrand == null ? "Выбрать Brand" : selectedBrand!.name,
-                              style: const TextStyle(
-                                color: Color(0xFF474747),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                          const Icon(Icons.navigate_next),
-                        ],
-                      ),
                     ),
                   ),
-                ),
-                Box(h: 30),
-                BlocBuilder<FileUplBloc, FileUplState>(
-                  builder: (context, state) {
-                    List<File> uploadingFiles = [];
-                    List<double> uploadingValues = [];
-                    List<File>? errorFiles = [];
-                    List<Failure>? errors = [];
-                    if (state is FileUploading && state.type == UploadingFileTypes.productPhotos) {
-                      uploadingFiles = state.uploadingFiles.keys.toList();
-                      uploadingValues = state.uploadingFiles.values.toList();
-                      errorFiles = state.errorMap?.keys.toList();
-                      errors = state.errorMap?.values.toList();
-                    }
+                  Box(h: 30),
+                  BlocBuilder<FileUplBloc, FileUplState>(
+                    builder: (context, state) {
+                      List<File> uploadingFiles = [];
+                      List<double> uploadingValues = [];
+                      List<File>? errorFiles = [];
+                      List<Failure>? errors = [];
+                      if (state is FileUploading &&
+                          state.type == UploadingFileTypes.productPhotos) {
+                        uploadingFiles = state.uploadingFiles.keys.toList();
+                        uploadingValues = state.uploadingFiles.values.toList();
+                        errorFiles = state.errorMap?.keys.toList();
+                        errors = state.errorMap?.values.toList();
+                      }
 
-                    return Wrap(
-                      spacing: 14,
-                      runSpacing: 14,
-                      children: [
-                        ...List.generate(productPhotos.length, (index) {
-                          var photo = productPhotos[index];
-                          return SizedBox(
-                            height: 106,
-                            width: 106,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    height: 106,
-                                    width: 106,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFF969696),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: UploadingCoverImage(
-                                      coverImage: photo,
-                                      loadingProgress: null,
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: Alignment.topRight,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        productPhotos.removeAt(index);
-                                        setState(() {});
-                                      },
-                                      child: Icon(Icons.cancel, color: Color(0xFFF3F3F3)),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                        ...List.generate(uploadingFiles.length, (index) {
-                          return UploadingImageCard(
-                            file: uploadingFiles[index],
-                            value: uploadingValues[index],
-                            onRemoveTap: () {
-                              context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
-                            },
-                          );
-                        }),
-                        ...List.generate(errorFiles?.length ?? 0, (index) {
-                          return UploadingImageCard(
-                            file: errorFiles![index],
-                            failure: errors![index],
-                            onRemoveTap: () {
-                              context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
-                            },
-                            onRetryTap: () {
-                              context.read<FileUplBloc>().add(
-                                RetryFile(errorFiles![index], UploadingFileTypes.productPhotos),
-                              );
-                            },
-                          );
-                        }),
-                        Material(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(30),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(30),
-                            splashColor: Colors.black.withOpacity(0.15),
-                            highlightColor: Colors.black.withOpacity(0.08),
-                            onTap: () async {
-                              HapticFeedback.mediumImpact();
-
-                              // Give ripple time to show
-                              await Future.delayed(const Duration(milliseconds: 120));
-
-                              if (state is! FileUploading) {
-                                FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                  type: FileType.image,
-                                  lockParentWindow: true,
-                                  allowMultiple: true,
-                                );
-
-                                if (result != null) {
-                                  List<File> files =
-                                      result.paths
-                                          .where((path) => path != null)
-                                          .map((path) => File(path!))
-                                          .toList();
-                                  context.read<FileUplBloc>().add(
-                                    UploadFiles(files, UploadingFileTypes.productPhotos),
-                                  );
-                                }
-                              }
-                            },
-                            child: Ink(
+                      return Wrap(
+                        spacing: 14,
+                        runSpacing: 14,
+                        children: [
+                          ...List.generate(productPhotos.length, (index) {
+                            var photo = productPhotos[index];
+                            return SizedBox(
                               height: 106,
                               width: 106,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(30),
-                                color: const Color(0xFFEAEAEA),
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: const [
-                                    Icon(Icons.add_circle, color: Colors.black),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      "Добавить еще медиа",
-                                      style: TextStyle(fontSize: 12),
-                                      textAlign: TextAlign.center,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      height: 106,
+                                      width: 106,
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFF969696),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: UploadingCoverImage(
+                                        coverImage: photo,
+                                        loadingProgress: null,
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.topRight,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          productPhotos.removeAt(index);
+                                          setState(() {});
+                                        },
+                                        child: Icon(Icons.cancel, color: Color(0xFFF3F3F3)),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
+                            );
+                          }),
+                          ...List.generate(uploadingFiles.length, (index) {
+                            return UploadingImageCard(
+                              file: uploadingFiles[index],
+                              value: uploadingValues[index],
+                              onRemoveTap: () {
+                                context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
+                              },
+                            );
+                          }),
+                          ...List.generate(errorFiles?.length ?? 0, (index) {
+                            return UploadingImageCard(
+                              file: errorFiles![index],
+                              failure: errors![index],
+                              onRemoveTap: () {
+                                context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
+                              },
+                              onRetryTap: () {
+                                context.read<FileUplBloc>().add(
+                                  RetryFile(errorFiles![index], UploadingFileTypes.productPhotos),
+                                );
+                              },
+                            );
+                          }),
+                          Material(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(30),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(30),
+                              splashColor: Colors.black.withOpacity(0.15),
+                              highlightColor: Colors.black.withOpacity(0.08),
+                              onTap: () async {
+                                HapticFeedback.mediumImpact();
+
+                                // Give ripple time to show
+                                await Future.delayed(const Duration(milliseconds: 120));
+
+                                if (state is! FileUploading) {
+                                  FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                    type: FileType.image,
+                                    lockParentWindow: true,
+                                    allowMultiple: true,
+                                  );
+
+                                  if (result != null) {
+                                    List<File> files =
+                                        result.paths
+                                            .where((path) => path != null)
+                                            .map((path) => File(path!))
+                                            .toList();
+                                    context.read<FileUplBloc>().add(
+                                      UploadFiles(files, UploadingFileTypes.productPhotos),
+                                    );
+                                  }
+                                }
+                              },
+                              child: Ink(
+                                height: 106,
+                                width: 106,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(30),
+                                  color: const Color(0xFFEAEAEA),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: const [
+                                      Icon(Icons.add_circle, color: Colors.black),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        "Добавить еще медиа",
+                                        style: TextStyle(fontSize: 12),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                Box(h: 30),
+                        ],
+                      );
+                    },
+                  ),
+                  Box(h: 30),
 
-                //price
-                Center(
-                  child: Text("Ценообразование", style: TextStyle(fontWeight: FontWeight.w600)),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Стоимость"),
-                    TexField(
-                      ctx: context,
-                      cont: priceController,
-                      border: true,
-                      borderColor: Color(0xFF474747),
-                      hint: "Обязательно",
-                      borderRadiusType: BorderRadius.circular(14),
-                      keyboard: TextInputType.numberWithOptions(decimal: true),
-                    ),
-                    Box(h: 10),
-                    Text("Стоимость до скидки"),
-                    TexField(
-                      ctx: context,
-                      cont: previousPriceController,
-                      border: true,
-                      hint: "Если есть скидка",
-                      borderColor: Color(0xFF474747),
-                      borderRadiusType: BorderRadius.circular(14),
-                      keyboard: TextInputType.numberWithOptions(decimal: true),
-                    ),
-                  ],
-                ),
-                Box(h: 100),
-              ],
+                  //price
+                  Center(
+                    child: Text("Ценообразование", style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Стоимость"),
+                      TexField(
+                        ctx: context,
+                        cont: priceController,
+                        border: true,
+                        borderColor: Color(0xFF474747),
+                        hint: "Обязательно",
+                        borderRadiusType: BorderRadius.circular(14),
+                        keyboard: TextInputType.numberWithOptions(decimal: true),
+                        validate: (text) => (text?.isEmpty ?? false) ? 'Обязательноe поле' : null,
+                      ),
+                      Box(h: 10),
+                      Text("Стоимость до скидки"),
+                      TexField(
+                        ctx: context,
+                        cont: previousPriceController,
+                        border: true,
+                        hint: "Если есть скидка",
+                        borderColor: Color(0xFF474747),
+                        borderRadiusType: BorderRadius.circular(14),
+                        keyboard: TextInputType.numberWithOptions(decimal: true),
+                      ),
+                    ],
+                  ),
+                  Box(h: 100),
+                ],
+              ),
             ),
           ),
         ),
