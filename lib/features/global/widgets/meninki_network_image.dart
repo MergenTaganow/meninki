@@ -51,7 +51,7 @@ class MeninkiNetworkImage extends StatelessWidget {
         fit: fit,
         placeholder:
             (context, url) =>
-                (file.blurhash?.isNotEmpty ?? false)
+                ((file.blurhash?.isNotEmpty ?? false) && file.blurhash?.length == 28)
                     ? BlurHash(hash: file.blurhash ?? "")
                     : Container(),
         errorWidget: (context, url, error) => const Icon(Icons.error),
