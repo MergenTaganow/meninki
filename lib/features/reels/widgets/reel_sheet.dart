@@ -6,6 +6,7 @@ import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit
 import '../../../core/go.dart';
 import '../../../core/helpers.dart';
 import '../../../core/routes.dart';
+import '../../file_download/bloc/file_download_bloc/file_download_bloc.dart';
 import '../blocs/like_reels_cubit/liked_reels_cubit.dart';
 import '../model/reels.dart';
 
@@ -68,7 +69,7 @@ class ReelsSheet extends StatelessWidget {
             title: AppLocalizations.of(context)!.download,
             value: Svvg.asset("download"),
             onTap: () {
-              print(reel.file.original_file);
+              context.read<FileDownloadBloc>().add(DownloadFile(reel.file));
             },
           ),
           if (reel.product?.id != null)

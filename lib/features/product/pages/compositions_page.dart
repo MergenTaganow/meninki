@@ -50,13 +50,13 @@ class _CompositionsPageState extends State<CompositionsPage> {
     return BlocListener<CompositionsSendCubit, CompositionsSendState>(
       listener: (context, state) {
         if (state is CompositionsSendSuccess) {
+          Navigator.popUntil(context, (route) => route.isFirst);
+          Go.to(Routes.publicProductDetailPage, argument: {'productId': widget.product.id});
           CustomSnackBar.showSnackBar(
             context: context,
             title: AppLocalizations.of(context)!.success,
             isError: false,
           );
-          Navigator.popUntil(context, (route) => route.isFirst);
-          Go.popGo(Routes.publicProductDetailPage, argument: {'productId': widget.product.id});
         }
       },
       child: Scaffold(

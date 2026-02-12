@@ -97,9 +97,6 @@ class _ReelCardState extends State<ReelCard> {
                   borderRadius: BorderRadius.circular(16),
                   splashColor: Colors.black.withOpacity(0.15),
                   highlightColor: Colors.black.withOpacity(0.08),
-                  onLongPress: () {
-                    context.read<FileDownloadBloc>().add(DownloadFile(widget.reel.file));
-                  },
                   onTap: () async {
                     await Future.delayed(const Duration(milliseconds: 120));
                     Go.to(

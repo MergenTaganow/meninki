@@ -220,8 +220,7 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Success>> editComposition(Map<String, dynamic> data) async {
     try {
-      //Todo need change url
-      var response = await api.dio.patch('v1/compositions/client', data: data);
+      var response = await api.dio.post('v1/compositions/client', data: data);
 
       print(response.data);
       return Right(Success());

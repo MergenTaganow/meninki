@@ -36,6 +36,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
 
   @override
   void initState() {
+    print("page init");
     context.read<GetProductByIdCubit>().getProduct(widget.productId);
     context.read<GetProductReelsBloc>().add(ClearReels());
     super.initState();
@@ -43,7 +44,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
 
   @override
   void deactivate() {
-    context.read<GetProductByIdCubit>().clear();
+    // context.read<GetProductByIdCubit>().clear();
     super.deactivate();
   }
 
@@ -97,6 +98,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
         floatingActionButton: ProductToCard(),
         body: BlocBuilder<GetProductByIdCubit, GetProductByIdState>(
           builder: (context, state) {
+            print(state);
             if (state is GetProductByIdLoading) {
               return Center(child: CircularProgressIndicator());
             }

@@ -1,3 +1,6 @@
+import 'dart:isolate';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -25,6 +28,7 @@ import 'features/file_download/bloc/file_download_bloc/file_download_bloc.dart';
 import 'features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import 'features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
+import 'features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
 import 'features/product/bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import 'features/product/bloc/compositions_send_cubit/compositions_send_cubit.dart';
 import 'features/product/bloc/get_attributes_bloc/get_product_attributes_bloc.dart';
@@ -58,9 +62,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await FlutterDownloader.initialize(
-    debug: true, // optional: set to false to disable printing logs to console (default: true)
-    ignoreSsl: true, // option: set to false to disable working with http links (default: false)
+    debug: true, // remove in prod
+    ignoreSsl: true,
   );
+  FlutterDownloader.registerCallback(downloadCallback);
 
   await init();
   await getVersion();
@@ -129,8 +134,15 @@ void main() async {
         BlocProvider<GetMyAddsBloc>(create: (context) => sl<GetMyAddsBloc>()),
         BlocProvider<GetFavoriteProductsBloc>(create: (context) => sl<GetFavoriteProductsBloc>()),
         BlocProvider<GetFavoriteAddsBloc>(create: (context) => sl<GetFavoriteAddsBloc>()),
+        BlocProvider<TabNavigationCubit>(create: (context) => sl<TabNavigationCubit>()),
       ],
       child: const MyApp(),
     ),
   );
+}
+
+@pragma('vm:entry-point')
+void downloadCallback(String id, int status, int progress) {
+  final send = IsolateNameServer.lookupPortByName('downloader_send_port');
+  send?.send([id, status, progress]);
 }

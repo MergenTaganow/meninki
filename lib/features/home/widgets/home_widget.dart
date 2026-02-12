@@ -14,6 +14,7 @@ import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import '../../reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import '../../reels/model/query.dart';
 import '../../store/models/market.dart';
+import '../bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
 import 'home_adds.dart';
 import 'home_lenta.dart';
 import 'home_main.dart';
@@ -50,12 +51,23 @@ class _HomeWidgetState extends State<HomeWidget>
   Widget build(BuildContext context) {
     super.build(context);
     AppLocalizations lg = AppLocalizations.of(context)!;
-    return BlocListener<GetVerifiedReelsBloc, GetReelsState>(
-      listener: (context, state) {
-        if (state is GetReelSuccess) {
-          context.read<ReelsControllersBloc>().add(NewReels(state.reels));
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<GetVerifiedReelsBloc, GetReelsState>(
+          listener: (context, state) {
+            if (state is GetReelSuccess) {
+              context.read<ReelsControllersBloc>().add(NewReels(state.reels));
+            }
+          },
+        ),
+        BlocListener<TabNavigationCubit, TabNavigationState>(
+          listener: (context, state) {
+            if (state is NavigateTab && state.page == TabPages.home) {
+              _tabController.animateTo(state.index);
+            }
+          },
+        ),
+      ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

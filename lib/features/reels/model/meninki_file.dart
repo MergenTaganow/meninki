@@ -101,3 +101,32 @@ bool isVideo(File file) {
   final mimeType = lookupMimeType(file.path);
   return mimeType != null && mimeType.startsWith('video/');
 }
+
+Future<Directory> getGalleryDirectory({required bool isImage}) async {
+  final basePath = Directory('/storage/emulated/0');
+
+  final dir = Directory(
+    isImage ? '${basePath.path}/Pictures/Meninki' : '${basePath.path}/Movies/Meninki',
+  );
+
+  if (!await dir.exists()) {
+    await dir.create(recursive: true);
+  }
+
+  return dir;
+}
+
+Future<bool> fileExists(MeninkiFile meninkiFile) async {
+  var isImage =
+      meninkiFile.name!.endsWith('.jpg') ||
+      meninkiFile.name!.endsWith('.png') ||
+      meninkiFile.name!.endsWith('.jpeg');
+  final directory = await getGalleryDirectory(isImage: isImage);
+  final file = File('${directory.path}/${meninkiFile.name}');
+
+  if (await file.exists()) {
+    return true;
+  }
+
+  return false;
+}

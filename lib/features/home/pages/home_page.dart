@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
+import 'package:meninki/features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
 import 'package:meninki/features/home/widgets/home_widget.dart';
 import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
 import 'package:meninki/features/store/bloc/get_stores_bloc/get_stores_bloc.dart';
@@ -8,6 +9,8 @@ import '../../../core/helpers.dart';
 import '../../adds/bloc/add_favorite_cubit/add_favorite_cubit.dart';
 import '../../basket/bloc/my_basket_cubit/my_basket_cubit.dart';
 import '../../basket/pages/basket_page.dart';
+import '../../file_download/bloc/file_download_bloc/file_download_bloc.dart';
+import '../../file_download/widgets/download_banner.dart';
 import '../../product/bloc/product_favorites_cubit/product_favorites_cubit.dart';
 import '../../store/bloc/market_favorites_cubit/market_favorites_cubit.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -34,22 +37,59 @@ class _HomePageState extends State<HomePage>
     context.read<ProductFavoritesCubit>().init();
     context.read<AddFavoriteCubit>().init();
     tabController = TabController(length: 4, vsync: this);
+
+    context.read<FileDownloadBloc>().stream.listen((state) {
+      if (state is FileDownloading) {
+        DownloadOverlay.show(
+          context,
+          DownloadUIState(
+            fileName: state.file.name ?? '--',
+            progress: state.progress,
+            isPaused: state.isPaused,
+          ),
+        );
+      }
+
+      if (state is FileDownloadInitial) {
+        DownloadOverlay.hide();
+      }
+      if (state is FileAlreadyExists) {
+        CustomSnackBar.showYellowSnackBar(context: context, title: "File already exists");
+      }
+      if (state is FileDownloadingIsBusy) {
+        CustomSnackBar.showYellowSnackBar(
+          context: context,
+          title: "There is File already downloading",
+        );
+      }
+    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocListener<ReelCreateCubit, ReelCreateState>(
-      listener: (context, state) {
-        if (state is ReelRepostSuccess) {
-          CustomSnackBar.showSnackBar(
-            context: context,
-            title: AppLocalizations.of(context)!.success,
-            isError: false,
-          );
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ReelCreateCubit, ReelCreateState>(
+          listener: (context, state) {
+            if (state is ReelRepostSuccess) {
+              CustomSnackBar.showSnackBar(
+                context: context,
+                title: AppLocalizations.of(context)!.success,
+                isError: false,
+              );
+            }
+          },
+        ),
+        BlocListener<TabNavigationCubit, TabNavigationState>(
+          listener: (context, state) {
+            if (state is NavigateTab && state.page == TabPages.main) {
+              tabController.animateTo(state.index, duration: Duration(milliseconds: 300));
+            }
+          },
+        ),
+      ],
       child: WillPopScope(
         onWillPop: () async {
           if (tabController.index != 0) {

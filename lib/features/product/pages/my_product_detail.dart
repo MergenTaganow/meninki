@@ -43,7 +43,7 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
 
   @override
   void deactivate() {
-    context.read<GetProductByIdCubit>().clear();
+    // context.read<GetProductByIdCubit>().clear();
     super.deactivate();
   }
 

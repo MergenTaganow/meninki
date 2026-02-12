@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/banner/bloc/get_banners_bloc/get_banners_bloc.dart';
+import 'package:meninki/features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'package:meninki/features/global/model/name.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
+import 'package:meninki/features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/bloc/get_store_products/get_store_products_bloc.dart';
 import 'package:meninki/features/store/widgets/store_card.dart';
@@ -92,7 +94,6 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
 
             /// discount products
             products(),
-            BannersList(priority: 2),
             Box(h: 20),
 
             ///marketProducts
@@ -242,11 +243,27 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padd(
-                    left: 10,
-                    child: Text(
-                      lg.newItems,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  GestureDetector(
+                    onTap: () {
+                      context.read<SortCubit>().selectSort(
+                        key: SortCubit.productSearchSort,
+                        newSort: Sort(orderBy: 'id', orderDirection: 'desc', text: lg.newItems),
+                      );
+                      context.read<GetProductsBloc>().add(GetProduct());
+                      context.read<TabNavigationCubit>().homeToSearchProduct();
+                    },
+                    child: Padd(
+                      hor: 10,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            lg.newItems,
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                          ),
+                          Icon(Icons.navigate_next),
+                        ],
+                      ),
                     ),
                   ),
                   Box(h: 10),
@@ -281,13 +298,30 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padd(
-                    left: 10,
-                    child: Text(
-                      lg.bestRated,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  GestureDetector(
+                    onTap: () {
+                      context.read<SortCubit>().selectSort(
+                        key: SortCubit.productSearchSort,
+                        newSort: Sort(orderBy: 'id', orderDirection: 'desc', text: lg.bestRated),
+                      );
+                      context.read<GetProductsBloc>().add(GetProduct());
+                      context.read<TabNavigationCubit>().homeToSearchProduct();
+                    },
+                    child: Padd(
+                      hor: 10,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            lg.bestRated,
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                          ),
+                          Icon(Icons.navigate_next),
+                        ],
+                      ),
                     ),
                   ),
+
                   Box(h: 10),
                   SizedBox(
                     height: 240,
@@ -320,11 +354,31 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padd(
-                    left: 10,
-                    child: Text(
-                      lg.discounts,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  GestureDetector(
+                    onTap: () {
+                      context.read<SortCubit>().selectSort(
+                        key: SortCubit.productSearchSort,
+                        newSort: Sort(
+                          orderDirection: 'desc',
+                          orderBy: 'discount',
+                          text: lg.discounts,
+                        ),
+                      );
+                      context.read<GetProductsBloc>().add(GetProduct(Query()));
+                      context.read<TabNavigationCubit>().homeToSearchProduct();
+                    },
+                    child: Padd(
+                      hor: 10,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            lg.discounts,
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                          ),
+                          Icon(Icons.navigate_next),
+                        ],
+                      ),
                     ),
                   ),
                   Box(h: 10),

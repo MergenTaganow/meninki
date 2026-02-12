@@ -27,8 +27,10 @@ import '../features/comments/bloc/comment_by_id_cubit/comment_by_id_cubit.dart';
 import '../features/comments/bloc/get_comments_bloc/get_comments_bloc.dart';
 import '../features/comments/bloc/send_comment_cubit/send_comment_cubit.dart';
 import '../features/file_download/bloc/file_download_bloc/file_download_bloc.dart';
+import '../features/file_download/data/download_service.dart';
 import '../features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import '../features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
+import '../features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
 import '../features/product/bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import '../features/product/bloc/compositions_send_cubit/compositions_send_cubit.dart';
 import '../features/product/bloc/get_attributes_bloc/get_product_attributes_bloc.dart';
@@ -71,6 +73,7 @@ Future<void> init() async {
   //global
   sl.registerLazySingleton<SortCubit>(() => SortCubit());
   sl.registerLazySingleton<KeyFilterCubit>(() => KeyFilterCubit());
+  sl.registerLazySingleton<TabNavigationCubit>(() => TabNavigationCubit());
 
   //auth
   sl.registerLazySingleton<AuthBloc>(() => AuthBloc(sl(), sl()));
@@ -106,7 +109,8 @@ Future<void> init() async {
   //file
   sl.registerLazySingleton<FileUplCoverImageBloc>(() => FileUplCoverImageBloc(sl()));
   sl.registerLazySingleton<FileUplBloc>(() => FileUplBloc(sl()));
-  sl.registerLazySingleton<FileDownloadBloc>(() => FileDownloadBloc());
+  sl.registerLazySingleton<DownloadService>(() => DownloadService());
+  sl.registerLazySingleton<FileDownloadBloc>(() => FileDownloadBloc(sl()));
 
   //product
   sl.registerLazySingleton<GetProductsBloc>(() => GetProductsBloc(sl()));

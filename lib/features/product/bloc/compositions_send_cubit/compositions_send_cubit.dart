@@ -60,17 +60,22 @@ class CompositionsSendCubit extends Cubit<CompositionsSendState> {
       final old = oldMap[key];
 
       payload.add({
-        if (old?.id != null) "id": old!.id,
-        // "is_main": i == 0,
-        // "is_active": true,
+        if (old?.id != null) "composition_id": old!.id,
+        "is_main": i == 0,
+        "is_active": true,
         "quantity": counts[i],
         "product_id": product.id,
         "attribute_ids": attrs.map((e) => e.id).toList(),
       });
     }
 
+    print(payload);
 
-    await ds.editComposition({"compositions": payload});
+    var failOrNot = await ds.editComposition({"compositions": payload});
+    failOrNot.fold(
+      (l) => emit.call(CompositionsSendFailed(l)),
+      (r) => emit.call(CompositionsSendSuccess()),
+    );
   }
 
   String compositionKey(List<ProductAttribute> attrs) {
