@@ -12,6 +12,7 @@ import '../../basket/pages/basket_page.dart';
 import '../../file_download/bloc/file_download_bloc/file_download_bloc.dart';
 import '../../file_download/widgets/download_banner.dart';
 import '../../product/bloc/product_favorites_cubit/product_favorites_cubit.dart';
+import '../../reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
 import '../../store/bloc/market_favorites_cubit/market_favorites_cubit.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/profile_page_widget.dart';
@@ -34,20 +35,29 @@ class _HomePageState extends State<HomePage>
     context.read<GetStoresBloc>().add(GetStores());
     context.read<MyBasketCubit>().getMyBasketProductIds();
     context.read<MarketFavoritesCubit>().init();
+    context.read<LikedReelsCubit>().init();
     context.read<ProductFavoritesCubit>().init();
     context.read<AddFavoriteCubit>().init();
     tabController = TabController(length: 4, vsync: this);
 
     context.read<FileDownloadBloc>().stream.listen((state) {
       if (state is FileDownloading) {
-        DownloadOverlay.show(
-          context,
-          DownloadUIState(
-            fileName: state.file.name ?? '--',
-            progress: state.progress,
-            isPaused: state.isPaused,
-          ),
+        var index = state.queue.indexWhere(
+          (e) => e.status == DownloadItemStatus.running || e.status == DownloadItemStatus.paused,
         );
+
+        final running = index != -1 ? state.queue[index] : null;
+
+        if (running != null) {
+          DownloadOverlay.show(
+            context,
+            DownloadUIState(
+              fileName: running.file.name ?? '--',
+              progress: running.progress,
+              isPaused: running.status == DownloadItemStatus.paused,
+            ),
+          );
+        }
       }
 
       if (state is FileDownloadInitial) {
@@ -56,11 +66,8 @@ class _HomePageState extends State<HomePage>
       if (state is FileAlreadyExists) {
         CustomSnackBar.showYellowSnackBar(context: context, title: "File already exists");
       }
-      if (state is FileDownloadingIsBusy) {
-        CustomSnackBar.showYellowSnackBar(
-          context: context,
-          title: "There is File already downloading",
-        );
+      if (state is FileQueued) {
+        CustomSnackBar.showYellowSnackBar(context: context, title: "Added to the queue");
       }
     });
     super.initState();
@@ -85,7 +92,8 @@ class _HomePageState extends State<HomePage>
         BlocListener<TabNavigationCubit, TabNavigationState>(
           listener: (context, state) {
             if (state is NavigateTab && state.page == TabPages.main) {
-              tabController.animateTo(state.index, duration: Duration(milliseconds: 300));
+              // tabController.animateTo(state.index, duration: Duration.zero);
+              tabController.index = state.index;
             }
           },
         ),
@@ -116,7 +124,7 @@ class _HomePageState extends State<HomePage>
                 TabBarView(
                   physics: NeverScrollableScrollPhysics(),
                   controller: tabController,
-                  children: [HomeWidget(), SearchPage(), BasketPage(), ProfilePageWidget()],
+                  children: [HomeWidget(), SearchPage(), BasketWidget(), ProfilePageWidget()],
                 ),
                 BottomNavBar(tabController),
               ],

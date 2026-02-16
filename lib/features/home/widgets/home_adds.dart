@@ -11,7 +11,6 @@ import 'package:meninki/features/adds/bloc/get_public_adds_bloc/get_adds_bloc.da
 import 'package:meninki/features/adds/models/add.dart';
 import 'package:meninki/features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import 'package:meninki/features/categories/bloc/get_categories_cubit/get_categories_cubit.dart';
-import 'package:meninki/features/categories/bloc/get_categories_cubit/get_categories_cubit.dart';
 import 'package:meninki/features/categories/models/category.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -37,68 +36,71 @@ class _HomeAddState extends State<HomeAdd> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<GetAddsBloc>().add(GetAdd());
-      },
-      child: SingleChildScrollView(
-        // physics: AlwaysScrollableScrollPhysics(),
-        child: Column(
-          children: [
-            Box(h: 20),
-
-            ///filter
-            Padd(
-              hor: 10,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                      Row(
-                        children: [
-                          Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
-                          Text(
-                            "По дате - сначала новые",
-                            style: TextStyle(color: Color(0xFF969696)),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Go.to(Routes.addCreatePage);
-                    },
-                    onLongPress: () {
-                      context.read<GetAddsBloc>().add(GetAdd());
-                    },
-                    child: Container(
-                      height: 40,
-                      width: 40,
-                      decoration: BoxDecoration(
-                        color: Col.primary,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Center(child: Icon(Icons.add_circle, color: Colors.white)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Box(h: 10),
-
-            ///categories
-            categories(),
-
-            Box(h: 20),
-
-            Padd(hor: 10, child: PublicAddsList()),
-          ],
+    return CustomScrollView(
+      slivers: [
+        CupertinoSliverRefreshControl(
+          onRefresh: () async {
+            await context.read<GetAddsBloc>().refresh();
+          },
         ),
-      ),
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              Box(h: 20),
+
+              ///filter
+              Padd(
+                hor: 10,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                        Row(
+                          children: [
+                            Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
+                            Text(
+                              "По дате - сначала новые",
+                              style: TextStyle(color: Color(0xFF969696)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Go.to(Routes.addCreatePage);
+                      },
+                      onLongPress: () {
+                        context.read<GetAddsBloc>().add(GetAdd());
+                      },
+                      child: Container(
+                        height: 40,
+                        width: 40,
+                        decoration: BoxDecoration(
+                          color: Col.primary,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Center(child: Icon(Icons.add_circle, color: Colors.white)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Box(h: 10),
+
+              ///categories
+              categories(),
+
+              Box(h: 20),
+
+              Padd(hor: 10, child: PublicAddsList()),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

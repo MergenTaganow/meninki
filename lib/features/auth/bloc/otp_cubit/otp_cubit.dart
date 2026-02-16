@@ -35,6 +35,7 @@ class OtpCubit extends Cubit<OtpState> {
 
   checkOtp({required int otp, required String phoneNumber}) async {
     checkLoading = true;
+    emit(OtpSend(retrySeconds: retrySeconds, checkLoading: checkLoading));
     var failOrNot = await ds.checkOtp(phoneNumber: phoneNumber, otp: otp);
 
     checkLoading = false;

@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:mime/mime.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 class MeninkiFile {
   int id;
@@ -102,26 +104,31 @@ bool isVideo(File file) {
   return mimeType != null && mimeType.startsWith('video/');
 }
 
-Future<Directory> getGalleryDirectory({required bool isImage}) async {
-  final basePath = Directory('/storage/emulated/0');
+Future<Directory> getGalleryDirectory() async {
+  final directory = await getExternalStorageDirectory();
 
-  final dir = Directory(
-    isImage ? '${basePath.path}/Pictures/Meninki' : '${basePath.path}/Movies/Meninki',
-  );
-
-  if (!await dir.exists()) {
-    await dir.create(recursive: true);
+  if (directory == null) {
+    throw Exception("External storage not available");
   }
 
-  return dir;
+  // This gives:
+  // /storage/emulated/0/Android/data/<package>/files
+  final basePath = directory.path.split('Android').first;
+
+  final downloadDir = Directory(p.join(basePath, 'Download', 'Meninki'));
+
+  if (!await downloadDir.exists()) {
+    await downloadDir.create(recursive: true);
+  }
+  return downloadDir;
 }
 
 Future<bool> fileExists(MeninkiFile meninkiFile) async {
-  var isImage =
-      meninkiFile.name!.endsWith('.jpg') ||
-      meninkiFile.name!.endsWith('.png') ||
-      meninkiFile.name!.endsWith('.jpeg');
-  final directory = await getGalleryDirectory(isImage: isImage);
+  // var isImage =
+  //     meninkiFile.name!.endsWith('.jpg') ||
+  //     meninkiFile.name!.endsWith('.png') ||
+  //     meninkiFile.name!.endsWith('.jpeg');
+  final directory = await getGalleryDirectory();
   final file = File('${directory.path}/${meninkiFile.name}');
 
   if (await file.exists()) {

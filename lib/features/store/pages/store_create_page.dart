@@ -4,10 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:meninki/core/api.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/helpers.dart';
-import 'package:meninki/features/categories/bloc/brand_selecting_cubit/brand_selecting_cubit.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
@@ -15,13 +13,11 @@ import 'package:meninki/features/reels/blocs/file_processing_cubit/file_processi
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'package:meninki/features/store/models/market.dart';
-import 'package:meninki/features/store/widgets/ColorPicker.dart';
 
 import '../../province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import '../../province/widgets/province_selection.dart';
 import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 import '../bloc/get_market_by_id/get_market_by_id_cubit.dart';
-import '../widgets/store_background_color_selection.dart';
 
 class StoreCreatePage extends StatefulWidget {
   final Market? market;
@@ -616,7 +612,7 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                   },
                   "location": {"longitude": 38.7373, "latitude": 52.7373},
                   "cover_image_id": coverImage?.id,
-                  if (provinces.isNotEmpty ?? false) "province_id": provinces.single.id,
+                  if (provinces.isNotEmpty ) "province_id": provinces.single.id,
                   "username": usernameController.text.trim(),
                   "file_ids": [1],
                   "contact_info": {

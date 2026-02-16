@@ -1,6 +1,11 @@
 import 'package:bloc/bloc.dart';
+import 'package:meninki/features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import 'package:meninki/features/reels/data/reels_remote_data_source.dart';
+import 'package:meninki/features/reels/model/reels.dart';
 import 'package:meta/meta.dart';
+
+import '../../../../core/injector.dart';
+import '../get_reels_bloc/get_reels_bloc.dart';
 
 part 'liked_reels_state.dart';
 
@@ -17,14 +22,19 @@ class LikedReelsCubit extends Cubit<LikedReelsState> {
     });
   }
 
-  likeTapped(int reelId) async {
-    var index = likedReels.indexWhere((e) => e == reelId);
+  likeTapped(Reel reel) async {
+    var index = likedReels.indexWhere((e) => e == reel.id);
     if (index == -1) {
-      likedReels.add(reelId);
+      likedReels.add(reel.id);
     } else {
       likedReels.removeAt(index);
     }
     emit.call(LikedReelsSuccess(likedReels));
-    await ds.likeReel(reelId);
+    await ds.likeReel(reel.id);
+    sl<GetMyReelsBloc>().add(UpdateMyReel(reel));
+    sl<GetVerifiedReelsBloc>().add(UpdateReels(reel));
+    sl<GetProductReelsBloc>().add(UpdateReels(reel));
+    sl<GetStoreReelsBloc>().add(UpdateReels(reel));
+    sl<GetSearchedReelsBloc>().add(UpdateReels(reel));
   }
 }

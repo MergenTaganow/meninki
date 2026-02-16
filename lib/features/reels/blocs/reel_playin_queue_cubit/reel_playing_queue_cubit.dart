@@ -78,7 +78,6 @@ class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
         playNext();
         break;
 
-      case BetterPlayerEventType.exception:
       case BetterPlayerEventType.play:
       case BetterPlayerEventType.bufferingStart:
         // optional logging

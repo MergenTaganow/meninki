@@ -9,15 +9,17 @@ class DownloadFile extends FileDownloadEvent {
 }
 
 class DownloadProgressUpdated extends FileDownloadEvent {
+  final String taskId;
   final int progress;
   final DownloadTaskStatus status;
 
-  DownloadProgressUpdated({
-    required this.progress,
-    required this.status,
-  });
+  DownloadProgressUpdated({required this.taskId, required this.progress, required this.status});
 }
 
 class PauseOrResumeDownload extends FileDownloadEvent {}
 
-class Retry extends FileDownloadEvent {}
+class Retry extends FileDownloadEvent {
+  final DownloadQueueItem item;
+
+  Retry({required this.item});
+}

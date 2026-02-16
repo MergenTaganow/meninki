@@ -40,6 +40,7 @@ import '../features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../features/product/bloc/product_compositions_cubit/product_compositions_cubit.dart';
 import '../features/product/bloc/product_create_cubit/product_create_cubit.dart';
 import '../features/product/bloc/product_favorites_cubit/product_favorites_cubit.dart';
+import '../features/product/bloc/product_watched_cubit/product_watched_cubit.dart';
 import '../features/product/data/product_remote_data_source.dart';
 import '../features/province/blocks/get_provinces_bloc/get_provinces_cubit.dart';
 import '../features/province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
@@ -89,13 +90,14 @@ Future<void> init() async {
   sl.registerLazySingleton<ReelPlayingQueueCubit>(() => ReelPlayingQueueCubit());
   sl.registerLazySingleton<ReelsControllersBloc>(() => ReelsControllersBloc());
   sl.registerLazySingleton<CurrentReelCubit>(() => CurrentReelCubit());
-  sl.registerLazySingleton<LikedReelsCubit>(() => LikedReelsCubit(sl())..init());
+  sl.registerLazySingleton<LikedReelsCubit>(() => LikedReelsCubit(sl()));
   sl.registerLazySingleton<ReelCreateCubit>(() => ReelCreateCubit(sl()));
   sl.registerLazySingleton<GetProductReelsBloc>(() => GetProductReelsBloc(sl()));
   sl.registerLazySingleton<GetStoreReelsBloc>(() => GetStoreReelsBloc(sl()));
   sl.registerLazySingleton<GetSearchedReelsBloc>(() => GetSearchedReelsBloc(sl()));
   sl.registerLazySingleton<FileProcessingCubit>(() => FileProcessingCubit(sl()));
   sl.registerLazySingleton<GetReelMarketsBloc>(() => GetReelMarketsBloc(sl()));
+  sl.registerLazySingleton<WatchersCubit>(() => WatchersCubit(sl(), sl()));
 
   //store
   sl.registerLazySingleton<StoreRemoteDataSource>(() => StoreRemoteDataImpl(sl()));

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 
 import '../../auth/models/user.dart';
 

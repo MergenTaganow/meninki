@@ -14,10 +14,10 @@ part 'file_download_state.dart';
 class FileDownloadBloc extends Bloc<FileDownloadEvent, FileDownloadState> {
   final DownloadService downloadService;
   late final StreamSubscription _sub;
-  MeninkiFile? currentDownloadingFile;
-  String? currentDownloadingPath;
-  String? _currentTaskId;
-  bool _isPaused = false;
+  // MeninkiFile? currentDownloadingFile;
+  // String? currentDownloadingPath;
+  // String? _currentTaskId;
+  final List<DownloadQueueItem> _items = [];
   bool isFailed = false;
 
   FileDownloadBloc(this.downloadService) : super(FileDownloadInitial()) {
@@ -26,131 +26,166 @@ class FileDownloadBloc extends Bloc<FileDownloadEvent, FileDownloadState> {
     on<PauseOrResumeDownload>(_onPauseOrResume);
     on<Retry>(_onRetry);
     _sub = downloadService.updates.listen((update) {
-      add(DownloadProgressUpdated(progress: update.progress, status: update.status));
+      add(
+        DownloadProgressUpdated(
+          taskId: update.taskId,
+          progress: update.progress,
+          status: update.status,
+        ),
+      );
     });
   }
 
-  void _onProgressUpdated(DownloadProgressUpdated event, Emitter<FileDownloadState> emit) {
-    if (event.status == DownloadTaskStatus.running) {
-      emit(
-        FileDownloading(
-          file: currentDownloadingFile!,
-          downloadingPath: currentDownloadingPath!,
-          progress: event.progress,
-          isPaused: _isPaused,
-          isFailed: isFailed,
-        ),
+  DownloadQueueItem? get _currentRunning {
+    try {
+      return _items.firstWhere(
+        (e) => e.status == DownloadItemStatus.running || e.status == DownloadItemStatus.paused,
       );
-    }
-
-    if (event.status == DownloadTaskStatus.complete) {
-      MediaScanner.loadMedia(path: currentDownloadingPath);
-      _reset();
-      emit(FileDownloadInitial());
-    }
-
-    if (event.status == DownloadTaskStatus.failed) {
-      if (state is FileDownloading) {
-        emit((state as FileDownloading).copyWith(isFailed: true, isPaused: false));
-      }
+    } catch (_) {
+      return null;
     }
   }
 
-  Future<void> _onDownloadFile(DownloadFile event, Emitter<FileDownloadState> emit) async {
-    if (_currentTaskId != null) {
-      emit.call(FileDownloadingIsBusy());
-      return;
+  bool get _hasRunning => _currentRunning != null;
+
+  void _onProgressUpdated(DownloadProgressUpdated event, Emitter<FileDownloadState> emit) async {
+    // Find item by taskId
+    var index = _items.indexWhere((e) => e.taskId == event.taskId);
+
+    final item = index != -1 ? _items[index] : null;
+
+    if (item == null) return;
+
+    if (event.status == DownloadTaskStatus.running) {
+      item.progress = event.progress;
+      item.status = DownloadItemStatus.running;
+
+      emit(FileDownloading(queue: List.from(_items)));
     }
 
-    if (await fileExists(event.file)) {
-      print('File already exists: }');
-      emit(FileAlreadyExists());
+    if (event.status == DownloadTaskStatus.complete) {
+      item.progress = 100;
+      item.status = DownloadItemStatus.completed;
+
+      MediaScanner.loadMedia(path: item.saveDir);
+
       emit(FileDownloadInitial());
-      return;
+
+      await _startNextQueued(emit);
     }
 
-    final isImage =
-        event.file.name!.endsWith('.jpg') ||
-        event.file.name!.endsWith('.png') ||
-        event.file.name!.endsWith('.jpeg');
+    if (event.status == DownloadTaskStatus.failed) {
+      item.status = DownloadItemStatus.failed;
 
-    final directory = await getGalleryDirectory(isImage: isImage);
+      emit(FileDownloading(queue: List.from(_items)));
 
-    currentDownloadingFile = event.file;
-    currentDownloadingPath = directory.path;
+      // 🔥 Start next queued automatically
+      await _startNextQueued(emit);
+    }
+  }
 
-    _currentTaskId = await FlutterDownloader.enqueue(
-      url: '$baseUrl/public/${event.file.original_file}',
-      savedDir: directory.path,
-      fileName: event.file.name,
+  Future<void> _startNextQueued(Emitter<FileDownloadState> emit) async {
+    if (_hasRunning) return;
+
+    var index = _items.indexWhere((e) => e.status == DownloadItemStatus.queued);
+
+    final next = index != -1 ? _items[index] : null;
+
+    if (next != null) {
+      await _startItem(next, emit);
+    }
+  }
+
+  Future<void> _startItem(DownloadQueueItem item, Emitter<FileDownloadState> emit) async {
+    final taskId = await FlutterDownloader.enqueue(
+      url: '$baseUrl/public/${item.file.original_file}',
+      savedDir: item.saveDir,
+      fileName: item.file.name,
       showNotification: true,
       openFileFromNotification: true,
     );
 
-    if (_currentTaskId == null) return;
+    if (taskId == null) return;
 
-    _isPaused = false;
+    item.taskId = taskId;
+    item.progress = 0;
+    item.status = DownloadItemStatus.running;
 
-    emit(
-      FileDownloading(
-        file: currentDownloadingFile!,
-        downloadingPath: currentDownloadingPath!,
-        progress: 0,
-        isPaused: _isPaused,
-        isFailed: isFailed,
-      ),
+    emit(FileDownloading(queue: List.from(_items)));
+  }
+
+  Future<void> _onDownloadFile(DownloadFile event, Emitter<FileDownloadState> emit) async {
+    // 🔹 Prevent duplicate
+    final alreadyExists = _items.any((e) => e.file.id == event.file.id);
+
+    if (alreadyExists) {
+      emit(FileAlreadyExists());
+      return;
+    }
+
+    // final isImage =
+    //     event.file.name!.endsWith('.jpg') ||
+    //     event.file.name!.endsWith('.png') ||
+    //     event.file.name!.endsWith('.jpeg');
+
+    final directory = await getGalleryDirectory();
+
+    final item = DownloadQueueItem(
+      file: event.file,
+      saveDir: directory.path,
+      status: DownloadItemStatus.queued,
     );
+
+    _items.add(item);
+
+    // 🔹 If nothing running → start immediately
+    if (!_hasRunning) {
+      await _startItem(item, emit);
+    } else {
+      // 🔹 Emit queued state for snackbar/overlay
+      emit(FileQueued(file: event.file));
+      emit(FileDownloading(queue: List.from(_items)));
+    }
   }
 
   Future<void> _onPauseOrResume(
     PauseOrResumeDownload event,
     Emitter<FileDownloadState> emit,
   ) async {
-    if (_currentTaskId == null) return;
+    final item = _currentRunning;
+    if (item == null || item.taskId == null) return;
 
-    if (!_isPaused) {
-      await FlutterDownloader.pause(taskId: _currentTaskId!);
-      _isPaused = true;
-    } else {
-      final newTaskId = await FlutterDownloader.resume(taskId: _currentTaskId!);
-
+    if (item.status == DownloadItemStatus.paused) {
+      final newTaskId = await FlutterDownloader.resume(taskId: item.taskId!);
       if (newTaskId != null) {
-        _currentTaskId = newTaskId;
+        item.taskId = newTaskId;
       }
+      item.status = DownloadItemStatus.running;
+    } else if (item.status == DownloadItemStatus.running) {
+      await FlutterDownloader.pause(taskId: item.taskId!);
+      item.status = DownloadItemStatus.paused;
+    }
 
-      _isPaused = false;
-    }
-    if (state is FileDownloading) {
-      emit((state as FileDownloading).copyWith(isPaused: _isPaused));
-    }
+    emit(FileDownloading(queue: List.from(_items)));
   }
 
   Future<void> _onRetry(Retry event, Emitter<FileDownloadState> emit) async {
-    if (_currentTaskId == null) return;
+    final item = event.item;
 
-    final previousProgress = state is FileDownloading ? (state as FileDownloading).progress : 0;
+    if (item.status != DownloadItemStatus.failed) return;
 
-    final newTaskId = await FlutterDownloader.retry(taskId: _currentTaskId!);
+    // Reset
+    item.taskId = null;
+    item.progress = 0;
+    item.status = DownloadItemStatus.queued;
 
-    if (newTaskId != null) {
-      _currentTaskId = newTaskId;
-      _isPaused = false;
+    // Move to end of list
+    _items.remove(item);
+    _items.add(item);
 
-      emit(
-        (state as FileDownloading).copyWith(
-          isFailed: false,
-          isPaused: false,
-          progress: previousProgress, // 🔥 important
-        ),
-      );
-    }
-  }
+    emit(FileDownloadInitial());
 
-  void _reset() {
-    _currentTaskId = null;
-    _isPaused = false;
-    currentDownloadingFile = null;
-    currentDownloadingPath = null;
+    await _startNextQueued(emit);
   }
 
   @override
@@ -159,3 +194,22 @@ class FileDownloadBloc extends Bloc<FileDownloadEvent, FileDownloadState> {
     return super.close();
   }
 }
+
+class DownloadQueueItem {
+  final MeninkiFile file;
+  final String saveDir;
+
+  String? taskId;
+  int progress;
+  DownloadItemStatus status;
+
+  DownloadQueueItem({
+    required this.file,
+    required this.saveDir,
+    this.taskId,
+    this.progress = 0,
+    this.status = DownloadItemStatus.queued,
+  });
+}
+
+enum DownloadItemStatus { queued, running, paused, failed, completed }

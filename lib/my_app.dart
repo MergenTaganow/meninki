@@ -76,7 +76,7 @@ class _MyAppState extends State<MyApp> {
           Locale('en'),
         ],
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        scrollBehavior: MyScrollBehavior(),
+        // scrollBehavior: MyScrollBehavior(),
         locale: appLocale,
         home: SafeArea(
           child: BlocBuilder<AuthBloc, AuthState>(

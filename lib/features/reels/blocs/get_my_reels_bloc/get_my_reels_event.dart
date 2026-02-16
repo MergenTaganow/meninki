@@ -12,3 +12,8 @@ class MyReelPag extends GetMyReelsEvent {
   final Query? query;
   MyReelPag({this.query});
 }
+
+class UpdateMyReel extends GetMyReelsEvent {
+  final Reel reel;
+  UpdateMyReel(this.reel);
+}

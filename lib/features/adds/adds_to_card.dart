@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:meninki/features/adds/bloc/add_favorite_cubit/add_favorite_cubit.dart';
 import 'package:meninki/features/adds/bloc/add_uuid_cubit/add_uuid_cubit.dart';
-import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';

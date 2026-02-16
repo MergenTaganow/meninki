@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import '../../data/reels_remote_data_source.dart';
@@ -14,11 +16,13 @@ class GetMyReelsBloc extends Bloc<GetMyReelsEvent, GetMyReelsState> {
   int page = 1;
   int limit = 15;
   bool canPag = false;
+  Query? lastQuery;
 
   GetMyReelsBloc(this.ds) : super(GetMyReelInitial()) {
     on<GetMyReelsEvent>((event, emit) async {
       if (event is GetMyReel) {
         canPag = false;
+        lastQuery = event.query;
 
         emit.call(GetMyReelLoading());
         emit.call(await _getReels(event));
@@ -31,7 +35,31 @@ class GetMyReelsBloc extends Bloc<GetMyReelsEvent, GetMyReelsState> {
         emit.call(MyReelPagLoading(reels));
         emit.call(await _paginate(event));
       }
+      if (event is UpdateMyReel) {
+        var index = reels.indexWhere((e) => e.id == event.reel.id);
+        if (index == -1) return;
+        reels[index] = event.reel;
+        emit.call(GetMyReelSuccess(reels, true));
+      }
     });
+  }
+
+  /// This is what your RefreshIndicator will call
+  Future<void> refresh() async {
+    final completer = Completer<void>();
+
+    // listen once for the next success or error state
+    late final StreamSubscription sub;
+    sub = stream.listen((state) {
+      if (state is GetMyReelSuccess || state is GetMyReelFailed) {
+        completer.complete();
+        sub.cancel();
+      }
+    });
+
+    emit.call(await _getReels(GetMyReel(lastQuery)));
+
+    return completer.future;
   }
 
   Future<GetMyReelsState> _paginate(MyReelPag event) async {

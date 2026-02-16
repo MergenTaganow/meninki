@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -16,11 +18,13 @@ class GetStoreProductsBloc extends Bloc<GetStoreProductsEvent, GetStoreProductsS
   int page = 1;
   int limit = 10;
   bool canPag = false;
+  String? lastQuery;
 
   GetStoreProductsBloc(this.ds) : super(GetStoreProductsInitial()) {
     on<GetStoreProductsEvent>((event, emit) async {
       if (event is GetProductStores) {
         emit(GetProductStoresLoading());
+        lastQuery = event.search;
 
         canPag = false;
         emit(await _getStores(event));
@@ -34,6 +38,25 @@ class GetStoreProductsBloc extends Bloc<GetStoreProductsEvent, GetStoreProductsS
         emit(await _paginate(event));
       }
     });
+  }
+
+  /// This is what your RefreshIndicator will call
+  Future<void> refresh() async {
+    final completer = Completer<void>();
+
+    // listen once for the next success or error state
+    late final StreamSubscription sub;
+    sub = stream.listen((state) {
+      if (state is GetProductStoresSuccess || state is GetProductStoresFailed) {
+        completer.complete();
+        sub.cancel();
+      }
+    });
+
+    canPag = false;
+    emit(await _getStores(GetProductStores(search: lastQuery)));
+
+    return completer.future;
   }
 
   Future<GetStoreProductsState> _getStores(GetProductStores event) async {

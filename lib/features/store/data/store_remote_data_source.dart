@@ -24,7 +24,7 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   @override
   Future<Either<Failure, Success>> storeCreate(Map map) async {
     try {
-      var response = await api.dio.post('v1/market', data: map);
+       await api.dio.post('v1/market', data: map);
 
       return Right(Success());
     } catch (e) {
@@ -35,7 +35,7 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   @override
   Future<Either<Failure, Success>> storeEdit(int marketId, Map map) async {
     try {
-      var response = await api.dio.patch('v1/market/$marketId', data: map);
+      await api.dio.patch('v1/market/$marketId', data: map);
 
       return Right(Success());
     } catch (e) {

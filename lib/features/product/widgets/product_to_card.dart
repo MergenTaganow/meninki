@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/core/go.dart';
+import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/basket/bloc/my_basket_cubit/my_basket_cubit.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 import 'package:meninki/features/product/bloc/product_compositions_cubit/product_compositions_cubit.dart';
@@ -17,10 +19,16 @@ class ProductToCard extends StatelessWidget {
     return BlocListener<MyBasketCubit, MyBasketState>(
       listener: (context, state) {
         if (state is ProductAdded) {
-          CustomSnackBar.showSnackBar(context: context, title: AppLocalizations.of(context)!.productAddedToBasket);
+          CustomSnackBar.showSnackBar(
+            context: context,
+            title: AppLocalizations.of(context)!.productAddedToBasket,
+          );
         }
         if (state is ProductRemoved) {
-          CustomSnackBar.showSnackBar(context: context, title: AppLocalizations.of(context)!.productRemovedFromBasket);
+          CustomSnackBar.showSnackBar(
+            context: context,
+            title: AppLocalizations.of(context)!.productRemovedFromBasket,
+          );
         }
       },
       child: BlocBuilder<GetProductByIdCubit, GetProductByIdState>(
@@ -105,7 +113,10 @@ class ProductToCard extends StatelessWidget {
                           }
                           return GestureDetector(
                             onTap: () {
-                              if (alreadyInBasket) return;
+                              if (alreadyInBasket) {
+                                Go.to(Routes.basketPage);
+                                return;
+                              }
                               final composition =
                                   context.read<ProductCompositionsCubit>().selectedComposition;
 

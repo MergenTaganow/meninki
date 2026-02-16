@@ -14,7 +14,15 @@ class DownloadOverlay {
   static void show(BuildContext context, DownloadUIState state) {
     if (_currentEntry == null) {
       _currentEntry = OverlayEntry(
-        builder: (context) => _DownloadOverlayWidget(stateNotifier: _stateNotifier),
+        builder:
+            (context) => _DownloadOverlayWidget(
+              stateNotifier: _stateNotifier,
+              onClose: () {
+                _currentEntry?.remove();
+                _currentEntry = null;
+                _stateNotifier.value = null;
+              },
+            ),
       );
       Overlay.of(context).insert(_currentEntry!);
     }
@@ -34,8 +42,12 @@ class DownloadOverlay {
 
 class _DownloadOverlayWidget extends StatefulWidget {
   final ValueNotifier<DownloadUIState?> stateNotifier;
+  final VoidCallback onClose; // <-- add this
 
-  const _DownloadOverlayWidget({required this.stateNotifier});
+  const _DownloadOverlayWidget({
+    required this.stateNotifier,
+    required this.onClose, // <-- add this
+  });
 
   @override
   State<_DownloadOverlayWidget> createState() => _DownloadOverlayWidgetState();
@@ -65,7 +77,13 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
     _controller.forward();
   }
 
-  FileDownloading? curState;
+  DownloadQueueItem? curState;
+
+  /// Animates the overlay out and then calls [widget.onClose].
+  Future<void> _dismiss() async {
+    await _controller.reverse();
+    widget.onClose();
+  }
 
   @override
   void dispose() {
@@ -78,7 +96,11 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
     return BlocBuilder<FileDownloadBloc, FileDownloadState>(
       builder: (context, state) {
         if (state is FileDownloading) {
-          curState = state;
+          var index = state.queue.indexWhere(
+            (e) => e.status == DownloadItemStatus.running || e.status == DownloadItemStatus.paused,
+          );
+
+          curState = index != -1 ? state.queue[index] : null;
         }
         return Positioned(
           top: MediaQuery.of(context).padding.top + 8,
@@ -99,7 +121,7 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
                     ),
                     borderRadius: BorderRadius.circular(12),
                     border:
-                        (curState?.isFailed ?? false)
+                        (curState?.status == DownloadItemStatus.failed)
                             ? Border.all(color: Col.redTask)
                             : Border.all(color: Colors.white.withOpacity(0.8)),
                     boxShadow: [
@@ -127,11 +149,11 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         child: Row(
                           children: [
-                            // Compact icon
+                            // Play / Pause / Retry button
                             GestureDetector(
                               onTap: () {
-                                if (curState?.isFailed ?? false) {
-                                  context.read<FileDownloadBloc>().add(Retry());
+                                if (curState?.status == DownloadItemStatus.failed) {
+                                  context.read<FileDownloadBloc>().add(Retry(item: curState!));
                                 } else {
                                   context.read<FileDownloadBloc>().add(PauseOrResumeDownload());
                                   setState(() {});
@@ -150,7 +172,6 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
                                     end: Alignment.bottomRight,
                                   ),
                                   borderRadius: BorderRadius.circular(10),
-
                                   boxShadow: [
                                     BoxShadow(
                                       color: const Color(0xFF7A4267).withOpacity(0.25),
@@ -160,9 +181,9 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
                                   ],
                                 ),
                                 child: Icon(
-                                  (curState?.isFailed ?? false)
+                                  (curState?.status == DownloadItemStatus.failed)
                                       ? Icons.refresh
-                                      : (curState?.isPaused ?? false)
+                                      : (curState?.status == DownloadItemStatus.paused)
                                       ? Icons.play_arrow_rounded
                                       : Icons.pause_rounded,
                                   color: Colors.white,
@@ -171,7 +192,7 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
                               ),
                             ),
                             const SizedBox(width: 10),
-                            // File info - more compact
+                            // File name + progress bar
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +209,6 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  // Inline progress bar
                                   Stack(
                                     children: [
                                       Container(
@@ -226,7 +246,7 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // Compact percentage
+                            // Percentage badge
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
@@ -240,6 +260,24 @@ class _DownloadOverlayWidgetState extends State<_DownloadOverlayWidget>
                                   fontWeight: FontWeight.w700,
                                   fontSize: 12,
                                   letterSpacing: -0.3,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            // ── Close button ──────────────────────────────
+                            GestureDetector(
+                              onTap: _dismiss,
+                              child: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 16,
+                                  color: Colors.grey.shade500,
                                 ),
                               ),
                             ),

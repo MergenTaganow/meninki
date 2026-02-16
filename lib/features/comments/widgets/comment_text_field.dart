@@ -55,7 +55,7 @@ class CommentTextField extends StatelessWidget {
                                   ).textTheme.bodySmall?.copyWith(color: Col.primBlue),
                                 ),
                                 Text(
-                                  actionstate.editingComment!.comment_text ?? '',
+                                  actionstate.editingComment!.comment_text,
                                   style: Theme.of(
                                     context,
                                   ).textTheme.bodyMedium?.copyWith(fontSize: 14),

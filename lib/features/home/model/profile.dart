@@ -1,24 +1,23 @@
-
 import '../../store/models/market.dart';
 
 class Profile {
   int id;
-  String username;
+  String? username;
   String? lang;
-  String first_name;
-  String last_name;
-  int following_count;
-  int followers_coun;
+  String? first_name;
+  String? last_name;
+  int? following_count;
+  int? followers_coun;
   List<Market>? markets;
 
   Profile({
     required this.id,
-    required this.username,
+    this.username,
     this.lang,
-    required this.first_name,
-    required this.last_name,
-    required this.following_count,
-    required this.followers_coun,
+    this.first_name,
+    this.last_name,
+    this.following_count,
+    this.followers_coun,
     this.markets,
   });
 

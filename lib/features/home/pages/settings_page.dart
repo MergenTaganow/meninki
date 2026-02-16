@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
+import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/auth/bloc/aut_bloc/auth_bloc.dart';
-import 'package:meninki/features/auth/bloc/register_cubit/register_cubit.dart';
 import 'package:meninki/features/store/widgets/store_sheet.dart';
 
 import '../../../my_app.dart';
@@ -35,6 +36,14 @@ class _SettingsPageState extends State<SettingsPage> {
               Text(lg.general, style: TextStyle(color: Color(0xFF969696), fontSize: 12)),
               Box(h: 10),
               languageChange(context, lg),
+              Box(h: 10),
+              singleLine(
+                title: lg.download,
+                value: Icon(Icons.download, size: 20),
+                onTap: () {
+                  Go.to(Routes.downloadsPage);
+                },
+              ),
               Box(h: 10),
 
               Text(lg.profile, style: TextStyle(color: Color(0xFF969696), fontSize: 12)),

@@ -49,7 +49,7 @@ class ReelsSheet extends StatelessWidget {
                     var count =
                         (reel.user_favorite_count ?? 0) +
                         (state.reelIds.contains(reel.id) ? -1 : 1);
-                    context.read<LikedReelsCubit>().likeTapped(reel.id);
+                    context.read<LikedReelsCubit>().likeTapped(reel);
                   },
                 );
               }

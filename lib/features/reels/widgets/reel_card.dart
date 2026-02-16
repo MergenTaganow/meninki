@@ -1,20 +1,13 @@
 import 'package:better_player/better_player.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/widgets/reel_sheet.dart';
-import 'package:meninki/features/store/pages/store_create_page.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import '../../../core/api.dart';
 import '../../../core/helpers.dart';
-import '../../file_download/bloc/file_download_bloc/file_download_bloc.dart';
-import '../blocs/like_reels_cubit/liked_reels_cubit.dart';
 import '../blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
 import '../blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import '../model/reels.dart';
@@ -142,6 +135,5 @@ class _ReelCardState extends State<ReelCard> {
         ),
       ],
     );
-    ;
   }
 }

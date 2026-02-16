@@ -1,6 +1,4 @@
-import 'dart:isolate';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -38,6 +36,7 @@ import 'features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import 'features/product/bloc/product_compositions_cubit/product_compositions_cubit.dart';
 import 'features/product/bloc/product_create_cubit/product_create_cubit.dart';
 import 'features/product/bloc/product_favorites_cubit/product_favorites_cubit.dart';
+import 'features/product/bloc/product_watched_cubit/product_watched_cubit.dart';
 import 'features/province/blocks/get_provinces_bloc/get_provinces_cubit.dart';
 import 'features/province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import 'features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
@@ -135,6 +134,7 @@ void main() async {
         BlocProvider<GetFavoriteProductsBloc>(create: (context) => sl<GetFavoriteProductsBloc>()),
         BlocProvider<GetFavoriteAddsBloc>(create: (context) => sl<GetFavoriteAddsBloc>()),
         BlocProvider<TabNavigationCubit>(create: (context) => sl<TabNavigationCubit>()),
+        BlocProvider<WatchersCubit>(create: (context) => sl<WatchersCubit>()),
       ],
       child: const MyApp(),
     ),

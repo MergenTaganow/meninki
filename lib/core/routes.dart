@@ -9,8 +9,10 @@ import 'package:meninki/features/product/pages/public_product_detail_page.dart';
 import 'package:meninki/features/reels/pages/reels_screen.dart';
 
 import '../features/adds/pages/add_detail_page.dart';
+import '../features/basket/pages/basket_page.dart';
 import '../features/categories/pages/categories_selecting_page.dart';
 import '../features/categories/pages/sub_category_selecting_page.dart';
+import '../features/file_download/pages/downloads_page.dart';
 import '../features/home/pages/favorites_page.dart';
 import '../features/home/pages/home_page.dart';
 import '../features/home/pages/my_adds_page.dart';
@@ -41,6 +43,8 @@ class Routes {
   static const String homePage = '/homePage';
   static const String favoritesPage = '/favoritesPage';
   static const String settingsPage = '/settingsPage';
+  static const String downloadsPage = '/downloadsPage';
+  static const String basketPage = '/basketPage';
 
   //store
   static const String storeCreatePage = '/storeCreatePage';
@@ -163,6 +167,10 @@ class Routes {
         return MaterialPageRoute(builder: (_) => MarketColorSelectingPage(data?['market']));
       case marketBannersPage:
         return MaterialPageRoute(builder: (_) => MarketBannersPage(market: data?['market']));
+      case downloadsPage:
+        return MaterialPageRoute(builder: (_) => DownloadsPage());
+      case basketPage:
+        return MaterialPageRoute(builder: (_) => BasketPage());
     }
 
     return null;

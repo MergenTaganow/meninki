@@ -14,3 +14,8 @@ class ReelPag extends GetReelsEvent {
 }
 
 class ClearReels extends GetReelsEvent {}
+
+class UpdateReels extends GetReelsEvent {
+  final Reel reel;
+  UpdateReels(this.reel);
+}

@@ -6,7 +6,6 @@ import 'package:meninki/features/auth/models/user.dart';
 import 'package:meninki/features/comments/pages/comments_page.dart';
 import 'package:meninki/features/global/widgets/images_back_button.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
-import 'package:meninki/features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 import 'package:meninki/features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import '../../../core/api.dart';
@@ -121,6 +120,7 @@ class _ReelWidgetState extends State<ReelWidget> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (event.betterPlayerEventType == BetterPlayerEventType.initialized) {
           controller.setOverriddenAspectRatio(controller.videoPlayerController!.value.aspectRatio);
+          // context.read<WatchersCubit>().reelsWatched(widget.reel.id);
           setState(() {});
         }
         setState(() {});
@@ -330,7 +330,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                               (state.reelIds.contains(widget.reel.id) ? -1 : 1);
                           widget.reel = widget.reel.copyWith(user_favorite_count: count);
                           setState(() {});
-                          context.read<LikedReelsCubit>().likeTapped(widget.reel.id);
+                          context.read<LikedReelsCubit>().likeTapped(widget.reel);
                         },
                         child: iconCount(
                           icon: state.reelIds.contains(widget.reel.id) ? "liked" : 'notLiked',

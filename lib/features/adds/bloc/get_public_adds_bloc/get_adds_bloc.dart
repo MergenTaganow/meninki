@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -15,12 +17,14 @@ class GetAddsBloc extends Bloc<GetAddsEvent, GetAddsState> {
   int page = 1;
   int limit = 20;
   bool canPag = false;
+  Query? lastQuery;
 
   GetAddsBloc(this.ds) : super(GetAddInitial()) {
     on<GetAddsEvent>((event, emit) async {
       if (event is GetAdd) {
         canPag = false;
 
+        lastQuery = event.query;
         emit.call(GetAddLoading());
         emit.call(await _getAdds(event));
       }
@@ -39,6 +43,25 @@ class GetAddsBloc extends Bloc<GetAddsEvent, GetAddsState> {
         emit.call(GetAddInitial());
       }
     });
+  }
+
+  /// This is what your RefreshIndicator will call
+  Future<void> refresh() async {
+    final completer = Completer<void>();
+
+    // listen once for the next success or error state
+    late final StreamSubscription sub;
+    sub = stream.listen((state) {
+      if (state is GetAddSuccess || state is GetAddFailed) {
+        completer.complete();
+        sub.cancel();
+      }
+    });
+
+    canPag = false;
+    emit(await _getAdds(GetAdd(lastQuery)));
+
+    return completer.future;
   }
 
   Future<GetAddsState> _paginate(AddPag event) async {

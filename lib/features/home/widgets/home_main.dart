@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
@@ -58,50 +59,44 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    AppLocalizations lg = AppLocalizations.of(context)!;
-    return RefreshIndicator(
-      backgroundColor: Colors.white,
-      onRefresh: () async {
-        context.read<GetReelMarketsBloc>().add(GetReelMarkets());
+    return CustomScrollView(
+      slivers: [
+        CupertinoSliverRefreshControl(
+          onRefresh: () async {
+            context.read<GetReelMarketsBloc>().refresh();
 
-        context.read<GetDiscountProducts>().add(
-          GetProduct(Query(orderDirection: 'desc', orderBy: 'discount')),
-        );
-        context.read<GetNewProducts>().add(
-          GetProduct(Query(orderBy: 'id', orderDirection: 'desc')),
-        );
-        context.read<GetRaitedProducts>().add(
-          GetProduct(/*Query(orderBy: 'rate', orderDirection: 'desc')*/),
-        );
-        context.read<GetStoreProductsBloc>().add(GetProductStores());
-        context.read<GetBannersBloc>().add(
-          GetBanner(Query(current_page: BannerPageTypes.home_main)),
-        );
-      },
-      child: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        child: Column(
-          children: [
-            Box(h: 20),
+            context.read<GetDiscountProducts>().refresh();
 
-            ///markets
-            markets(),
-            Box(h: 20),
-
-            ///reklama
-            BannersList(priority: 1),
-            Box(h: 20),
-
-            /// discount products
-            products(),
-            Box(h: 20),
-
-            ///marketProducts
-            marketProducts(),
-            Box(h: 80),
-          ],
+            context.read<GetRaitedProducts>().refresh();
+            context.read<GetStoreProductsBloc>().refresh();
+            context.read<GetBannersBloc>().refresh();
+            await context.read<GetNewProducts>().refresh();
+          },
         ),
-      ),
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              Box(h: 20),
+
+              ///markets
+              markets(),
+              Box(h: 20),
+
+              ///reklama
+              BannersList(priority: 1),
+              Box(h: 20),
+
+              /// discount products
+              products(),
+              Box(h: 20),
+
+              ///marketProducts
+              marketProducts(),
+              Box(h: 80),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -273,6 +268,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                       itemBuilder: (context, index) {
                         return Padd(
                           left: index == 0 ? 10 : 0,
+                          right: index == products.length - 1 ? 10 : 0,
                           child: ProductCard(product: products[index]),
                         );
                       },
@@ -329,6 +325,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                       itemBuilder: (context, index) {
                         return Padd(
                           left: index == 0 ? 10 : 0,
+                          right: index == products.length - 1 ? 10 : 0,
                           child: ProductCard(product: products[index]),
                         );
                       },
@@ -388,6 +385,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                       itemBuilder: (context, index) {
                         return Padd(
                           left: index == 0 ? 10 : 0,
+                          right: index == products.length - 1 ? 10 : 0,
                           child: ProductCard(product: products[index]),
                         );
                       },

@@ -10,7 +10,7 @@ class TabNavigationCubit extends Cubit<TabNavigationState> {
 
   homeToSearchProduct() async {
     emit(NavigateTab(page: TabPages.main, index: 1));
-    await Future.delayed(Duration(milliseconds: 400));
+    await Future.delayed(Duration(milliseconds: 100));
     emit(NavigateTab(page: TabPages.search, index: 1));
     emit(TabNavigationInitial());
   }

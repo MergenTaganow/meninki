@@ -92,8 +92,8 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
       descriptionTMController.text = widget.product!.description?.tk ?? '';
       descriptionRuController.text = widget.product!.description?.ru ?? '';
       descriptionENController.text = widget.product!.description?.en ?? '';
-      priceController.text = widget.product!.price.toString() ?? '';
-      discountPriceController.text = widget.product!.discount.toString() ?? '';
+      priceController.text = widget.product!.price.toString();
+      discountPriceController.text = widget.product!.discount.toString();
       if (widget.product?.cover_image != null) {
         coverImage = widget.product!.cover_image?.copyWith(status: 'ready');
       }

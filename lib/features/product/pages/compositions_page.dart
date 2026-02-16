@@ -9,7 +9,6 @@ import '../../../core/routes.dart';
 import '../../global/widgets/custom_snack_bar.dart';
 import '../../store/widgets/store_sheet.dart';
 import '../bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
-import '../bloc/get_products_bloc/get_products_bloc.dart';
 import '../models/product_atribute.dart';
 import '../models/product_parameters.dart';
 

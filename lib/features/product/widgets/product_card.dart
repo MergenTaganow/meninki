@@ -89,7 +89,7 @@ class ProductCard extends StatelessWidget {
                 Box(h: 4),
 
                 Text(
-                  product.name.trans(context) ?? '',
+                  product.name.trans(context),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(height: 1.2, color: scheme?.textPrimary),

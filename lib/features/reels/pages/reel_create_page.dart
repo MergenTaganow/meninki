@@ -6,22 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/helpers.dart';
-import 'package:meninki/features/auth/data/employee_local_data_source.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
-import 'package:meninki/features/reels/model/meninki_file.dart';
-import 'package:meninki/features/reels/model/reels.dart';
 import 'package:meninki/features/store/bloc/get_my_stores_bloc/get_my_stores_bloc.dart';
 import 'package:meninki/features/store/models/market.dart';
 
-import '../../../core/api.dart';
 import '../../../core/colors.dart';
 import '../../../core/go.dart';
-import '../../../core/injector.dart';
-import '../../global/widgets/meninki_network_image.dart';
-import '../blocs/get_reels_bloc/get_reels_bloc.dart';
 
 class ReelCreatePage extends StatefulWidget {
   final Product product;

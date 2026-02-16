@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:meninki/features/reels/data/reels_remote_data_source.dart';
 import 'package:meninki/features/store/models/market.dart';
@@ -30,12 +32,14 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
   int page = 1;
   int limit = 10;
   bool canPag = false;
+  String? lastSearch;
 
   GetReelMarketsBloc(this.ds) : super(GetReelMarketsInitial()) {
     on<GetReelMarketsEvent>((event, emit) async {
       if (event is GetReelMarkets) {
         emit(GetReelMarketsLoading());
 
+        lastSearch = event.search;
         canPag = false;
         emit(await _getReelMarkets(event));
       }
@@ -48,6 +52,25 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
         emit(await _paginate(event));
       }
     });
+  }
+
+  /// This is what your RefreshIndicator will call
+  Future<void> refresh() async {
+    final completer = Completer<void>();
+
+    // listen once for the next success or error state
+    late final StreamSubscription sub;
+    sub = stream.listen((state) {
+      if (state is GetReelMarketsSuccess || state is GetReelMarketsFailed) {
+        completer.complete();
+        sub.cancel();
+      }
+    });
+
+    canPag = false;
+    emit(await _getReelMarkets(GetReelMarkets(search: lastSearch)));
+
+    return completer.future;
   }
 
   Future<GetReelMarketsState> _getReelMarkets(GetReelMarkets event) async {

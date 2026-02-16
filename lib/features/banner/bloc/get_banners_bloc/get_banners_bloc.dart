@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:meninki/features/product/data/product_remote_data_source.dart';
 import 'package:meta/meta.dart';
@@ -30,6 +32,7 @@ class GetBannersBloc extends Bloc<GetBannersEvent, GetBannersState> {
   int priority = 1;
   int limit = 15;
   int page = 1;
+  Query? lastQuery;
 
   GetBannersBloc(this.ds) : super(GetBannerInitial()) {
     on<GetBannersEvent>((event, emit) async {
@@ -37,6 +40,7 @@ class GetBannersBloc extends Bloc<GetBannersEvent, GetBannersState> {
         priority = 1;
         bannersByPriority.clear();
 
+        lastQuery == event.query;
         emit(GetBannerLoading());
         emit(await _getBanners(event));
       }
@@ -52,6 +56,24 @@ class GetBannersBloc extends Bloc<GetBannersEvent, GetBannersState> {
         emit(GetBannerInitial());
       }
     });
+  }
+
+  /// This is what your RefreshIndicator will call
+  Future<void> refresh() async {
+    final completer = Completer<void>();
+
+    // listen once for the next success or error state
+    late final StreamSubscription sub;
+    sub = stream.listen((state) {
+      if (state is GetBannerSuccess || state is GetBannerFailed) {
+        completer.complete();
+        sub.cancel();
+      }
+    });
+
+    emit(await _getBanners(GetBanner(lastQuery)));
+
+    return completer.future;
   }
 
   Future<GetBannersState> _getBanners(GetBanner event) async {

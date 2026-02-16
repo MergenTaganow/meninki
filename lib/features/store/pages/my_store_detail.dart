@@ -104,294 +104,309 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
           }
           if (state is GetMarketByIdSuccess) {
             return RefreshIndicator(
-              notificationPredicate: (notification) {
-                // with NestedScrollView local(depth == 2) OverscrollNotification are not sent
-                return notification.depth == 2 &&
-                    notification.metrics.pixels <= 0 &&
-                    notification.metrics.axisDirection == AxisDirection.down;
-              },
               onRefresh: () async {
                 context.read<GetMarketByIdCubit>().getStoreById(state.market.id);
               },
-              child: NestedScrollView(
-                controller: scrollController,
-                headerSliverBuilder: (context, innerBoxIsScrolled) {
-                  return [
-                    //store detail
-                    SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (state.market.cover_image != null ||
-                              (state.market.files?.isNotEmpty ?? false))
-                            Stack(
-                              children: [
-                                SizedBox(
-                                  height: 360,
-                                  width: double.infinity,
-                                  child:
-                                      (state.market.files?.isNotEmpty ?? false)
-                                          ? PageView.builder(
-                                            controller: _pageController,
-                                            itemCount: state.market.files!.length,
-                                            onPageChanged: (index) {
-                                              _currentPage = index;
-                                            },
-                                            itemBuilder: (_, index) {
-                                              return MeninkiNetworkImage(
-                                                file: state.market.files![index],
-                                                networkImageType: NetworkImageType.large,
-                                                otherFiles: state.market.files,
-                                                fit: BoxFit.cover,
-                                              );
-                                            },
-                                          )
-                                          : MeninkiNetworkImage(
-                                            file: state.market.cover_image!,
-                                            networkImageType: NetworkImageType.large,
-                                            fit: BoxFit.cover,
-                                          ),
-                                ),
-                                ImagesBackButton(),
-                                moreButton(context, state.market),
+              child: CustomScrollView(
+                physics: const ClampingScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (state.market.cover_image != null ||
+                            (state.market.files?.isNotEmpty ?? false))
+                          Stack(
+                            children: [
+                              SizedBox(
+                                height: 360,
+                                width: double.infinity,
+                                child:
+                                    (state.market.files?.isNotEmpty ?? false)
+                                        ? PageView.builder(
+                                          controller: _pageController,
+                                          itemCount: state.market.files!.length,
+                                          onPageChanged: (index) {
+                                            _currentPage = index;
+                                          },
+                                          itemBuilder: (_, index) {
+                                            return MeninkiNetworkImage(
+                                              file: state.market.files![index],
+                                              networkImageType: NetworkImageType.large,
+                                              otherFiles: state.market.files,
+                                              fit: BoxFit.cover,
+                                            );
+                                          },
+                                        )
+                                        : MeninkiNetworkImage(
+                                          file: state.market.cover_image!,
+                                          networkImageType: NetworkImageType.large,
+                                          fit: BoxFit.cover,
+                                        ),
+                              ),
+                              ImagesBackButton(),
+                              moreButton(context, state.market),
 
-                                /// Page indicator
-                                if (state.market.files?.isNotEmpty ?? false)
-                                  Positioned(
-                                    bottom: 16,
-                                    left: 0,
-                                    right: 0,
-                                    child: Center(
-                                      child: SmoothPageIndicator(
-                                        controller: _pageController,
-                                        count: state.market.files!.length,
-                                        effect: SlideEffect(
-                                          spacing: 6,
-                                          radius: 4,
-                                          dotWidth: 32,
-                                          dotHeight: 3,
-                                          paintStyle: PaintingStyle.fill,
-                                          dotColor: Colors.white.withOpacity(0.35),
-                                          activeDotColor: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          Container(
-                            color: scheme.bgSecondary,
-                            padding: EdgeInsets.all(14),
-                            child: Row(
-                              children: [
-                                if (state.market.cover_image != null)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(100),
-                                    child: SizedBox(
-                                      height: 45,
-                                      width: 45,
-                                      child: MeninkiNetworkImage(
-                                        file: state.market.cover_image!,
-                                        networkImageType: NetworkImageType.small,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                Box(w: 14),
-                                Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        state.market.name,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                          color: scheme.textPrimary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Material(
-                                  color: Colors.transparent,
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(14),
-                                    splashColor: Colors.white.withOpacity(0.22),
-                                    highlightColor: Colors.white.withOpacity(0.10),
-                                    onTap: () {
-                                      HapticFeedback.mediumImpact();
-                                      Future.delayed(const Duration(milliseconds: 120), () {
-                                        Go.to(
-                                          Routes.productCreate,
-                                          argument: {'storeId': state.market.id},
-                                        );
-                                      });
-                                    },
-                                    child: Ink(
-                                      height: 45,
-                                      width: 45,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(14),
-                                        color: scheme.button,
-                                      ),
-                                      child: const Center(
-                                        child: Icon(Icons.add_circle, color: Colors.white),
+                              /// Page indicator
+                              if (state.market.files?.isNotEmpty ?? false)
+                                Positioned(
+                                  bottom: 16,
+                                  left: 0,
+                                  right: 0,
+                                  child: Center(
+                                    child: SmoothPageIndicator(
+                                      controller: _pageController,
+                                      count: state.market.files!.length,
+                                      effect: SlideEffect(
+                                        spacing: 6,
+                                        radius: 4,
+                                        dotWidth: 32,
+                                        dotHeight: 3,
+                                        paintStyle: PaintingStyle.fill,
+                                        dotColor: Colors.white.withOpacity(0.35),
+                                        activeDotColor: Colors.white,
                                       ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
+                            ],
                           ),
-                          Box(h: 10),
-                          Padd(
-                            hor: 14,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                singleRow(
-                                  title: AppLocalizations.of(context)!.phone,
-                                  value: "+993 62 66 66 66 ",
-                                ),
-                                singleRow(
-                                  title: AppLocalizations.of(context)!.description,
-                                  value: state.market.description?.trans(context) ?? '',
-                                ),
-                                singleRow(
-                                  title: AppLocalizations.of(context)!.username,
-                                  value: state.market.username ?? '',
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: card(
-                                        child: Padd(
-                                          ver: 10,
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                "Подписчики",
-                                                style: TextStyle(color: scheme.textSecondary),
-                                              ),
-                                              Text(
-                                                state.market.user_favorite_count.toString(),
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 16,
-                                                  color: scheme.textPrimary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
+                        Container(
+                          color: scheme.bgSecondary,
+                          padding: EdgeInsets.all(14),
+                          child: Row(
+                            children: [
+                              if (state.market.cover_image != null)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(100),
+                                  child: SizedBox(
+                                    height: 45,
+                                    width: 45,
+                                    child: MeninkiNetworkImage(
+                                      file: state.market.cover_image!,
+                                      networkImageType: NetworkImageType.small,
+                                      fit: BoxFit.cover,
                                     ),
-                                    Box(w: 10),
-                                    Expanded(
-                                      child: card(
-                                        child: Padd(
-                                          ver: 10,
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                "Место в рейтинге",
-                                                style: TextStyle(color: scheme.textSecondary),
-                                              ),
-                                              Text(
-                                                state.market.rate_count.toString(),
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 16,
-                                                  color: scheme.textPrimary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                  ),
+                                ),
+                              Box(w: 14),
+                              Expanded(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      state.market.name,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: scheme.textPrimary,
                                       ),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
+                              ),
+                              Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(14),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  splashColor: Colors.white.withOpacity(0.22),
+                                  highlightColor: Colors.white.withOpacity(0.10),
+                                  onTap: () {
+                                    HapticFeedback.mediumImpact();
+                                    Future.delayed(const Duration(milliseconds: 120), () {
+                                      Go.to(
+                                        Routes.productCreate,
+                                        argument: {'storeId': state.market.id},
+                                      );
+                                    });
+                                  },
+                                  child: Ink(
+                                    height: 45,
+                                    width: 45,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(14),
+                                      color: scheme.button,
+                                    ),
+                                    child: const Center(
+                                      child: Icon(Icons.add_circle, color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-
-                    // reels-products tabs
-                    SliverAppBar(
-                      pinned: true,
-                      floating: true,
-                      snap: true, // optional but nice
-                      automaticallyImplyLeading: false,
-                      backgroundColor: scheme.bgMain,
-                      titleSpacing: 0,
-                      title: Row(
-                        children: [
-                          Padd(
-                            hor: 10,
-                            child: ButtonsTabBar(
-                              // Customize the appearance and behavior of the tab bar
-                              controller: tabController,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                color: scheme.button,
+                        ),
+                        Box(h: 10),
+                        Padd(
+                          hor: 14,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              singleRow(
+                                title: AppLocalizations.of(context)!.phone,
+                                value: "+993 62 66 66 66 ",
                               ),
-                              unselectedDecoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                color: scheme.cardBackground,
+                              singleRow(
+                                title: AppLocalizations.of(context)!.description,
+                                value: state.market.description?.trans(context) ?? '',
                               ),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                              buttonMargin: EdgeInsets.only(right: 8),
-                              labelStyle: TextStyle(
-                                color: scheme.buttonText,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
+                              singleRow(
+                                title: AppLocalizations.of(context)!.username,
+                                value: state.market.username ?? '',
                               ),
-                              unselectedLabelStyle: TextStyle(
-                                color: scheme.textPrimary,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14,
-                              ),
-                              // Add your tabs here
-                              tabs:
-                                  ["Обзоры", "Товары"]
-                                      .map(
-                                        (e) => Tab(
-                                          text:
-                                              "${e == 'Обзоры' ? AppLocalizations.of(context)!.reviews : AppLocalizations.of(context)!.products} • ${e == 'Обзоры' ? state.market.reel_verified_count : state.market.product_verified_count}",
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: card(
+                                      child: Padd(
+                                        ver: 10,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              "Подписчики",
+                                              style: TextStyle(color: scheme.textSecondary),
+                                            ),
+                                            Text(
+                                              state.market.user_favorite_count.toString(),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 16,
+                                                color: scheme.textPrimary,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      )
-                                      .toList(),
+                                      ),
+                                    ),
+                                  ),
+                                  Box(w: 10),
+                                  Expanded(
+                                    child: card(
+                                      child: Padd(
+                                        ver: 10,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              "Место в рейтинге",
+                                              style: TextStyle(color: scheme.textSecondary),
+                                            ),
+                                            Text(
+                                              state.market.rate_count.toString(),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 16,
+                                                color: scheme.textPrimary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // reels-products tabs
+                  SliverAppBar(
+                    pinned: true,
+                    floating: true,
+                    snap: true, // optional but nice
+                    automaticallyImplyLeading: false,
+                    backgroundColor: scheme.bgMain,
+                    titleSpacing: 0,
+                    title: Row(
+                      children: [
+                        Padd(
+                          hor: 10,
+                          child: ButtonsTabBar(
+                            // Customize the appearance and behavior of the tab bar
+                            controller: tabController,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              color: scheme.button,
                             ),
+                            unselectedDecoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              color: scheme.cardBackground,
+                            ),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                            buttonMargin: EdgeInsets.only(right: 8),
+                            labelStyle: TextStyle(
+                              color: scheme.buttonText,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                            ),
+                            unselectedLabelStyle: TextStyle(
+                              color: scheme.textPrimary,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                            ),
+                            // Add your tabs here
+                            tabs:
+                                ["Обзоры", "Товары"]
+                                    .map(
+                                      (e) => Tab(
+                                        text:
+                                            "${e == 'Обзоры' ? AppLocalizations.of(context)!.reviews : AppLocalizations.of(context)!.products} • ${e == 'Обзоры' ? state.market.reel_verified_count : state.market.product_verified_count}",
+                                      ),
+                                    )
+                                    .toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SliverFillRemaining(
+                    hasScrollBody: true,
+                    child: Padd(
+                      hor: 10,
+                      child: TabBarView(
+                        controller: tabController,
+                        children: [
+                          StoreReelsList(query: Query(market_id: state.market.id), scheme: scheme),
+                          StoreProductsList(
+                            query: Query(market_ids: [state.market.id]),
+                            scheme: scheme,
+                            isPublic: false,
                           ),
                         ],
                       ),
                     ),
-                  ];
-                },
-                body: Padd(
-                  hor: 10,
-                  child: TabBarView(
-                    controller: tabController,
-                    children: [
-                      StoreReelsList(query: Query(market_id: state.market.id), scheme: scheme),
-                      StoreProductsList(
-                        query: Query(market_ids: [state.market.id]),
-                        scheme: scheme,
-                        isPublic: false,
-                      ),
-                    ],
                   ),
-                ),
+                ],
               ),
             );
+            // return RefreshIndicator(
+            //   notificationPredicate: (notification) {
+            //     // with NestedScrollView local(depth == 2) OverscrollNotification are not sent
+            //     return notification.depth == 2 &&
+            //         notification.metrics.pixels <= 0 &&
+            //         notification.metrics.axisDirection == AxisDirection.down;
+            //   },
+            //   onRefresh: () async {
+            //     context.read<GetMarketByIdCubit>().getStoreById(state.market.id);
+            //   },
+            //   child: NestedScrollView(
+            //     controller: scrollController,
+            //     headerSliverBuilder: (context, innerBoxIsScrolled) {
+            //       return [
+            //         //store detail
+            //
+            //       ];
+            //     },
+            //     body:
+            //   ),
+            // );
           }
           return Container();
         },

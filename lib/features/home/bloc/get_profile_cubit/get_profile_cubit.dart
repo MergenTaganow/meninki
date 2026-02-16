@@ -14,4 +14,9 @@ class GetProfileCubit extends Cubit<GetProfileState> {
     var failOrNot = await ds.getMyProfile();
     failOrNot.fold((l) => emit.call(GetProfileFailed(l)), (r) => emit.call(GetProfileSuccess(r)));
   }
+
+  Future<void> refreshMyProfile() async {
+    var failOrNot = await ds.getMyProfile();
+    failOrNot.fold((l) => emit.call(GetProfileFailed(l)), (r) => emit.call(GetProfileSuccess(r)));
+  }
 }

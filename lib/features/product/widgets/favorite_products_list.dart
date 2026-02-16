@@ -4,9 +4,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/features/product/bloc/get_products_bloc/get_products_bloc.dart';
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/product/widgets/product_card.dart';
-import 'package:meninki/features/reels/model/query.dart';
-
-import '../../store/widgets/store_background_color_selection.dart';
 
 class FavoriteProductsList extends StatefulWidget {
   const FavoriteProductsList({super.key});

@@ -4,6 +4,8 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/features/reels/blocs/file_processing_cubit/file_processing_cubit.dart';
 import 'package:meninki/features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import '../../reels/model/meninki_file.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
 
@@ -36,52 +38,38 @@ class _MyReelsListState extends State<MyReelsList> {
           }
         }
       },
-      child: BlocConsumer<GetMyReelsBloc, GetMyReelsState>(
-        listener: (context, state) {
-          // if (state is GetMyReelSuccess) {
-          //   for (final reel in state.reels.where(
-          //     (e) => e.file.status != 'ready' && e.file.status != 'failed',
-          //   )) {
-          //     sl<FileProcessingCubit>().trackFile(reel.file);
-          //   }
-          // }
-        },
+      child: BlocBuilder<GetMyReelsBloc, GetMyReelsState>(
         builder: (context, state) {
-          if (state is GetMyReelLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is GetMyReelSuccess) {
-            WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-              setState(() {
-                reels = state.reels;
-              });
-            });
-          }
+          final isLoading = state is GetMyReelLoading;
+          final reels = state is GetMyReelSuccess ? state.reels : <Reel>[];
 
-          if (state is GetMyReelFailed) {
-            // return ErrorPage(
-            //   fl: state.fl,
-            //   onRefresh: () {
-            //     context.read<GetOrdersBloc>().add(RefreshLastOrders());
-            //   },
-            // );
-            return Text("error");
-          }
+          final itemCount = isLoading ? 6 : reels.length;
+          // final isLoading = state is GetReelLoading;
+          // final itemCount = isLoading ? 6 : reels.length;
 
-          return RefreshIndicator(
-            backgroundColor: Colors.white,
-            onRefresh: () async {
-              context.read<GetMyReelsBloc>().add(GetMyReel(widget.query));
-            },
+          return Skeletonizer(
+            enabled: isLoading,
             child: MasonryGridView.count(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
               mainAxisSpacing: 14,
               crossAxisSpacing: 8,
-              itemCount: reels.length,
+              itemCount: itemCount,
               itemBuilder: (context, index) {
-                return ReelCard(reel: reels[index], allReels: reels);
+                final reel =
+                    isLoading
+                        ? Reel(
+                          id: index,
+                          type: '',
+                          is_active: false,
+                          is_verified: false,
+                          user_id: 0,
+                          title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
+                          file: MeninkiFile(id: 0, name: '', original_file: ''),
+                        )
+                        : reels[index];
+                return ReelCard(reel: reel, allReels: reels);
               },
             ),
           );

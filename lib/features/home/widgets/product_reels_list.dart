@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
-import '../../../core/colors.dart';
-import '../../../core/helpers.dart';
+import 'package:skeletonizer/skeletonizer.dart';
+import '../../reels/model/meninki_file.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
 
@@ -28,35 +28,34 @@ class _ProductReelsListState extends State<ProductReelsList> {
   Widget build(BuildContext context) {
     return BlocBuilder<GetProductReelsBloc, GetReelsState>(
       builder: (context, state) {
-        if (state is GetReelLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state is GetReelSuccess) {
-          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-            setState(() {
-              reels = state.reels;
-            });
-          });
-        }
+        final isLoading = state is GetReelLoading;
+        final reels = state is GetReelSuccess ? state.reels : <Reel>[];
 
-        if (state is GetReelFailed) {
-          return Text("error");
-        }
+        final itemCount = isLoading ? 6 : reels.length;
 
-        return RefreshIndicator(
-          backgroundColor: Colors.white,
-          onRefresh: () async {
-            context.read<GetProductReelsBloc>().add(GetReel(widget.query));
-          },
+        return Skeletonizer(
+          enabled: isLoading,
           child: MasonryGridView.count(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
             mainAxisSpacing: 14,
             crossAxisSpacing: 8,
-            itemCount: reels.length,
+            itemCount: itemCount,
             itemBuilder: (context, index) {
-              return ReelCard(reel: reels[index], allReels: reels);
+              final reel =
+                  isLoading
+                      ? Reel(
+                        id: index,
+                        type: '',
+                        is_active: false,
+                        is_verified: false,
+                        user_id: 0,
+                        title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
+                        file: MeninkiFile(id: 0, name: '', original_file: ''),
+                      )
+                      : reels[index];
+              return ReelCard(reel: reel, allReels: reels);
             },
           ),
         );

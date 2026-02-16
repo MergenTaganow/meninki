@@ -81,7 +81,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
 
       // 🔑 notify queue with ID only
       sl<ReelPlayingQueueCubit>().addReadyId(reel.id);
-    } catch (e, s) {
+    } catch (e) {
       controllersMap.remove(reel.id);
       _initializingIds.remove(reel.id);
       debugPrint('Failed to init reel ${reel.id}: $e');

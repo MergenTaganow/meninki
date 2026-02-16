@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:meninki/features/product/data/product_remote_data_source.dart';
 import 'package:meta/meta.dart';
@@ -15,12 +17,13 @@ class GetProductsBloc extends Bloc<GetProductsEvent, GetProductsState> {
   int page = 1;
   int limit = 20;
   bool canPag = false;
+  Query? lastQuery;
 
   GetProductsBloc(this.ds) : super(GetProductInitial()) {
     on<GetProductsEvent>((event, emit) async {
       if (event is GetProduct) {
         canPag = false;
-
+        lastQuery = event.query;
         emit.call(GetProductLoading());
         emit.call(await _getProducts(event));
       }
@@ -39,6 +42,25 @@ class GetProductsBloc extends Bloc<GetProductsEvent, GetProductsState> {
         emit.call(GetProductInitial());
       }
     });
+  }
+
+  /// This is what your RefreshIndicator will call
+  Future<void> refresh() async {
+    final completer = Completer<void>();
+
+    // listen once for the next success or error state
+    late final StreamSubscription sub;
+    sub = stream.listen((state) {
+      if (state is GetProductSuccess || state is GetProductFailed) {
+        completer.complete();
+        sub.cancel();
+      }
+    });
+
+    canPag = false;
+    emit(await _getProducts(GetProduct(lastQuery)));
+
+    return completer.future;
   }
 
   Future<GetProductsState> _paginate(ProductPag event) async {

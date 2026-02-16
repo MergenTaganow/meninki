@@ -30,6 +30,7 @@ abstract class ReelsRemoteDataSource {
   Future<Either<Failure, MeninkiFile>> getFileById(int id);
   Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query);
   Future<Either<Failure, Success>> repostReel(int reelId);
+  Future<Either<Failure, Success>> watchReel(int reelId);
 }
 
 class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
@@ -106,7 +107,7 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
 
         // ✅ Give event loop one tick to deliver last value
         await Future.delayed(Duration.zero);
-      } catch (e, s) {
+      } catch (e) {
         if (!controller.isClosed) {
           controller.addError(e);
         }
@@ -265,7 +266,19 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
   @override
   Future<Either<Failure, Success>> repostReel(int reelId) async {
     // try {
-    var response = await api.dio.post('v1/reels/repost/$reelId');
+     await api.dio.post('v1/reels/repost/$reelId');
+
+    return Right(Success());
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
+  }
+
+  @override
+  Future<Either<Failure, Success>> watchReel(int reelId) async {
+    // try {
+    var response = await api.dio.post('v1/reel-watchers/$reelId');
+    print(response.data);
 
     return Right(Success());
     // } catch (e) {

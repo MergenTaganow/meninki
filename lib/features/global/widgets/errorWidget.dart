@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
 import '../../../core/failure.dart'; // Assuming this import based on usage
-import 'package:meninki/core/helpers.dart'; // Already imported
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Import localization
 
 class ErrorPage extends StatelessWidget {

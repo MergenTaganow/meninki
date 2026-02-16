@@ -18,4 +18,12 @@ class GetProductByIdCubit extends Cubit<GetProductByIdState> {
       (r) => emit.call(GetProductByIdSuccess(r)),
     );
   }
+
+  Future<void> refreshProduct(int id) async {
+    var failOrNot = await ds.getProductById(id);
+    failOrNot.fold(
+      (l) => emit.call(GetProductByIdFailed(l)),
+      (r) => emit.call(GetProductByIdSuccess(r)),
+    );
+  }
 }

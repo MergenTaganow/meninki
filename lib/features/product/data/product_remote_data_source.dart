@@ -29,6 +29,7 @@ abstract class ProductRemoteDataSource {
   Future<Either<Failure, List<int>>> getFavoriteIds();
   Future<Either<Failure, Success>> addFavoriteProduct(int productId);
   Future<Either<Failure, Success>> removeFavoriteProduct(int productId);
+  Future<Either<Failure, Success>> watchProduct(int productId);
 }
 
 class ProductRemoteDataImpl extends ProductRemoteDataSource {
@@ -49,9 +50,9 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Product>> getProductById(int id) async {
     // try {
-      var response = await api.dio.get('v1/products/client/$id');
+    var response = await api.dio.get('v1/products/client/$id');
 
-      return Right(Product.fromJson(response.data['payload']));
+    return Right(Product.fromJson(response.data['payload']));
     // } catch (e) {
     //   return Left(handleError(e));
     // }
@@ -93,7 +94,7 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   Future<Either<Failure, Success>> sendComposition(Map<String, dynamic> data) async {
     try {
       //Todo need change url
-      var response = await api.dio.post('v1/compositions/client', data: data);
+      await api.dio.post('v1/compositions/client', data: data);
 
       return Right(Success());
     } catch (e) {
@@ -227,5 +228,17 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
     } catch (e) {
       return Left(handleError(e));
     }
+  }
+
+  @override
+  Future<Either<Failure, Success>> watchProduct(int productId) async {
+    // try {
+    var response = await api.dio.post('v1/product-watchers/$productId');
+
+    print(response.data);
+    return Right(Success());
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 }
