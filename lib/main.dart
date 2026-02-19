@@ -53,7 +53,6 @@ import 'features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import 'features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 import 'features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
 import 'features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
-import 'features/reels/blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
 import 'features/reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import 'features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import 'features/store/bloc/get_my_stores_bloc/get_my_stores_bloc.dart';
@@ -104,7 +103,6 @@ void main() async {
         BlocProvider<OtpCubit>(create: (context) => sl<OtpCubit>()),
         BlocProvider<RegisterCubit>(create: (context) => sl<RegisterCubit>()),
         BlocProvider<GetVerifiedReelsBloc>(create: (context) => sl<GetVerifiedReelsBloc>()),
-        BlocProvider<ReelPlayingQueueCubit>(create: (context) => sl<ReelPlayingQueueCubit>()),
         BlocProvider<ReelsControllersBloc>(create: (context) => sl<ReelsControllersBloc>()),
         BlocProvider<GetProfileCubit>(create: (context) => sl<GetProfileCubit>()),
         BlocProvider<CurrentReelCubit>(create: (context) => sl<CurrentReelCubit>()),

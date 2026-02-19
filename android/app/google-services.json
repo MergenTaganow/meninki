@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "86845493759",
+    "project_id": "meninki-903d5",
+    "storage_bucket": "meninki-903d5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:86845493759:android:b3668d09f1353a55ad97ca",
+        "android_client_info": {
+          "package_name": "com.example.meninki"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ3WNTXYZg5Vhvahh37SbDCIcyYoxVOhk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

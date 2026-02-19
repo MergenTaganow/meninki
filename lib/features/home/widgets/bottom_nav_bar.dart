@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/features/reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 
 import '../../../core/helpers.dart';
 
@@ -39,6 +41,9 @@ class _BottomNavBarState extends State<BottomNavBar> {
             onTap: () {
               HapticFeedback.selectionClick();
               widget.controller.animateTo(index);
+              if (index != 0) {
+                context.read<ReelsControllersBloc>().add(PauseAllReels());
+              }
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -48,9 +53,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
               width: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.controller.index == index
-                    ? Colors.black
-                    : const Color(0xFFF3F3F3),
+                color: widget.controller.index == index ? Colors.black : const Color(0xFFF3F3F3),
               ),
               child: Center(
                 child: AnimatedSwitcher(
@@ -61,13 +64,11 @@ class _BottomNavBarState extends State<BottomNavBar> {
                   child: Svvg.asset(
                     icons[index],
                     key: ValueKey(widget.controller.index == index),
-                    color: widget.controller.index == index
-                        ? Colors.white
-                        : Colors.black,
+                    color: widget.controller.index == index ? Colors.white : Colors.black,
                   ),
                 ),
               ),
-            )
+            ),
           );
         }),
       ),

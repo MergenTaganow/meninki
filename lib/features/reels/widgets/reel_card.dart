@@ -1,6 +1,5 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
@@ -8,33 +7,58 @@ import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/widgets/reel_sheet.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../../core/helpers.dart';
-import '../blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
 import '../blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import '../model/reels.dart';
 
 class ReelCard extends StatefulWidget {
-  const ReelCard({super.key, required this.reel, required this.allReels, this.primaryText});
+  const ReelCard({
+    super.key,
+    required this.reel,
+    required this.allReels,
+    this.primaryText,
+    this.playingReels = false,
+  });
 
   final Reel reel;
   final List<Reel> allReels;
   final Color? primaryText;
+  final bool playingReels;
 
   @override
   State<ReelCard> createState() => _ReelCardState();
 }
 
 class _ReelCardState extends State<ReelCard> {
+  bool playing = true;
+  late Key visibilityKey;
+
+  @override
+  void initState() {
+    visibilityKey = Key('reel_visibility_${widget.reel.id}');
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     // super.build(context);
-    final visibilityKey = Key('reel_visibility_${widget.reel.id}');
     final controller = context.select<ReelsControllersBloc, BetterPlayerController?>(
       (bloc) => bloc.controllersMap[widget.reel.id],
     );
 
-    final isActive = context.select<ReelPlayingQueueCubit, bool>(
-      (cubit) => cubit.currentPlayingId == widget.reel.id,
-    );
+    if (!widget.playingReels && playing && controller != null) {
+      controller.pause();
+      playing = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {});
+      });
+    }
+
+    if (controller == null && playing) {
+      playing = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {});
+      });
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,14 +72,28 @@ class _ReelCardState extends State<ReelCard> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: VisibilityDetector(
-                  onVisibilityChanged: (VisibilityInfo info) {
-                    if (!isActive) return;
+                  onVisibilityChanged: (VisibilityInfo info) async {
+                    if (controller == null) return;
 
-                    if (info.visibleFraction * 100 < 15) {
-                      SchedulerBinding.instance.addPostFrameCallback((_) {
-                        if (!mounted) return;
-                        context.read<ReelPlayingQueueCubit>().playNext();
-                      });
+                    if (!mounted) return;
+
+                    if (info.visibleFraction * 100 < 80) {
+                      if (controller.isPlaying() ?? false) {
+                        await controller.pause();
+                        playing = false;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          setState(() {});
+                        });
+                      }
+                    }
+                    if (info.visibleFraction * 100 > 80) {
+                      if (!(controller.isPlaying() ?? true)) {
+                        await controller.play();
+                        playing = true;
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          setState(() {});
+                        });
+                      }
                     }
                   },
                   key: visibilityKey,
@@ -69,10 +107,23 @@ class _ReelCardState extends State<ReelCard> {
                               ? Colors.black
                               : Colors.grey.withOpacity(0.5),
                     ),
-                    child:
-                        (isActive)
-                            ? BetterPlayer(key: ValueKey(widget.reel.id), controller: controller!)
-                            : IgnorePointer(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (controller != null)
+                          SizedBox(
+                            height: 240,
+                            width: MediaQuery.of(context).size.width / 2,
+                            child: BetterPlayer(
+                              key: ValueKey(widget.reel.id),
+                              controller: controller,
+                            ),
+                          ),
+                        if (!playing)
+                          SizedBox(
+                            height: 240,
+                            width: MediaQuery.of(context).size.width / 2,
+                            child: IgnorePointer(
                               ignoring: true,
                               child: MeninkiNetworkImage(
                                 file: widget.reel.file,
@@ -80,6 +131,9 @@ class _ReelCardState extends State<ReelCard> {
                                 fit: BoxFit.cover,
                               ),
                             ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),

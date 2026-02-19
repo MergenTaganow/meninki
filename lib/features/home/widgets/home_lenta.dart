@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
+import 'package:meninki/features/reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../core/go.dart';
 import '../../../core/helpers.dart';
@@ -23,6 +25,9 @@ class HomeLenta extends StatefulWidget {
 }
 
 class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixin {
+  // final visibilityKey = Key('reel_visibility_for_home_lenta_page');
+  // bool reelsPlaying = true;
+
   @override
   void initState() {
     context.read<SortCubit>().selectSort(
@@ -171,7 +176,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
                                     file: MeninkiFile(id: 0, name: '', original_file: ''),
                                   )
                                   : reels[index];
-                          return ReelCard(reel: reel, allReels: reels);
+                          return ReelCard(reel: reel, allReels: reels, playingReels: true);
                         },
                       ),
                     );

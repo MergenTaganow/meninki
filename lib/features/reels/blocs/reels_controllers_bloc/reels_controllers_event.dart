@@ -8,6 +8,10 @@ class NewReels extends ReelsControllersEvent {
   NewReels(this.reels);
 }
 
+class PauseAllReels extends ReelsControllersEvent {}
+
+class PlayAllReels extends ReelsControllersEvent {}
+
 class CloseAllControllers extends ReelsControllersEvent {
   CloseAllControllers();
 }

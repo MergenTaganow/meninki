@@ -1,12 +1,11 @@
 import 'package:better_player/better_player.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:meninki/features/reels/blocs/reel_playin_queue_cubit/reel_playing_queue_cubit.dart';
+import 'package:flutter/foundation.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../core/api.dart';
-import '../../../../core/injector.dart';
 
 part 'reels_controllers_event.dart';
 part 'reels_controllers_state.dart';
@@ -65,14 +64,20 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
       final controller = BetterPlayerController(
         const BetterPlayerConfiguration(
           fit: BoxFit.cover,
-          looping: false,
+          looping: true,
+          aspectRatio: 9 / 16,
           allowedScreenSleep: false,
+          autoDispose: false,
+          handleLifecycle: false,
           controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
         ),
         betterPlayerDataSource: dataSource,
       );
 
       await controller.setVolume(0);
+      if (kReleaseMode) {
+        await controller.play();
+      }
 
       controllersMap[reel.id] = controller;
 
@@ -80,7 +85,6 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
       emit(ReelsControllersReady(Map<int, BetterPlayerController>.from(controllersMap)));
 
       // 🔑 notify queue with ID only
-      sl<ReelPlayingQueueCubit>().addReadyId(reel.id);
     } catch (e) {
       controllersMap.remove(reel.id);
       _initializingIds.remove(reel.id);
