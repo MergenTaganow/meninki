@@ -188,5 +188,8 @@
   "like": "Like",
   "reelWillBeCreated": "Reel will be created",
   "chooseFile": "Choose file",
-  "addVariant": "Add variant"
+  "addVariant": "Add variant",
+  "howToShare": "How to share",
+  "choosHowToShare": "Choose how to share",
+  "repost": "Repost"
 }

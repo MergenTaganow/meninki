@@ -68,7 +68,7 @@ class ReelMarketCard extends StatelessWidget {
                   border: Border.all(color: Colors.black.withOpacity(0.3), width: 0.5),
                 ),
                 child: Text(
-                  (store?.reel_count ?? 0).toString(),
+                  (store?.reel_count ?? store?.product_count ?? 0).toString(),
                   style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
                 ),
               ),

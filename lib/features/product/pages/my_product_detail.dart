@@ -38,7 +38,7 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
 
   @override
   void initState() {
-    context.read<GetProductByIdCubit>().getProduct(widget.productId);
+    context.read<GetProductByIdCubit>().getMyProduct(widget.productId);
     context.read<GetProductReelsBloc>().add(ClearReels());
     super.initState();
   }
@@ -121,10 +121,11 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
             return Skeletonizer(
               enabled: isLoading,
               child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
                 slivers: [
                   CupertinoSliverRefreshControl(
                     onRefresh: () async {
-                      await context.read<GetProductByIdCubit>().refreshProduct(product.id);
+                      await context.read<GetProductByIdCubit>().refreshMyProduct(product.id);
                     },
                   ),
                   SliverToBoxAdapter(

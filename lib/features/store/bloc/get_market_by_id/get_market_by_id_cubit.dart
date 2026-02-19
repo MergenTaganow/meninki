@@ -19,6 +19,14 @@ class GetMarketByIdCubit extends Cubit<GetMarketByIdState> {
     );
   }
 
+  Future<void> refresh(int id) async {
+    var failOrNot = await ds.getStoreByID(id);
+    failOrNot.fold(
+      (l) => emit.call(GetMarketByIdFailed(l)),
+      (r) => emit.call(GetMarketByIdSuccess(r)),
+    );
+  }
+
   clear() {
     emit(GetMarketByIdInitial());
   }

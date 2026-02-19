@@ -45,6 +45,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
         return Skeletonizer(
           enabled: isLoading,
           child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
             slivers: [
               CupertinoSliverRefreshControl(
                 onRefresh: () async {

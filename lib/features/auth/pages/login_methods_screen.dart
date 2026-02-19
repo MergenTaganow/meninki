@@ -58,7 +58,10 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          title: Text(lg.authorization, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+          title: Text(
+            lg.authorization,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
           actions: [Padd(right: 20, child: EditLang())],
         ),
         body: Padd(
@@ -87,10 +90,7 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              lg.enterNumber,
-                              style: TextStyle(fontWeight: FontWeight.w500),
-                            ),
+                            Text(lg.enterNumber, style: TextStyle(fontWeight: FontWeight.w500)),
                             Box(h: 6),
                             Form(
                               key: _formKey,

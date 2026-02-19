@@ -18,6 +18,7 @@ class Product {
   int? user_rate_count;
   int? user_favorite_count;
   int? rate_count;
+  int? product_watchers_count;
   Brand? brand;
   List<Category>? categories;
   List<MeninkiFile>? product_files;
@@ -42,6 +43,7 @@ class Product {
     this.product_files,
     this.cover_image,
     this.compositions,
+    this.product_watchers_count,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -51,6 +53,7 @@ class Product {
       description: Name.fromJson(json["description"]),
       is_active: json["is_active"],
       is_verified: json["is_verified"],
+      product_watchers_count: json["product_watchers_count"],
       price: (json["price"] is String) ? num.parse(json["price"]) : json["price"],
       discount: (json["discount"]),
       market: json["market"] != null ? Market.fromJson(json["market"]) : null,

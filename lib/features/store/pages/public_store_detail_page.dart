@@ -110,6 +110,8 @@ class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTicker
               state.market.id,
             );
 
+            print("Here############## ${state.market.files?.last.id}");
+
             return RefreshIndicator(
               onRefresh: () async {
                 context.read<GetMarketByIdCubit>().getStoreById(state.market.id);

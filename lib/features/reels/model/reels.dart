@@ -7,6 +7,7 @@ class Reel {
   String? title;
   String? description;
   int? user_favorite_count;
+  int? reel_watchers_count;
   String? link;
   int? link_id;
   String type;
@@ -37,6 +38,7 @@ class Reel {
     required this.file,
     this.product,
     this.user,
+    this.reel_watchers_count,
   });
 
   factory Reel.fromJson(Map<String, dynamic> json) {
@@ -53,6 +55,7 @@ class Reel {
       user_id: json["user_id"],
       comment_count: json["comment_count"],
       repost_count: json["repost_count"],
+      reel_watchers_count: json["reel_watchers_count"],
       created_at:
           json["created_at"] != null
               ? DateTime.fromMillisecondsSinceEpoch(int.parse(json["created_at"])).toLocal()
@@ -70,6 +73,7 @@ class Reel {
     int? user_favorite_count,
     String? link,
     int? link_id,
+    int? reel_watchers_count,
     String? type,
     bool? is_active,
     bool? is_verified,
@@ -94,6 +98,7 @@ class Reel {
       comment_count: comment_count ?? this.comment_count,
       repost_count: repost_count ?? this.repost_count,
       file: file ?? this.file,
+      reel_watchers_count: reel_watchers_count ?? this.reel_watchers_count,
     );
   }
 }

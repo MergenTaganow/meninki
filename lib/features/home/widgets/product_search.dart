@@ -45,6 +45,7 @@ class ProductSearch extends StatelessWidget {
       if (maxPrice != null) 'до $maxPrice',
     ];
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {

@@ -1,5 +1,6 @@
 import 'package:better_player/better_player.dart';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:meta/meta.dart';
 
 import '../../../../core/injector.dart';
@@ -36,7 +37,12 @@ class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
   }
 
   Future<void> _playNextInternal() async {
-    if (readyQueue.isEmpty) return;
+    if (readyQueue.isEmpty) {
+      if (currentPlayingId != null) currentPlayingId = null;
+      if (_currentIndex != -1) _currentIndex = -1;
+      emit(ReelPlaying(currentPlayingId: currentPlayingId));
+      return;
+    }
 
     final controllersBloc = sl<ReelsControllersBloc>();
 
@@ -53,22 +59,32 @@ class ReelPlayingQueueCubit extends Cubit<ReelPlayingQueueState> {
 
     final controller = controllersBloc.controllersMap[currentPlayingId];
 
+
     if (controller == null) {
       readyQueue.removeAt(_currentIndex);
       _currentIndex--;
       return _playNextInternal();
     }
 
+    // if (controller.videoPlayerController?.value.initialized != true) {
+    //   print("found that it is not initialized");
+    //   readyQueue.removeAt(_currentIndex);
+    //   _currentIndex--;
+    //   return _playNextInternal();
+    // }
+
     controller.addEventsListener(_onPlayerEvent);
 
-    await controller.play();
+    if (kReleaseMode) {
+      await controller.play();
+    }
+
 
     emit(ReelPlaying(currentPlayingId: currentPlayingId));
   }
 
   void _onPlayerEvent(BetterPlayerEvent event) {
     final controller = sl<ReelsControllersBloc>().controllersMap[currentPlayingId];
-
     switch (event.betterPlayerEventType) {
       case BetterPlayerEventType.initialized:
         controller?.setOverriddenAspectRatio(controller.videoPlayerController!.value.aspectRatio);

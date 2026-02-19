@@ -21,7 +21,6 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
   }
 
   Future<void> _onNewReels(NewReels event, Emitter<ReelsControllersState> emit) async {
-    print("new Reels event called");
     for (final reel in event.reels) {
       final isImage = (reel.file.mimetype ?? '').contains('image');
 
@@ -46,6 +45,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
       final dataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,
         "$baseUrl/public/$url",
+        videoFormat: BetterPlayerVideoFormat.hls,
         useAsmsAudioTracks: false,
         useAsmsSubtitles: false,
         useAsmsTracks: false,
@@ -86,7 +86,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
       _initializingIds.remove(reel.id);
       debugPrint('Failed to init reel ${reel.id}: $e');
     } finally {
-      controllersMap.remove(reel.id);
+      // controllersMap.remove(reel.id);
       _initializingIds.remove(reel.id);
     }
   }

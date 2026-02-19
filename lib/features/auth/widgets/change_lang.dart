@@ -10,12 +10,11 @@ class EditLang extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // AppLocalizations lg = AppLocalizations.of(context)!;
     return PopupMenuButton<String>(
       elevation: 1.5,
       color: Col.white,
       offset: const Offset(0, 30),
-      child: Svvg.asset('language'),
+      child: SizedBox(height: 30, width: 30, child: Center(child: Svvg.asset('language'))),
       onSelected: (item) {
         MyApp.setLocale(context, Locale(item));
       },
@@ -27,8 +26,4 @@ class EditLang extends StatelessWidget {
           ],
     );
   }
-
-  // getLocale(AppLocalizations lg) {
-  //   return lg.localeName == 'tr' ? 'TM' : lg.localeName.toUpperCase();
-  // }
 }

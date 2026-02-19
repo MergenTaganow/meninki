@@ -14,11 +14,13 @@ import 'package:meninki/features/reels/model/query.dart';
 import '../../../core/api.dart';
 import '../../../core/failure.dart';
 import '../../../core/injector.dart';
+import '../../reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 
 abstract class ProductRemoteDataSource {
   Future<Either<Failure, Product>> createProduct(Map<String, dynamic> data);
   Future<Either<Failure, Success>> editProduct(int productId, Map<String, dynamic> data);
-  Future<Either<Failure, Product>> getProductById(int id);
+  Future<Either<Failure, Product>> getPublicProductById(int id);
+  Future<Either<Failure, Product>> getMyProductById(int id);
   Future<Either<Failure, List<Product>>> getProducts(Query query);
   Future<Either<Failure, List<ProductParameter>>> getParameters(Query query);
   Future<Either<Failure, List<ProductAttribute>>> getAttributes(Query query);
@@ -30,6 +32,7 @@ abstract class ProductRemoteDataSource {
   Future<Either<Failure, Success>> addFavoriteProduct(int productId);
   Future<Either<Failure, Success>> removeFavoriteProduct(int productId);
   Future<Either<Failure, Success>> watchProduct(int productId);
+  Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query);
 }
 
 class ProductRemoteDataImpl extends ProductRemoteDataSource {
@@ -48,7 +51,18 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   }
 
   @override
-  Future<Either<Failure, Product>> getProductById(int id) async {
+  Future<Either<Failure, Product>> getPublicProductById(int id) async {
+    // try {
+    var response = await api.dio.get('v1/products/public/$id');
+
+    return Right(Product.fromJson(response.data['payload']));
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
+  }
+
+  @override
+  Future<Either<Failure, Product>> getMyProductById(int id) async {
     // try {
     var response = await api.dio.get('v1/products/client/$id');
 
@@ -240,5 +254,21 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
     // } catch (e) {
     //   return Left(handleError(e));
     // }
+  }
+
+  @override
+  Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query) async {
+    try {
+      var response = await api.dio.get(
+        'v1/products/public/market/count',
+        queryParameters: query?.toMap(),
+      );
+
+      List<ReelMarket> reels =
+          (response.data['payload'] as List).map((e) => ReelMarket.fromJson(e)).toList();
+      return Right(reels);
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 }

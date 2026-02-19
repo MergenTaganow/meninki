@@ -1,4 +1,5 @@
 import 'package:better_player/better_player.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/helpers.dart';
@@ -64,8 +65,8 @@ class _ReelPageState extends State<ReelPage> {
 }
 
 class ReelWidget extends StatefulWidget {
-  Reel reel;
-  ReelWidget({super.key, required this.reel});
+  final Reel reel;
+  const ReelWidget({super.key, required this.reel});
 
   @override
   State<ReelWidget> createState() => _ReelWidgetState();
@@ -73,7 +74,7 @@ class ReelWidget extends StatefulWidget {
 
 class _ReelWidgetState extends State<ReelWidget> {
   late BetterPlayerController controller;
-
+  bool myLikedReel = false;
   bool x2 = false;
 
   @override
@@ -112,6 +113,8 @@ class _ReelWidgetState extends State<ReelWidget> {
       ),
     );
 
+    myLikedReel = context.read<LikedReelsCubit>().likedReels.contains(widget.reel.id);
+
     controller = BetterPlayerController(
       betterPlayerConfiguration,
       betterPlayerDataSource: dataSource,
@@ -126,7 +129,9 @@ class _ReelWidgetState extends State<ReelWidget> {
         setState(() {});
       });
     });
-    controller.play();
+    if (kReleaseMode) {
+      controller.play();
+    }
     super.initState();
   }
 
@@ -138,256 +143,277 @@ class _ReelWidgetState extends State<ReelWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          color: Colors.black,
-          child: Column(
-            children: [
-              Expanded(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    (controller.isVideoInitialized() ?? false)
-                        ? BetterPlayer(controller: controller)
-                        : IgnorePointer(
-                          ignoring: true,
-                          child: MeninkiNetworkImage(
-                            file: widget.reel.file,
-                            networkImageType: NetworkImageType.large,
-                          ),
-                        ),
-                    if (!x2)
-                      Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padd(
-                          pad: 10,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '@${widget.reel.user_id}',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              ExpandableText(text: widget.reel.description ?? ''),
-                            ],
-                          ),
-                        ),
-                      ),
-                    Positioned.fill(
-                      child: Row(
-                        children: [
-                          // LEFT — 2x
-                          Expanded(
-                            flex: 1,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onLongPressStart: (_) {
-                                controller.setSpeed(2.0);
-                                x2 = true;
-                                setState(() {});
-                              },
-                              onLongPressEnd: (_) {
-                                controller.setSpeed(1.0);
-                                x2 = false;
-                                setState(() {});
-                              },
-                              child: const SizedBox.expand(),
-                            ),
-                          ),
-
-                          // CENTER — pause
-                          Expanded(
-                            flex: 2,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onLongPressStart: (_) {
-                                controller.pause();
-                              },
-                              onLongPressEnd: (_) {
-                                controller.play();
-                              },
-                              child: const SizedBox.expand(),
-                            ),
-                          ),
-
-                          // RIGHT — 2x
-                          Expanded(
-                            flex: 1,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.translucent,
-                              onLongPressStart: (_) {
-                                controller.setSpeed(2.0);
-                                x2 = true;
-                                setState(() {});
-                              },
-                              onLongPressEnd: (_) {
-                                controller.setSpeed(1.0);
-                                x2 = false;
-                                setState(() {});
-                              },
-                              child: const SizedBox.expand(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padd(
-                hor: 10,
-                child: Column(
-                  children: [
-                    if (x2)
-                      Text(
-                        AppLocalizations.of(context)!.speed2x,
-                        style: TextStyle(color: Colors.white, fontSize: 14, height: 1),
-                      ),
-                    InstaProgressBar(controller: controller),
-                  ],
-                ),
-              ),
-              if (!x2)
-                Padd(
-                  hor: 10,
-                  ver: 14,
-                  child: Row(
+    print(widget.reel.user);
+    return BlocListener<LikedReelsCubit, LikedReelsState>(
+      listener: (context, state) {
+        if (state is LikedReelsSuccess) {
+          widget.reel.user_favorite_count;
+        }
+      },
+      child: Stack(
+        children: [
+          Container(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            color: Colors.black,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Container(
-                          height: 30,
-                          width: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(4),
+                      (controller.isVideoInitialized() ?? false)
+                          ? BetterPlayer(controller: controller)
+                          : IgnorePointer(
+                            ignoring: true,
+                            child: MeninkiNetworkImage(
+                              file: widget.reel.file,
+                              networkImageType: NetworkImageType.large,
+                            ),
                           ),
-                          child:
-                              widget.reel.product?.cover_image != null
-                                  ? MeninkiNetworkImage(
-                                    file: widget.reel.product!.cover_image!,
-                                    networkImageType: NetworkImageType.small,
-                                    fit: BoxFit.cover,
-                                  )
-                                  : null,
+                      if (!x2)
+                        Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Padd(
+                            pad: 10,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '@${widget.reel.user_id}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                ExpandableText(text: widget.reel.description ?? ''),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                      Box(w: 10),
-                      Expanded(
-                        child: Text(
-                          widget.reel.product?.name.trans(context) ?? '',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onTap: () {
-                          showModalBottomSheet(
-                            backgroundColor: Color(0xFFF3F3F3),
-                            context: context,
-                            builder: (context) {
-                              return ReelsSheet(widget.reel);
-                            },
-                          );
-                        },
-                        child: Container(
-                          padding: EdgeInsets.only(top: 4, bottom: 4, right: 4, left: 8),
-                          child: Icon(Icons.more_horiz, color: Color(0xFF969696)),
+                      Positioned.fill(
+                        child: Row(
+                          children: [
+                            // LEFT — 2x
+                            Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onLongPressStart: (_) {
+                                  controller.setSpeed(2.0);
+                                  x2 = true;
+                                  setState(() {});
+                                },
+                                onLongPressEnd: (_) {
+                                  controller.setSpeed(1.0);
+                                  x2 = false;
+                                  setState(() {});
+                                },
+                                child: const SizedBox.expand(),
+                              ),
+                            ),
+
+                            // CENTER — pause
+                            Expanded(
+                              flex: 2,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onLongPressStart: (_) {
+                                  controller.pause();
+                                },
+                                onLongPressEnd: (_) {
+                                  controller.play();
+                                },
+                                child: const SizedBox.expand(),
+                              ),
+                            ),
+
+                            // RIGHT — 2x
+                            Expanded(
+                              flex: 1,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onLongPressStart: (_) {
+                                  controller.setSpeed(2.0);
+                                  x2 = true;
+                                  setState(() {});
+                                },
+                                onLongPressEnd: (_) {
+                                  controller.setSpeed(1.0);
+                                  x2 = false;
+                                  setState(() {});
+                                },
+                                child: const SizedBox.expand(),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              if (x2) Container(height: 60),
-            ],
-          ),
-        ),
-        if (!x2)
-          Positioned(
-            top: MediaQuery.of(context).size.height * 0.5 - 30,
-            right: 20,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                UsersProfile(widget.reel.user ?? User()),
-                BlocBuilder<LikedReelsCubit, LikedReelsState>(
-                  builder: (context, state) {
-                    if (state is LikedReelsSuccess) {
-                      return InkWell(
-                        onTap: () {
-                          var count =
-                              (widget.reel.user_favorite_count ?? 0) +
-                              (state.reelIds.contains(widget.reel.id) ? -1 : 1);
-                          widget.reel = widget.reel.copyWith(user_favorite_count: count);
-                          setState(() {});
-                          context.read<LikedReelsCubit>().likeTapped(widget.reel);
-                        },
-                        child: iconCount(
-                          icon: state.reelIds.contains(widget.reel.id) ? "liked" : 'notLiked',
-                          count: (widget.reel.user_favorite_count ?? 0).toString(),
+                Padd(
+                  hor: 10,
+                  child: Column(
+                    children: [
+                      if (x2)
+                        Text(
+                          AppLocalizations.of(context)!.speed2x,
+                          style: TextStyle(color: Colors.white, fontSize: 14, height: 1),
                         ),
-                      );
-                    }
-                    return Container();
-                  },
+                      InstaProgressBar(controller: controller),
+                    ],
+                  ),
                 ),
-                InkWell(
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      backgroundColor: Colors.white,
-                      isScrollControlled: true,
-                      builder: (context) {
-                        return DraggableScrollableSheet(
-                          expand: false,
-                          initialChildSize: 0.5,
-                          minChildSize: 0.5,
-                          maxChildSize: 0.8,
-                          builder: (context, scrollController) {
-                            return CommentsPage(
-                              reel: widget.reel,
-                              scrollController: scrollController,
+                if (!x2)
+                  Padd(
+                    hor: 10,
+                    ver: 14,
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: Container(
+                            height: 30,
+                            width: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.grey,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child:
+                                widget.reel.product?.cover_image != null
+                                    ? MeninkiNetworkImage(
+                                      file: widget.reel.product!.cover_image!,
+                                      networkImageType: NetworkImageType.small,
+                                      fit: BoxFit.cover,
+                                    )
+                                    : null,
+                          ),
+                        ),
+                        Box(w: 10),
+                        Expanded(
+                          child: Text(
+                            widget.reel.product?.name.trans(context) ?? '',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            showModalBottomSheet(
+                              backgroundColor: Color(0xFFF3F3F3),
+                              context: context,
+                              builder: (context) {
+                                return ReelsSheet(widget.reel);
+                              },
                             );
                           },
-                        );
-                      },
-                    );
-                  },
-                  child: iconCount(
-                    icon: "comment",
-                    count: (widget.reel.comment_count ?? 0).toString(),
+                          child: Container(
+                            padding: EdgeInsets.only(top: 4, bottom: 4, right: 4, left: 8),
+                            child: Icon(Icons.more_horiz, color: Color(0xFF969696)),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                InkWell(
-                  onTap: () {
-                    showModalBottomSheet(
-                      backgroundColor: Color(0xFFF3F3F3),
-                      context: context,
-                      builder: (context) {
-                        return ReelsSheet(widget.reel);
-                      },
-                    );
-                  },
-                  child: iconCount(
-                    icon: "repost",
-                    count: (widget.reel.repost_count ?? 0).toString(),
-                  ),
-                ),
+                if (x2) Container(height: 60),
               ],
             ),
           ),
-        if (!x2) ImagesBackButton(),
-      ],
+          if (!x2)
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.5 - 30,
+              right: 20,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  UsersProfile(widget.reel.user ?? User()),
+                  BlocBuilder<LikedReelsCubit, LikedReelsState>(
+                    builder: (context, state) {
+                      if (state is LikedReelsSuccess) {
+                        // if (myLikedReel && !state.reelIds.contains(widget.reel.id)) {
+                        //   var count = (widget.reel.user_favorite_count ?? 1) - 1;
+                        //   widget.reel.user_favorite_count = count;
+                        //   setState(() {});
+                        // }
+                        // if (!myLikedReel && state.reelIds.contains(widget.reel.id)) {
+                        //   var count = (widget.reel.user_favorite_count ?? 0) + 1;
+                        //   widget.reel.user_favorite_count = count;
+                        //   setState(() {});
+                        // }
+                        return InkWell(
+                          onTap: () {
+                            print("previously . ${widget.reel.user_favorite_count}");
+                            var count =
+                                (widget.reel.user_favorite_count ?? 0) +
+                                (state.reelIds.contains(widget.reel.id) ? -1 : 1);
+                            widget.reel.user_favorite_count = count;
+                            print("later . ${widget.reel.user_favorite_count}");
+
+                            setState(() {});
+                            context.read<LikedReelsCubit>().likeTapped(widget.reel);
+                          },
+                          child: iconCount(
+                            icon: state.reelIds.contains(widget.reel.id) ? "liked" : 'notLiked',
+                            count: (widget.reel.user_favorite_count ?? 0).toString(),
+                          ),
+                        );
+                      }
+                      return Container();
+                    },
+                  ),
+                  InkWell(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.white,
+                        isScrollControlled: true,
+                        builder: (context) {
+                          return DraggableScrollableSheet(
+                            expand: false,
+                            initialChildSize: 0.5,
+                            minChildSize: 0.5,
+                            maxChildSize: 0.8,
+                            builder: (context, scrollController) {
+                              return CommentsPage(
+                                reel: widget.reel,
+                                scrollController: scrollController,
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                    child: iconCount(
+                      icon: "comment",
+                      count: (widget.reel.comment_count ?? 0).toString(),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      showModalBottomSheet(
+                        backgroundColor: Color(0xFFF3F3F3),
+                        context: context,
+                        builder: (context) {
+                          return ReelsSheet(widget.reel);
+                        },
+                      );
+                    },
+                    child: iconCount(
+                      icon: "repost",
+                      count: (widget.reel.repost_count ?? 0).toString(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (!x2) ImagesBackButton(),
+        ],
+      ),
     );
     // return BlocConsumer<CurrentReelCubit, CurrentReelState>(
     //   listener: (context, state) {

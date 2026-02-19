@@ -176,5 +176,8 @@
   "mandatoryField": "Hökmany öýjük",
   "success": "Üstünlikli",
   "filter": "Filter",
-  "newStore": "Täze dükan"
+  "newStore": "Täze dükan",
+  "howToShare": "Haýsy görnüşde paýlaşmakçy",
+  "choosHowToShare": "Görnüşi saýlañ",
+  "repost": "Öz adyñdan gaýtalap paýlaş"
 }

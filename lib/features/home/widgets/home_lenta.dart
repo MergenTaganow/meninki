@@ -29,7 +29,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
       key: SortCubit.reelsSearchSort,
       newSort: Sort(orderBy: 'id', orderDirection: "desc", text: "По дате - сначала новые"),
     );
-    context.read<GetReelMarketsBloc>().add(GetReelMarkets());
+    context.read<GetReelMarketsBloc>().add(GetReelMarkets(type: 'reel'));
     context.read<GetVerifiedReelsBloc>().add(GetReel());
     super.initState();
   }
@@ -40,6 +40,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
     var selectedSort = context.watch<SortCubit>().sortMap[SortCubit.reelsSearchSort];
 
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {
@@ -58,34 +59,43 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
 
                   final itemCount = isLoading ? 5 : stores.length;
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        height: 120,
-                        child: Skeletonizer(
-                          enabled: isLoading,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index) {
-                              // Use dummy store when loading to avoid index errors
-                              final store = isLoading ? null : stores[index];
-                              return Padd(
-                                left: index == 0 ? 10 : 0,
-                                child: ReelMarketCard(store: store),
-                              );
-                            },
-                            separatorBuilder: (context, index) => Box(w: 8),
-                            itemCount: itemCount,
+                  return AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 300),
+                    firstCurve: Curves.easeOut,
+                    secondCurve: Curves.easeIn,
+                    sizeCurve: Curves.easeInOut,
+                    crossFadeState:
+                        (itemCount == 0) ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                    secondChild: Container(),
+                    firstChild: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 120,
+                          child: Skeletonizer(
+                            enabled: isLoading,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                // Use dummy store when loading to avoid index errors
+                                final store = isLoading ? null : stores[index];
+                                return Padd(
+                                  left: index == 0 ? 10 : 0,
+                                  child: ReelMarketCard(store: store),
+                                );
+                              },
+                              separatorBuilder: (context, index) => Box(w: 8),
+                              itemCount: itemCount,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        Box(h: 20),
+                      ],
+                    ),
                   );
                 },
               ),
 
-              Box(h: 20),
               InkWell(
                 borderRadius: BorderRadius.circular(14),
                 onTap: () {
@@ -152,7 +162,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
                           final reel =
                               isLoading
                                   ? Reel(
-                                    id: index,
+                                    id: 999999999999999999,
                                     type: '',
                                     is_active: false,
                                     is_verified: false,

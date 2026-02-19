@@ -28,6 +28,9 @@ import '../features/comments/bloc/get_comments_bloc/get_comments_bloc.dart';
 import '../features/comments/bloc/send_comment_cubit/send_comment_cubit.dart';
 import '../features/file_download/bloc/file_download_bloc/file_download_bloc.dart';
 import '../features/file_download/data/download_service.dart';
+import '../features/firebase_messaging/bloc/notification_tap/notification_tap_cubit.dart';
+import '../features/firebase_messaging/firebase_mess.dart';
+import '../features/firebase_messaging/local_notification.dart';
 import '../features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import '../features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import '../features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
@@ -96,7 +99,8 @@ Future<void> init() async {
   sl.registerLazySingleton<GetStoreReelsBloc>(() => GetStoreReelsBloc(sl()));
   sl.registerLazySingleton<GetSearchedReelsBloc>(() => GetSearchedReelsBloc(sl()));
   sl.registerLazySingleton<FileProcessingCubit>(() => FileProcessingCubit(sl()));
-  sl.registerLazySingleton<GetReelMarketsBloc>(() => GetReelMarketsBloc(sl()));
+  sl.registerLazySingleton<GetReelMarketsBloc>(() => GetReelMarketsBloc(sl(), sl()));
+  sl.registerLazySingleton<GetProductMarketsBloc>(() => GetProductMarketsBloc(sl(), sl()));
   sl.registerLazySingleton<WatchersCubit>(() => WatchersCubit(sl(), sl()));
 
   //store
@@ -160,4 +164,18 @@ Future<void> init() async {
   sl.registerLazySingleton<GetBasketCubit>(() => GetBasketCubit(sl()));
   sl.registerLazySingleton<MyBasketCubit>(() => MyBasketCubit(sl()));
   sl.registerLazySingleton<BasketRemoteDataSource>(() => BasketRemoteDataImpl(sl()));
+
+  // firebase
+  sl.registerLazySingleton<FirebaseMessagingService>(
+    () => FirebaseMessagingService(
+      localDs: sl(),
+      // remoteDs: sl(),
+      notification: sl(),
+      // notifCount: sl(),
+    ),
+  );
+  sl.registerLazySingleton<NotificationTapCubit>(() => NotificationTapCubit());
+  sl.registerLazySingleton<LocalNotificationService>(
+    () => LocalNotificationService(notifTap: sl()),
+  );
 }

@@ -37,7 +37,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
 
   @override
   void initState() {
-    context.read<GetReelMarketsBloc>().add(GetReelMarkets());
+    context.read<GetProductMarketsBloc>().add(GetReelMarkets(type: 'product'));
     context.read<GetBannersBloc>().add(GetBanner(Query(current_page: BannerPageTypes.home_main)));
 
     context.read<GetDiscountProducts>().add(
@@ -60,10 +60,11 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
   Widget build(BuildContext context) {
     super.build(context);
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {
-            context.read<GetReelMarketsBloc>().refresh();
+            context.read<GetProductMarketsBloc>().refresh();
 
             context.read<GetDiscountProducts>().refresh();
 
@@ -80,7 +81,6 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
 
               ///markets
               markets(),
-              Box(h: 20),
 
               ///reklama
               BannersList(priority: 1),
@@ -233,52 +233,62 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                 state is GetProductSuccess
                     ? state.products
                     : List.generate(5, (_) => Product(id: 999, name: Name())); // 👈 fake model
-            return Skeletonizer(
-              enabled: isLoading,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      context.read<SortCubit>().selectSort(
-                        key: SortCubit.productSearchSort,
-                        newSort: Sort(orderBy: 'id', orderDirection: 'desc', text: lg.newItems),
-                      );
-                      context.read<GetProductsBloc>().add(GetProduct());
-                      context.read<TabNavigationCubit>().homeToSearchProduct();
-                    },
-                    child: Padd(
-                      hor: 10,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            lg.newItems,
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                          ),
-                          Icon(Icons.navigate_next),
-                        ],
+
+            return AnimatedCrossFade(
+              duration: const Duration(milliseconds: 380),
+              firstCurve: Curves.easeOut,
+              secondCurve: Curves.easeIn,
+              sizeCurve: Curves.easeInOut,
+              crossFadeState:
+                  products.isNotEmpty ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              firstChild: Skeletonizer(
+                enabled: isLoading,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        context.read<SortCubit>().selectSort(
+                          key: SortCubit.productSearchSort,
+                          newSort: Sort(orderBy: 'id', orderDirection: 'desc', text: lg.newItems),
+                        );
+                        context.read<GetProductsBloc>().add(GetProduct());
+                        context.read<TabNavigationCubit>().homeToSearchProduct();
+                      },
+                      child: Padd(
+                        hor: 10,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              lg.newItems,
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                            ),
+                            Icon(Icons.navigate_next),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Box(h: 10),
-                  SizedBox(
-                    height: 240,
-                    child: ListView.separated(
-                      itemBuilder: (context, index) {
-                        return Padd(
-                          left: index == 0 ? 10 : 0,
-                          right: index == products.length - 1 ? 10 : 0,
-                          child: ProductCard(product: products[index]),
-                        );
-                      },
-                      itemCount: products.length,
-                      scrollDirection: Axis.horizontal,
-                      separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                    Box(h: 10),
+                    SizedBox(
+                      height: 240,
+                      child: ListView.separated(
+                        itemBuilder: (context, index) {
+                          return Padd(
+                            left: index == 0 ? 10 : 0,
+                            right: index == products.length - 1 ? 10 : 0,
+                            child: ProductCard(product: products[index]),
+                          );
+                        },
+                        itemCount: products.length,
+                        scrollDirection: Axis.horizontal,
+                        separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              secondChild: Container(),
             );
           },
         ),
@@ -289,53 +299,62 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                 state is GetProductSuccess
                     ? state.products
                     : List.generate(5, (_) => Product(id: 999, name: Name())); // 👈 fake model
-            return Skeletonizer(
-              enabled: isLoading,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      context.read<SortCubit>().selectSort(
-                        key: SortCubit.productSearchSort,
-                        newSort: Sort(orderBy: 'id', orderDirection: 'desc', text: lg.bestRated),
-                      );
-                      context.read<GetProductsBloc>().add(GetProduct());
-                      context.read<TabNavigationCubit>().homeToSearchProduct();
-                    },
-                    child: Padd(
-                      hor: 10,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            lg.bestRated,
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                          ),
-                          Icon(Icons.navigate_next),
-                        ],
+            return AnimatedCrossFade(
+              duration: const Duration(milliseconds: 380),
+              firstCurve: Curves.easeOut,
+              secondCurve: Curves.easeIn,
+              sizeCurve: Curves.easeInOut,
+              crossFadeState:
+                  products.isNotEmpty ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              firstChild: Skeletonizer(
+                enabled: isLoading,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        context.read<SortCubit>().selectSort(
+                          key: SortCubit.productSearchSort,
+                          newSort: Sort(orderBy: 'id', orderDirection: 'desc', text: lg.bestRated),
+                        );
+                        context.read<GetProductsBloc>().add(GetProduct());
+                        context.read<TabNavigationCubit>().homeToSearchProduct();
+                      },
+                      child: Padd(
+                        hor: 10,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              lg.bestRated,
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                            ),
+                            Icon(Icons.navigate_next),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  Box(h: 10),
-                  SizedBox(
-                    height: 240,
-                    child: ListView.separated(
-                      itemBuilder: (context, index) {
-                        return Padd(
-                          left: index == 0 ? 10 : 0,
-                          right: index == products.length - 1 ? 10 : 0,
-                          child: ProductCard(product: products[index]),
-                        );
-                      },
-                      itemCount: products.length,
-                      scrollDirection: Axis.horizontal,
-                      separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                    Box(h: 10),
+                    SizedBox(
+                      height: 240,
+                      child: ListView.separated(
+                        itemBuilder: (context, index) {
+                          return Padd(
+                            left: index == 0 ? 10 : 0,
+                            right: index == products.length - 1 ? 10 : 0,
+                            child: ProductCard(product: products[index]),
+                          );
+                        },
+                        itemCount: products.length,
+                        scrollDirection: Axis.horizontal,
+                        separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              secondChild: Container(),
             );
           },
         ),
@@ -346,56 +365,65 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                 state is GetProductSuccess
                     ? state.products
                     : List.generate(5, (_) => Product(id: 999, name: Name())); // 👈 fake model
-            return Skeletonizer(
-              enabled: isLoading,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      context.read<SortCubit>().selectSort(
-                        key: SortCubit.productSearchSort,
-                        newSort: Sort(
-                          orderDirection: 'desc',
-                          orderBy: 'discount',
-                          text: lg.discounts,
-                        ),
-                      );
-                      context.read<GetProductsBloc>().add(GetProduct(Query()));
-                      context.read<TabNavigationCubit>().homeToSearchProduct();
-                    },
-                    child: Padd(
-                      hor: 10,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            lg.discounts,
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            return AnimatedCrossFade(
+              duration: const Duration(milliseconds: 380),
+              firstCurve: Curves.easeOut,
+              secondCurve: Curves.easeIn,
+              sizeCurve: Curves.easeInOut,
+              crossFadeState:
+                  products.isNotEmpty ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              firstChild: Skeletonizer(
+                enabled: isLoading,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        context.read<SortCubit>().selectSort(
+                          key: SortCubit.productSearchSort,
+                          newSort: Sort(
+                            orderDirection: 'desc',
+                            orderBy: 'discount',
+                            text: lg.discounts,
                           ),
-                          Icon(Icons.navigate_next),
-                        ],
+                        );
+                        context.read<GetProductsBloc>().add(GetProduct(Query()));
+                        context.read<TabNavigationCubit>().homeToSearchProduct();
+                      },
+                      child: Padd(
+                        hor: 10,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              lg.discounts,
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                            ),
+                            Icon(Icons.navigate_next),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Box(h: 10),
-                  SizedBox(
-                    height: 240,
-                    child: ListView.separated(
-                      itemBuilder: (context, index) {
-                        return Padd(
-                          left: index == 0 ? 10 : 0,
-                          right: index == products.length - 1 ? 10 : 0,
-                          child: ProductCard(product: products[index]),
-                        );
-                      },
-                      itemCount: products.length,
-                      scrollDirection: Axis.horizontal,
-                      separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                    Box(h: 10),
+                    SizedBox(
+                      height: 240,
+                      child: ListView.separated(
+                        itemBuilder: (context, index) {
+                          return Padd(
+                            left: index == 0 ? 10 : 0,
+                            right: index == products.length - 1 ? 10 : 0,
+                            child: ProductCard(product: products[index]),
+                          );
+                        },
+                        itemCount: products.length,
+                        scrollDirection: Axis.horizontal,
+                        separatorBuilder: (BuildContext context, int index) => Box(w: 4),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              secondChild: Container(),
             );
           },
         ),
@@ -403,8 +431,8 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
     );
   }
 
-  BlocBuilder<GetReelMarketsBloc, GetReelMarketsState> markets() {
-    return BlocBuilder<GetReelMarketsBloc, GetReelMarketsState>(
+  BlocBuilder<GetProductMarketsBloc, GetReelMarketsState> markets() {
+    return BlocBuilder<GetProductMarketsBloc, GetReelMarketsState>(
       builder: (context, state) {
         if (state is GetReelMarketsSuccess) {
           WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
@@ -418,27 +446,35 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
 
         final isLoading = state is GetReelMarketsLoading;
         final itemCount = isLoading ? 5 : stores.length;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 120,
-              child: Skeletonizer(
-                enabled: isLoading,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) {
-                    // Use dummy store when loading to avoid index errors
-                    final store = isLoading ? null : stores[index];
-                    return Padd(left: index == 0 ? 10 : 0, child: ReelMarketCard(store: store));
-                  },
-                  separatorBuilder: (context, index) => Box(w: 8),
-                  itemCount: itemCount,
+        return AnimatedCrossFade(
+          duration: const Duration(milliseconds: 380),
+          firstCurve: Curves.easeOut,
+          secondCurve: Curves.easeIn,
+          sizeCurve: Curves.easeInOut,
+          crossFadeState: itemCount != 0 ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+          firstChild: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 120,
+                child: Skeletonizer(
+                  enabled: isLoading,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      // Use dummy store when loading to avoid index errors
+                      final store = isLoading ? null : stores[index];
+                      return Padd(left: index == 0 ? 10 : 0, child: ReelMarketCard(store: store));
+                    },
+                    separatorBuilder: (context, index) => Box(w: 8),
+                    itemCount: itemCount,
+                  ),
                 ),
               ),
-            ),
-          ],
+              Box(h: 20),
+            ],
+          ),
+          secondChild: Container(),
         );
       },
     );

@@ -183,6 +183,7 @@ class _SearchPageState extends State<SearchPage>
                     ReelsSearch(text: search.text.trim()),
                     ProductSearch(text: search.text.trim()),
                     CustomScrollView(
+                      physics: const BouncingScrollPhysics(),
                       slivers: [
                         CupertinoSliverRefreshControl(
                           onRefresh: () async {

@@ -26,8 +26,11 @@ class ReelCard extends StatefulWidget {
 class _ReelCardState extends State<ReelCard> {
   @override
   Widget build(BuildContext context) {
+    // super.build(context);
     final visibilityKey = Key('reel_visibility_${widget.reel.id}');
-    final controller = context.watch<ReelsControllersBloc>().controllersMap[widget.reel.id];
+    final controller = context.select<ReelsControllersBloc, BetterPlayerController?>(
+      (bloc) => bloc.controllersMap[widget.reel.id],
+    );
 
     final isActive = context.select<ReelPlayingQueueCubit, bool>(
       (cubit) => cubit.currentPlayingId == widget.reel.id,
@@ -53,7 +56,6 @@ class _ReelCardState extends State<ReelCard> {
                         if (!mounted) return;
                         context.read<ReelPlayingQueueCubit>().playNext();
                       });
-                      context.read<ReelPlayingQueueCubit>().playNext();
                     }
                   },
                   key: visibilityKey,
@@ -68,10 +70,8 @@ class _ReelCardState extends State<ReelCard> {
                               : Colors.grey.withOpacity(0.5),
                     ),
                     child:
-                        (controller != null &&
-                                (controller.isVideoInitialized() ?? false) &&
-                                (controller.isPlaying() ?? false))
-                            ? BetterPlayer(controller: controller)
+                        (isActive)
+                            ? BetterPlayer(key: ValueKey(widget.reel.id), controller: controller!)
                             : IgnorePointer(
                               ignoring: true,
                               child: MeninkiNetworkImage(
@@ -97,6 +97,18 @@ class _ReelCardState extends State<ReelCard> {
                       argument: {"reel": widget.reel, "reels": widget.allReels},
                     );
                   },
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                left: 12,
+                right: 10,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    iconText("notLiked", widget.reel.user_favorite_count),
+                    iconText("watchers_count", widget.reel.reel_watchers_count),
+                  ],
                 ),
               ),
             ],
@@ -136,4 +148,25 @@ class _ReelCardState extends State<ReelCard> {
       ],
     );
   }
+
+  Widget iconText(String icon, int? count) {
+    final int safeCount = count ?? 0;
+
+    String formattedCount;
+    if (safeCount >= 1000) {
+      formattedCount = '${(safeCount / 1000).floor()}K';
+    } else {
+      formattedCount = safeCount.toString();
+    }
+    return Row(
+      children: [
+        Svvg.asset(icon, size: 16),
+        Box(w: 4),
+        Text(formattedCount, style: TextStyle(color: Colors.white)),
+      ],
+    );
+  }
+
+  // @override
+  // bool get wantKeepAlive => true;
 }

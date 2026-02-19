@@ -49,10 +49,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
         BlocListener<AddCreateCubit, AddCreateState>(
           listener: (context, state) {
             if (state is AddCreateSuccess) {
-              CustomSnackBar.showSnackBar(
-                context: context,
-                title: lg.addPublishedAfterReview,
-              );
+              CustomSnackBar.showSnackBar(context: context, title: lg.addPublishedAfterReview);
               Go.pop();
             }
           },
@@ -313,7 +310,10 @@ class _AddCreatePageState extends State<AddCreatePage> {
                 ),
                 Box(h: 20),
                 Center(
-                  child: Text(lg.media, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  child: Text(
+                    lg.media,
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  ),
                 ),
                 Box(h: 20),
                 BlocBuilder<FileUplBloc, FileUplState>(
@@ -383,7 +383,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                             file: errorFiles![index],
                             failure: errors![index],
                             onRemoveTap: () {
-                              context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
+                              context.read<FileUplBloc>().add(RemoveFile(errorFiles![index]));
                             },
                             onRetryTap: () {
                               context.read<FileUplBloc>().add(

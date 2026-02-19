@@ -46,9 +46,12 @@ class ReelsSheet extends StatelessWidget {
                     ],
                   ),
                   onTap: () {
+                    print("previous ${reel.user_favorite_count}");
                     var count =
                         (reel.user_favorite_count ?? 0) +
                         (state.reelIds.contains(reel.id) ? -1 : 1);
+                    reel.user_favorite_count = count;
+                    print("later ${reel.user_favorite_count}");
                     context.read<LikedReelsCubit>().likeTapped(reel);
                   },
                 );
@@ -58,12 +61,51 @@ class ReelsSheet extends StatelessWidget {
           ),
           singleLine(
             context: context,
-            title: "repost",
+            title: AppLocalizations.of(context)!.share,
             value: Svvg.asset("share"),
             onTap: () {
-              context.read<ReelCreateCubit>().repostReel(reel);
+              showModalBottomSheet(
+                backgroundColor: Color(0xFFF3F3F3),
+                context: context,
+                builder: (context) {
+                  return Padd(
+                    hor: 16,
+                    ver: 30,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.howToShare,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                        ),
+                        Box(h: 6),
+                        Text(AppLocalizations.of(context)!.choosHowToShare),
+                        Box(h: 20),
+                        singleLine(
+                          context: context,
+                          title: AppLocalizations.of(context)!.repost,
+                          value: Svvg.asset("share"),
+                          onTap: () {
+                            context.read<ReelCreateCubit>().repostReel(reel);
+                          },
+                        ),
+                        singleLine(
+                          context: context,
+                          title: "deeplink",
+                          value: Svvg.asset("share"),
+                          onTap: () {
+                            context.read<ReelCreateCubit>().repostReel(reel);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
             },
           ),
+
           singleLine(
             context: context,
             title: AppLocalizations.of(context)!.download,
@@ -85,11 +127,7 @@ class ReelsSheet extends StatelessWidget {
                 print('object');
               },
             ),
-          singleLine(
-            context: context,
-            title: AppLocalizations.of(context)!.share,
-            value: Svvg.asset("share"),
-          ),
+
           singleLine(
             context: context,
             title: AppLocalizations.of(context)!.complaint,

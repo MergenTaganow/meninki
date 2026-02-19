@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'dart:ui';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
@@ -23,6 +25,10 @@ import 'features/comments/bloc/comment_by_id_cubit/comment_by_id_cubit.dart';
 import 'features/comments/bloc/get_comments_bloc/get_comments_bloc.dart';
 import 'features/comments/bloc/send_comment_cubit/send_comment_cubit.dart';
 import 'features/file_download/bloc/file_download_bloc/file_download_bloc.dart';
+import 'features/firebase_messaging/bloc/notification_tap/notification_tap_cubit.dart';
+import 'features/firebase_messaging/firebase_mess.dart';
+import 'features/firebase_messaging/life_sycle.dart';
+import 'features/firebase_messaging/local_notification.dart';
 import 'features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import 'features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
@@ -57,8 +63,22 @@ import 'features/store/bloc/market_favorites_cubit/market_favorites_cubit.dart';
 import 'features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'my_app.dart';
 
+final LifecycleEventHandler lifecycleEventHandler = LifecycleEventHandler();
+
+@pragma('vm:entry-point')
+Future<void> backgroundMessageHandler(RemoteMessage message) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  print("notif came when app is on background");
+  var localNotificationService = LocalNotificationService(notifTap: NotificationTapCubit());
+  localNotificationService.initialize().then((value) {
+    localNotificationService.display(message);
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await init();
+  await getVersion();
 
   await FlutterDownloader.initialize(
     debug: true, // remove in prod
@@ -66,8 +86,16 @@ void main() async {
   );
   FlutterDownloader.registerCallback(downloadCallback);
 
-  await init();
-  await getVersion();
+  final FirebaseMessagingService firebaseService = sl();
+  final LocalNotificationService notification = sl();
+  await firebaseService.initFirebase();
+  await firebaseService.getToken();
+  await firebaseService.setupFirebaseMessaging();
+
+  if (!Platform.isMacOS) {
+    notification.initialize();
+  }
+
   // initBaseUrl();
   runApp(
     MultiBlocProvider(
@@ -135,6 +163,8 @@ void main() async {
         BlocProvider<GetFavoriteAddsBloc>(create: (context) => sl<GetFavoriteAddsBloc>()),
         BlocProvider<TabNavigationCubit>(create: (context) => sl<TabNavigationCubit>()),
         BlocProvider<WatchersCubit>(create: (context) => sl<WatchersCubit>()),
+        BlocProvider<GetProductMarketsBloc>(create: (context) => sl<GetProductMarketsBloc>()),
+        BlocProvider<NotificationTapCubit>(create: (context) => sl<NotificationTapCubit>()),
       ],
       child: const MyApp(),
     ),

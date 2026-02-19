@@ -151,7 +151,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
               );
             }
             if (state is ProductEditSuccess) {
-              context.read<GetProductByIdCubit>().getProduct(widget.product!.id);
+              context.read<GetProductByIdCubit>().getPublicProduct(widget.product!.id);
               CustomSnackBar.showSnackBar(
                 context: context,
                 title: AppLocalizations.of(context)!.success,

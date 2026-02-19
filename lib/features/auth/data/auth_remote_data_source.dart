@@ -121,7 +121,9 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
     try {
       var response = await api.dio.post(
         'v1/authentications/validate-otp',
-        data: {'phonenumber': phoneNumber, "otp": otp},
+        data: {'phonenumber': phoneNumber, "otp": otp,
+          // "firebase_token": local.firebaseToken
+        },
       );
       User user;
       if (response.data['payload'] is String) {

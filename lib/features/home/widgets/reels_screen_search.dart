@@ -30,6 +30,7 @@ class ReelsSearch extends StatelessWidget {
         filteredCategories!.map((e) => e.name?.tk).toList().join(', '),
     ];
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {

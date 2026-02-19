@@ -37,6 +37,7 @@ class _HomeAddState extends State<HomeAdd> with AutomaticKeepAliveClientMixin {
   Widget build(BuildContext context) {
     super.build(context);
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {

@@ -29,6 +29,8 @@ class LikedReelsCubit extends Cubit<LikedReelsState> {
     } else {
       likedReels.removeAt(index);
     }
+
+    print("reels came ${reel.user_favorite_count}");
     emit.call(LikedReelsSuccess(likedReels));
     await ds.likeReel(reel.id);
     sl<GetMyReelsBloc>().add(UpdateMyReel(reel));

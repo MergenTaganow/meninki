@@ -67,6 +67,9 @@ dependencies:
 #  gallery_saver_plus: ^3.2.9
   flutter_reorderable_grid_view: ^5.5.2
   media_scanner: ^2.1.0
+  firebase_core: ^4.4.0
+  firebase_messaging: ^16.1.1
+  flutter_local_notifications: ^17.0.0
 
 
 dev_dependencies:

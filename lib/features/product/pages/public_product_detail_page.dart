@@ -16,6 +16,7 @@ import 'package:meninki/features/product/bloc/product_compositions_cubit/product
 import 'package:meninki/features/product/bloc/product_watched_cubit/product_watched_cubit.dart';
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
+import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../global/widgets/meninki_network_image.dart';
@@ -41,7 +42,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
 
   @override
   void initState() {
-    context.read<GetProductByIdCubit>().getProduct(widget.productId);
+    context.read<GetProductByIdCubit>().getPublicProduct(widget.productId);
     context.read<GetProductReelsBloc>().add(ClearReels());
     _startStayTimer();
     super.initState();
@@ -120,15 +121,21 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
             final product =
                 state is GetProductByIdSuccess
                     ? state.product
-                    : Product(id: 999, name: Name()); // <-- fake model for skeleton
+                    : Product(
+                      id: 999,
+                      name: Name(),
+                      product_files: [MeninkiFile(id: 999), MeninkiFile(id: 999)],
+                    ); // <-- fake model for skeleton
 
             return Skeletonizer(
               enabled: isLoading,
+              ignorePointers: false,
               child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
                 slivers: [
                   CupertinoSliverRefreshControl(
                     onRefresh: () async {
-                      await context.read<GetProductByIdCubit>().refreshProduct(product.id);
+                      await context.read<GetProductByIdCubit>().refreshPublicProduct(product.id);
                     },
                   ),
 
@@ -284,7 +291,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
                                       ),
                                     singleLine(
                                       "${AppLocalizations.of(context)!.views}:",
-                                      product.rate_count.toString(),
+                                      product.product_watchers_count.toString(),
                                     ),
                                     singleLine(
                                       "${AppLocalizations.of(context)!.brand}:",

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:meninki/features/product/data/product_remote_data_source.dart';
 import 'package:meninki/features/reels/data/reels_remote_data_source.dart';
 import 'package:meninki/features/store/models/market.dart';
 import 'package:meta/meta.dart';
@@ -12,34 +13,39 @@ part 'get_reel_markets_event.dart';
 part 'get_reel_markets_state.dart';
 
 class ReelMarket {
-  String reel_count;
+  String? reel_count;
+  String? product_count;
   Market? market;
 
-  ReelMarket({required this.reel_count, required this.market});
+  ReelMarket({this.reel_count, required this.market, this.product_count});
 
   factory ReelMarket.fromJson(Map<String, dynamic> json) {
     return ReelMarket(
       reel_count: (json["reel_count"]),
+      product_count: (json["product_count"]),
       market: json["market"] != null ? Market.fromJson(json["market"]) : null,
     );
   }
 }
 
 class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> {
-  final ReelsRemoteDataSource ds;
+  final ReelsRemoteDataSource reelsDs;
+  final ProductRemoteDataSource productsDs;
   List<ReelMarket> reelMarkets = [];
 
   int page = 1;
   int limit = 10;
   bool canPag = false;
   String? lastSearch;
+  String lastType = 'product';
 
-  GetReelMarketsBloc(this.ds) : super(GetReelMarketsInitial()) {
+  GetReelMarketsBloc(this.reelsDs, this.productsDs) : super(GetReelMarketsInitial()) {
     on<GetReelMarketsEvent>((event, emit) async {
       if (event is GetReelMarkets) {
         emit(GetReelMarketsLoading());
 
         lastSearch = event.search;
+        lastType = event.type;
         canPag = false;
         emit(await _getReelMarkets(event));
       }
@@ -68,22 +74,33 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
     });
 
     canPag = false;
-    emit(await _getReelMarkets(GetReelMarkets(search: lastSearch)));
+    emit(await _getReelMarkets(GetReelMarkets(search: lastSearch, type: lastType)));
 
     return completer.future;
   }
 
   Future<GetReelMarketsState> _getReelMarkets(GetReelMarkets event) async {
     page = 1;
-    final failOrNot = await ds.getReelMarkets(
-      Query(
-        limit: limit,
-        offset: page,
-        keyword: event.search ?? '',
-        orderDirection: 'asc',
-        orderBy: 'created_at',
-      ),
-    );
+    final failOrNot =
+        await (event.type == 'reel'
+            ? reelsDs.getReelMarkets(
+              Query(
+                limit: limit,
+                offset: page,
+                keyword: event.search ?? '',
+                orderDirection: 'asc',
+                orderBy: 'created_at',
+              ),
+            )
+            : productsDs.getReelMarkets(
+              Query(
+                limit: limit,
+                offset: page,
+                keyword: event.search ?? '',
+                orderDirection: 'asc',
+                orderBy: 'created_at',
+              ),
+            ));
     return failOrNot.fold((l) => GetReelMarketsFailed(l), (r) {
       if (r.length == limit) canPag = true;
       reelMarkets = r;
@@ -95,15 +112,26 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
     await Future.delayed(const Duration(milliseconds: 400));
     page++;
 
-    final failOrNot = await ds.getReelMarkets(
-      Query(
-        offset: page,
-        limit: limit,
-        keyword: event.search,
-        orderDirection: 'asc',
-        orderBy: 'created_at',
-      ),
-    );
+    final failOrNot =
+        event.type == 'reel'
+            ? await reelsDs.getReelMarkets(
+              Query(
+                offset: page,
+                limit: limit,
+                keyword: event.search,
+                orderDirection: 'asc',
+                orderBy: 'created_at',
+              ),
+            )
+            : await productsDs.getReelMarkets(
+              Query(
+                offset: page,
+                limit: limit,
+                keyword: event.search,
+                orderDirection: 'asc',
+                orderBy: 'created_at',
+              ),
+            );
 
     return failOrNot.fold((l) => GetReelMarketsFailed(l), (r) {
       if (r.length == limit) canPag = true;
@@ -111,4 +139,8 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
       return GetReelMarketsSuccess(reelMarkets);
     });
   }
+}
+
+class GetProductMarketsBloc extends GetReelMarketsBloc {
+  GetProductMarketsBloc(super.reelsDs, super.productsDs);
 }

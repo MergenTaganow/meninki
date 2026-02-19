@@ -10,17 +10,34 @@ class GetProductByIdCubit extends Cubit<GetProductByIdState> {
   final ProductRemoteDataSource ds;
   GetProductByIdCubit(this.ds) : super(GetProductByIdInitial());
 
-  getProduct(int id) async {
+  getPublicProduct(int id) async {
     emit.call(GetProductByIdLoading());
-    var failOrNot = await ds.getProductById(id);
+    var failOrNot = await ds.getPublicProductById(id);
     failOrNot.fold(
       (l) => emit.call(GetProductByIdFailed(l)),
       (r) => emit.call(GetProductByIdSuccess(r)),
     );
   }
 
-  Future<void> refreshProduct(int id) async {
-    var failOrNot = await ds.getProductById(id);
+  getMyProduct(int id) async {
+    emit.call(GetProductByIdLoading());
+    var failOrNot = await ds.getMyProductById(id);
+    failOrNot.fold(
+      (l) => emit.call(GetProductByIdFailed(l)),
+      (r) => emit.call(GetProductByIdSuccess(r)),
+    );
+  }
+
+  Future<void> refreshPublicProduct(int id) async {
+    var failOrNot = await ds.getPublicProductById(id);
+    failOrNot.fold(
+      (l) => emit.call(GetProductByIdFailed(l)),
+      (r) => emit.call(GetProductByIdSuccess(r)),
+    );
+  }
+
+  Future<void> refreshMyProduct(int id) async {
+    var failOrNot = await ds.getPublicProductById(id);
     failOrNot.fold(
       (l) => emit.call(GetProductByIdFailed(l)),
       (r) => emit.call(GetProductByIdSuccess(r)),

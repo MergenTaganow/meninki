@@ -24,6 +24,7 @@ class MarketProductsSearch extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Market> storesProducts = [];
     return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {
