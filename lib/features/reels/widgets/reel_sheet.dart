@@ -46,12 +46,10 @@ class ReelsSheet extends StatelessWidget {
                     ],
                   ),
                   onTap: () {
-                    print("previous ${reel.user_favorite_count}");
                     var count =
                         (reel.user_favorite_count ?? 0) +
                         (state.reelIds.contains(reel.id) ? -1 : 1);
                     reel.user_favorite_count = count;
-                    print("later ${reel.user_favorite_count}");
                     context.read<LikedReelsCubit>().likeTapped(reel);
                   },
                 );
@@ -120,11 +118,7 @@ class ReelsSheet extends StatelessWidget {
               title: AppLocalizations.of(context)!.goToProduct,
               value: Svvg.asset("go_to_product"),
               onTap: () {
-                print('object');
-                print(reel.product!.id);
-
                 Go.to(Routes.publicProductDetailPage, argument: {"productId": reel.product!.id});
-                print('object');
               },
             ),
 

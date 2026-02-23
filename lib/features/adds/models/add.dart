@@ -17,6 +17,7 @@ class Add {
   Province? province;
   User? user;
   MeninkiFile? cover_image;
+  List<MeninkiFile>? files;
 
   Add({
     this.id,
@@ -32,19 +33,20 @@ class Add {
     this.user,
     this.cover_image,
     this.description,
+    this.files,
   });
 
   factory Add.fromJson(Map<String, dynamic> json) {
-    return Add(
+    var add = Add(
       id: (json["id"]),
       title: json["title"],
       is_active: json["is_active"],
       description: json["description"],
       is_verified: json["is_verified"],
       created_at:
-      json["created_at"] != null
-          ? DateTime.fromMillisecondsSinceEpoch(int.parse(json["created_at"])).toLocal()
-          : null,
+          json["created_at"] != null
+              ? DateTime.fromMillisecondsSinceEpoch(int.parse(json["created_at"])).toLocal()
+              : null,
       link: json["link"],
       link_type: json["link_type"],
       price: (json["price"]),
@@ -52,7 +54,16 @@ class Add {
       province: json["province"] != null ? Province.fromJson(json["province"]) : null,
       user: json["user"] != null ? User.fromJson(json["user"]) : null,
       cover_image: json["cover_image"] != null ? MeninkiFile.fromJson(json["cover_image"]) : null,
+      files:
+          json["files"] != null
+              ? (json["files"] as List).map((e) => MeninkiFile.fromJson(e)).toList()
+              : null,
     );
+    if (add.cover_image != null) {
+      if (add.files == null) add.files = [];
+      add.files?.insert(0, add.cover_image!);
+    }
+    return add;
   }
   //
 }

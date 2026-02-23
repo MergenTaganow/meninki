@@ -188,5 +188,9 @@
   "like": "Нравится",
   "reelWillBeCreated": "Обзор будет создан",
   "chooseFile": "Выберите файл",
-  "addVariant": "Добавить вариант"
+  "addVariant": "Добавить вариант",
+  "editProduct": "Редактировать товар",
+  "deleteProduct": "Удалить товар",
+  "deleteReel": "Удалить рилс",
+  "deleted": "Удалено"
 }

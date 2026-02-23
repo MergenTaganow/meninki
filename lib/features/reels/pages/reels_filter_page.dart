@@ -23,7 +23,10 @@ class ReelsFilterPage extends StatelessWidget {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.filterAndSort, style: TextStyle(fontWeight: FontWeight.w500)),
+        title: Text(
+          AppLocalizations.of(context)!.filterAndSort,
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
       ),
       body: SingleChildScrollView(
         child: ConstrainedBox(
@@ -38,12 +41,12 @@ class ReelsFilterPage extends StatelessWidget {
               children: [
                 SortSelection(listSort: listSort, sortKey: SortCubit.reelsSearchSort),
 
-                Box(h: 10),
-                CategorySelection(
-                  selectionKey: CategorySelectingCubit.reels_searching_category,
-                  singleSelection: false,
-                  rootCategorySelection: false,
-                ),
+                // Box(h: 10),
+                // CategorySelection(
+                //   selectionKey: CategorySelectingCubit.reels_searching_category,
+                //   singleSelection: false,
+                //   rootCategorySelection: false,
+                // ),
                 Spacer(),
 
                 ///clear filter
@@ -85,7 +88,10 @@ class ReelsFilterPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
-                          child: Text(AppLocalizations.of(context)!.save, style: TextStyle(color: Colors.white)),
+                          child: Text(
+                            AppLocalizations.of(context)!.save,
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
                     ),

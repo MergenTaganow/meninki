@@ -71,7 +71,6 @@ class Api {
                       ),
                     );
                   } else {
-                    print('⚠️ Cannot rebuild file, filepath header missing.');
                   }
                 }
 

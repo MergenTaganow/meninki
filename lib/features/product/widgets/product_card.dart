@@ -77,10 +77,11 @@ class ProductCard extends StatelessWidget {
           ),
           InkWell(
             onTap: () {
-              print(product.discount);
-              print(product.discount != null);
-              print(product.discount != null ? scheme?.textSecondary : scheme?.textPrimary);
-              // Go.to(Routes.productDetailPage, argument: {"productId": product.id});
+              if (isPublic) {
+                Go.to(Routes.publicProductDetailPage, argument: {"productId": product.id});
+              } else {
+                Go.to(Routes.myProductDetailPage, argument: {"productId": product.id});
+              }
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,

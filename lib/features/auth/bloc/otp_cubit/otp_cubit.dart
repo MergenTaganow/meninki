@@ -3,6 +3,7 @@ import 'package:bloc/bloc.dart';
 import 'package:meninki/core/failure.dart';
 import 'package:meninki/features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'package:meninki/features/auth/data/auth_remote_data_source.dart';
+import 'package:meninki/features/firebase_messaging/firebase_mess.dart';
 import 'package:meta/meta.dart';
 import '../../../../core/injector.dart';
 
@@ -44,12 +45,14 @@ class OtpCubit extends Cubit<OtpState> {
         emit.call(OtpFailed(l));
         emit(OtpSend(retrySeconds: retrySeconds, checkLoading: checkLoading));
       },
-      (r) {
+      (r) async {
         retryTimer?.cancel();
         retryTimer = null;
 
         if (r.temporaryToken != null) {
           emit.call(OtpSuccess(r.temporaryToken!));
+          await ds.sendFirebaseToken();
+          await sl<FirebaseMessagingService>().setupFirebaseMessaging();
         } else {
           sl<AuthBloc>().add(SetUser(r));
         }

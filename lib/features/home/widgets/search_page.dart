@@ -28,6 +28,8 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage>
     with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController tabController;
+
+  final ScrollController addsScrollController = ScrollController();
   TextEditingController search = TextEditingController();
   List<String> searchTypes = ['Обзоры', 'Товары', 'Объявления', 'Магазины'];
   String selectedType = 'Обзоры';
@@ -48,6 +50,12 @@ class _SearchPageState extends State<SearchPage>
     fetchList();
     search.addListener(() {
       setState(() {});
+    });
+
+    addsScrollController.addListener(() {
+      if (addsScrollController.position.pixels == addsScrollController.position.maxScrollExtent) {
+        context.read<GetAddsBloc>().add(AddPag());
+      }
     });
     super.initState();
   }
@@ -183,6 +191,7 @@ class _SearchPageState extends State<SearchPage>
                     ReelsSearch(text: search.text.trim()),
                     ProductSearch(text: search.text.trim()),
                     CustomScrollView(
+                      controller: addsScrollController,
                       physics: const BouncingScrollPhysics(),
                       slivers: [
                         CupertinoSliverRefreshControl(

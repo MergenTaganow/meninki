@@ -92,7 +92,7 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
                 orderBy: 'created_at',
               ),
             )
-            : productsDs.getReelMarkets(
+            : productsDs.getProductMarkets(
               Query(
                 limit: limit,
                 offset: page,
@@ -123,7 +123,7 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
                 orderBy: 'created_at',
               ),
             )
-            : await productsDs.getReelMarkets(
+            : await productsDs.getProductMarkets(
               Query(
                 offset: page,
                 limit: limit,

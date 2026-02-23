@@ -16,3 +16,5 @@ class SetLanguage extends AuthEvent {
   final String lang;
   SetLanguage(this.lang);
 }
+
+class DeleteUser extends AuthEvent {}

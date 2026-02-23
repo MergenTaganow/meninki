@@ -37,6 +37,8 @@ class PublicProductDetailPage extends StatefulWidget {
 }
 
 class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
+  final ScrollController scrollController = ScrollController();
+
   Product? product;
   Timer? _stayTimer;
 
@@ -44,6 +46,14 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
   void initState() {
     context.read<GetProductByIdCubit>().getPublicProduct(widget.productId);
     context.read<GetProductReelsBloc>().add(ClearReels());
+
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+        context.read<GetProductReelsBloc>().add(
+          ReelPag(query: Query(product_id: widget.productId)),
+        );
+      }
+    });
     _startStayTimer();
     super.initState();
   }
@@ -131,6 +141,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
               enabled: isLoading,
               ignorePointers: false,
               child: CustomScrollView(
+                controller: scrollController,
                 physics: const BouncingScrollPhysics(),
                 slivers: [
                   CupertinoSliverRefreshControl(

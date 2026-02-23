@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/global/blocs/delete_items_cubit/delete_items_cubit.dart';
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/store/models/market.dart';
 import '../../../core/helpers.dart';
@@ -106,6 +108,7 @@ class ProductSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return Padd(
       hor: 16,
       ver: 30,
@@ -114,7 +117,7 @@ class ProductSheet extends StatelessWidget {
         children: [
           singleLine(
             context: context,
-            title: "Редактировать продукт",
+            title: lg.editProduct,
             value: Svvg.asset("profile"),
             onTap: () {
               Go.to(
@@ -123,22 +126,6 @@ class ProductSheet extends StatelessWidget {
               );
             },
           ),
-          // singleLine(
-          //   context: context,
-          //   title: "Цветовая схема",
-          //   value: Svvg.asset("schemePicker"),
-          //   onTap: () {
-          //     Go.to(Routes.colorSchemeSelectingPage, argument: {'market': product});
-          //   },
-          // ),
-          // singleLine(
-          //   context: context,
-          //   title: "Обявлния магазина",
-          //   value: Svvg.asset("schemePicker"),
-          //   onTap: () {
-          //     Go.to(Routes.marketBannersPage, argument: {'market': product});
-          //   },
-          // ),
           singleLine(
             context: context,
             title: AppLocalizations.of(context)!.copyLink,
@@ -147,9 +134,22 @@ class ProductSheet extends StatelessWidget {
           ),
           singleLine(
             context: context,
-            title: "Удалить продукт",
-            value: Svvg.asset("delete"),
+            title: lg.deleteProduct,
+            value: Svvg.asset("delete", size: 24),
             textColor: Col.redTask,
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return AreYouSureSheet(
+                    title: lg.deleteProduct,
+                    onYes: () {
+                      context.read<DeleteItemsCubit>().deleteProduct(product.id);
+                    },
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
@@ -181,7 +181,7 @@ class ProductSheet extends StatelessWidget {
           },
           child: Container(
             height: 46,
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

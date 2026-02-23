@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:meninki/features/adds/bloc/add_uuid_cubit/add_uuid_cubit.dart';
 import 'package:meninki/features/adds/models/add.dart';
 import '../../../core/helpers.dart';
+import '../../global/widgets/meninki_network_image.dart';
 import '../adds_to_card.dart';
 
 class AddDetailPage extends StatefulWidget {
@@ -40,34 +42,33 @@ class _AddDetailPageState extends State<AddDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 250),
-                    // if (state.add.?.isNotEmpty ?? false)
-                    //   SizedBox(
-                    //     height: 250,
-                    //     child: ListView.separated(
-                    //       scrollDirection: Axis.horizontal,
-                    //       itemBuilder: (context, index) {
-                    //         return Padd(
-                    //           left: index == 0 ? 10 : 0,
-                    //           child: SizedBox(
-                    //             height: 250,
-                    //             width: MediaQuery.sizeOf(context).width * 0.5,
-                    //             child: ClipRRect(
-                    //               borderRadius: BorderRadius.circular(14),
-                    //               child: MeninkiNetworkImage(
-                    //                 file: state.product.product_files![index],
-                    //                 networkImageType: NetworkImageType.large,
-                    //                 fit: BoxFit.cover,
-                    //                 otherFiles: state.product.product_files,
-                    //               ),
-                    //             ),
-                    //           ),
-                    //         );
-                    //       },
-                    //       separatorBuilder: (context, index) => Box(w: 10),
-                    //       itemCount: state.product.product_files?.length ?? 0,
-                    //     ),
-                    //   ),
+                    if (state.add.files?.isNotEmpty ?? false)
+                      SizedBox(
+                        height: 250,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) {
+                            return Padd(
+                              left: index == 0 ? 10 : 0,
+                              child: SizedBox(
+                                height: 250,
+                                width: MediaQuery.sizeOf(context).width * 0.5,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: MeninkiNetworkImage(
+                                    file: state.add.files![index],
+                                    networkImageType: NetworkImageType.medium,
+                                    fit: BoxFit.cover,
+                                    otherFiles: state.add.files,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder: (context, index) => Box(w: 10),
+                          itemCount: state.add.files?.length ?? 0,
+                        ),
+                      ),
                     Padd(
                       hor: 10,
                       child: Column(
@@ -129,32 +130,21 @@ class _AddDetailPageState extends State<AddDetailPage> {
                             padding: EdgeInsets.all(10),
                             child: Column(
                               children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      lg.publishedAt,
-                                      style: TextStyle(color: Color(0xFF969696)),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        "state.add.created_at ?? '-'",
-                                        textAlign: TextAlign.right,
+                                if (state.add.created_at != null)
+                                  Row(
+                                    children: [
+                                      Text(
+                                        lg.publishedAt,
+                                        style: TextStyle(color: Color(0xFF969696)),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Text(lg.views, style: TextStyle(color: Color(0xFF969696))),
-                                    Expanded(
-                                      child: Text(
-                                        //Todo need to change to viewCount
-                                        "state.add.rate_count",
-                                        textAlign: TextAlign.right,
+                                      Expanded(
+                                        child: Text(
+                                          DateFormat('dd.MM.yyyy').format(state.add.created_at!),
+                                          textAlign: TextAlign.right,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
                                 Row(
                                   children: [
                                     Text(lg.category, style: TextStyle(color: Color(0xFF969696))),

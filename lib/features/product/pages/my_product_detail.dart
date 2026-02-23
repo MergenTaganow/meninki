@@ -7,6 +7,7 @@ import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/global/blocs/delete_items_cubit/delete_items_cubit.dart';
 import 'package:meninki/features/global/model/name.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 import 'package:meninki/features/product/bloc/get_product_by_id/get_product_by_id_cubit.dart';
@@ -20,6 +21,7 @@ import '../../global/widgets/meninki_network_image.dart';
 import '../../home/widgets/product_reels_list.dart';
 import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
+import '../bloc/get_products_bloc/get_products_bloc.dart';
 import '../widgets/compositions_list.dart';
 import '../widgets/later_uploading_reel.dart';
 import '../widgets/product_to_card.dart';
@@ -34,12 +36,21 @@ class MyProductDetailPage extends StatefulWidget {
 }
 
 class _MyProductDetailPageState extends State<MyProductDetailPage> {
+  final ScrollController scrollController = ScrollController();
+
   Product? product;
 
   @override
   void initState() {
     context.read<GetProductByIdCubit>().getMyProduct(widget.productId);
     context.read<GetProductReelsBloc>().add(ClearReels());
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+        context.read<GetProductReelsBloc>().add(
+          ReelPag(query: Query(product_id: widget.productId)),
+        );
+      }
+    });
     super.initState();
   }
 
@@ -51,6 +62,8 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
+
     return MultiBlocListener(
       listeners: [
         BlocListener<GetProductByIdCubit, GetProductByIdState>(
@@ -84,7 +97,19 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
         BlocListener<GetProductByIdCubit, GetProductByIdState>(
           listener: (context, state) {
             if (state is GetProductByIdSuccess) {
+              product = state.product;
               context.read<GetProductReelsBloc>().add(GetReel(Query(product_id: state.product.id)));
+            }
+          },
+        ),
+        BlocListener<DeleteItemsCubit, DeleteItemsState>(
+          listener: (context, state) {
+            if (state is DeleteItemsSuccess &&
+                state.deletedThing == DeleteItems.product &&
+                state.deletedId == product?.id) {
+              context.read<GetOneStoresProducts>().refresh();
+              CustomSnackBar.showSnackBar(context: context, title: lg.deleted, isError: false);
+              Go.pop();
             }
           },
         ),
@@ -121,6 +146,7 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
             return Skeletonizer(
               enabled: isLoading,
               child: CustomScrollView(
+                controller: scrollController,
                 physics: const BouncingScrollPhysics(),
                 slivers: [
                   CupertinoSliverRefreshControl(

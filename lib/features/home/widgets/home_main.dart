@@ -31,9 +31,13 @@ class HomeMain extends StatefulWidget {
 }
 
 class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin {
+  ScrollController productMarketsScrollController = ScrollController();
+  ScrollController newProductsScrollController = ScrollController();
+  ScrollController ratedProductsScrollController = ScrollController();
+  ScrollController discountedProductsScrollController = ScrollController();
+  ScrollController marketsScrollController = ScrollController();
   List<ReelMarket> stores = [];
   List<Market> storesProducts = [];
-  ScrollController scrollController = ScrollController();
 
   @override
   void initState() {
@@ -48,9 +52,45 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
       GetProduct(Query(/*orderBy: 'rate', orderDirection: 'desc'*/)),
     );
     context.read<GetStoreProductsBloc>().add(GetProductStores());
-    scrollController.addListener(() {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+    productMarketsScrollController.addListener(() {
+      if (productMarketsScrollController.position.pixels ==
+          productMarketsScrollController.position.maxScrollExtent) {
+        context.read<GetProductMarketsBloc>().add(PaginateReelMarkets(type: 'product'));
+      }
+    });
+
+    newProductsScrollController.addListener(() {
+      if (newProductsScrollController.position.pixels ==
+          newProductsScrollController.position.maxScrollExtent) {
+        context.read<GetNewProducts>().add(
+          ProductPag(query: Query(orderBy: 'id', orderDirection: 'desc')),
+        );
+      }
+    });
+
+    ratedProductsScrollController.addListener(() {
+      if (ratedProductsScrollController.position.pixels ==
+          ratedProductsScrollController.position.maxScrollExtent) {
+        context.read<GetRaitedProducts>().add(
+          ProductPag(query: Query(/*orderBy: 'rate', orderDirection: 'desc'*/)),
+        );
+      }
+    });
+
+    discountedProductsScrollController.addListener(() {
+      if (discountedProductsScrollController.position.pixels ==
+          discountedProductsScrollController.position.maxScrollExtent) {
+        context.read<GetDiscountProducts>().add(
+          ProductPag(query: Query(orderDirection: 'desc', orderBy: 'discount')),
+        );
+      }
+    });
+
+    marketsScrollController.addListener(() {
+      if (marketsScrollController.position.pixels ==
+          marketsScrollController.position.maxScrollExtent) {
         context.read<GetStoreProductsBloc>().add(PaginateProductStores());
+        context.read<GetBannersBloc>().add(BannerPag());
       }
     });
     super.initState();
@@ -60,6 +100,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
   Widget build(BuildContext context) {
     super.build(context);
     return CustomScrollView(
+      controller: marketsScrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
@@ -77,8 +118,6 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
         SliverToBoxAdapter(
           child: Column(
             children: [
-              Box(h: 20),
-
               ///markets
               markets(),
 
@@ -92,7 +131,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
 
               ///marketProducts
               marketProducts(),
-              Box(h: 80),
+              // Box(h: 80),
             ],
           ),
         ),
@@ -100,123 +139,130 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
     );
   }
 
-  BlocBuilder<GetStoreProductsBloc, GetStoreProductsState> marketProducts() {
-    return BlocBuilder<GetStoreProductsBloc, GetStoreProductsState>(
-      builder: (context, state) {
-        if (state is GetProductStoresSuccess) {
-          storesProducts = state.stores;
-        }
-        final isLoading = state is GetProductStoresLoading;
+  Widget marketProducts() {
+    return Padd(
+      bot: 80,
+      child: BlocBuilder<GetStoreProductsBloc, GetStoreProductsState>(
+        builder: (context, state) {
+          if (state is GetProductStoresSuccess) {
+            storesProducts = state.stores;
+          }
+          final isLoading = state is GetProductStoresLoading;
 
-        storesProducts =
-            isLoading
-                ? List.generate(
-                  3,
-                  (_) => Market(id: 9999, name: ''), // lightweight model or mock
-                )
-                : storesProducts;
-        return Skeletonizer(
-          enabled: isLoading,
-          effect: ShimmerEffect(
-            baseColor: const Color(0xFFEAEAEA),
-            highlightColor: const Color(0xFFF5F5F5),
-          ),
-          child: Padd(
-            hor: 10,
-            child: ListView.separated(
-              itemCount: storesProducts.length,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return Container(
-                  constraints: BoxConstraints(maxHeight: 292),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Color(0xFFF3F3F3), width: 1),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          context.read<GetMarketByIdCubit>().getStoreById(storesProducts[index].id);
-                          Go.to(Routes.publicStoreDetail, argument: {'navigatedTab': 'product'});
-                        },
-                        child: Padd(
-                          hor: 10,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(100),
-                                    child: Container(
-                                      height: 28,
-                                      width: 28,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Col.primary,
+          storesProducts =
+              isLoading
+                  ? List.generate(
+                    3,
+                    (_) => Market(id: 9999, name: ''), // lightweight model or mock
+                  )
+                  : storesProducts;
+          return Skeletonizer(
+            enabled: isLoading,
+            effect: ShimmerEffect(
+              baseColor: const Color(0xFFEAEAEA),
+              highlightColor: const Color(0xFFF5F5F5),
+            ),
+            child: Padd(
+              hor: 10,
+              child: ListView.separated(
+                itemCount: storesProducts.length,
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return Container(
+                    constraints: BoxConstraints(maxHeight: 292),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Color(0xFFF3F3F3), width: 1),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    child: Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            context.read<GetMarketByIdCubit>().getStoreById(
+                              storesProducts[index].id,
+                            );
+                            Go.to(Routes.publicStoreDetail, argument: {'navigatedTab': 'product'});
+                          },
+                          child: Padd(
+                            hor: 10,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(100),
+                                      child: Container(
+                                        height: 28,
+                                        width: 28,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Col.primary,
+                                        ),
+                                        child:
+                                            storesProducts[index].cover_image != null
+                                                ? IgnorePointer(
+                                                  ignoring: true,
+                                                  child: MeninkiNetworkImage(
+                                                    file: storesProducts[index].cover_image!,
+                                                    networkImageType: NetworkImageType.small,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                )
+                                                : null,
                                       ),
-                                      child:
-                                          storesProducts[index].cover_image != null
-                                              ? IgnorePointer(
-                                                ignoring: true,
-                                                child: MeninkiNetworkImage(
-                                                  file: storesProducts[index].cover_image!,
-                                                  networkImageType: NetworkImageType.small,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              )
-                                              : null,
                                     ),
-                                  ),
-                                  Box(w: 10),
-                                  Text(
-                                    isLoading ? 'Store name' : storesProducts[index].name,
-                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                                  ),
-                                ],
-                              ),
-                              Icon(Icons.navigate_next),
-                            ],
+                                    Box(w: 10),
+                                    Text(
+                                      isLoading ? 'Store name' : storesProducts[index].name,
+                                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                    ),
+                                  ],
+                                ),
+                                Icon(Icons.navigate_next),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      Box(h: 10),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxHeight: 232),
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: isLoading ? 3 : storesProducts[index].products?.length ?? 0,
-                          itemBuilder: (context, productIndex) {
-                            return Padd(
-                              left: productIndex == 0 ? 10 : 0,
-                              child: Skeletonizer(
-                                enabled: isLoading,
-                                child: ProductCard(
-                                  product:
-                                      storesProducts[index].products?[productIndex] ??
-                                      Product(id: 9999, name: Name()),
+                        Box(h: 10),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxHeight: 232),
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: isLoading ? 3 : storesProducts[index].products?.length ?? 0,
+                            itemBuilder: (context, productIndex) {
+                              return Padd(
+                                left: productIndex == 0 ? 10 : 0,
+                                child: Skeletonizer(
+                                  enabled: isLoading,
+                                  child: ProductCard(
+                                    product:
+                                        storesProducts[index].products?[productIndex] ??
+                                        Product(id: 9999, name: Name()),
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          separatorBuilder: (context, index) => Box(w: 4),
+                              );
+                            },
+                            separatorBuilder: (context, index) => Box(w: 4),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              separatorBuilder:
-                  (context, index) =>
-                      index == 0 ? Padd(ver: 4, child: BannersList(priority: 3)) : Box(h: 20),
+                      ],
+                    ),
+                  );
+                },
+                separatorBuilder:
+                    (context, index) =>
+                        index % 10 == 0
+                            ? Padd(ver: 4, child: BannersList(priority: index ~/ 10))
+                            : Box(h: 20),
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -273,6 +319,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                     SizedBox(
                       height: 240,
                       child: ListView.separated(
+                        controller: newProductsScrollController,
                         itemBuilder: (context, index) {
                           return Padd(
                             left: index == 0 ? 10 : 0,
@@ -339,6 +386,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                     SizedBox(
                       height: 240,
                       child: ListView.separated(
+                        controller: ratedProductsScrollController,
                         itemBuilder: (context, index) {
                           return Padd(
                             left: index == 0 ? 10 : 0,
@@ -408,6 +456,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                     SizedBox(
                       height: 240,
                       child: ListView.separated(
+                        controller: discountedProductsScrollController,
                         itemBuilder: (context, index) {
                           return Padd(
                             left: index == 0 ? 10 : 0,
@@ -431,52 +480,61 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
     );
   }
 
-  BlocBuilder<GetProductMarketsBloc, GetReelMarketsState> markets() {
-    return BlocBuilder<GetProductMarketsBloc, GetReelMarketsState>(
-      builder: (context, state) {
-        if (state is GetReelMarketsSuccess) {
-          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-            if (mounted) {
-              setState(() {
-                stores = state.reelMarkets;
-              });
-            }
-          });
-        }
+  Widget markets() {
+    return Padd(
+      child: BlocBuilder<GetProductMarketsBloc, GetReelMarketsState>(
+        builder: (context, state) {
+          if (state is GetReelMarketsSuccess) {
+            WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+              if (mounted) {
+                setState(() {
+                  stores = state.reelMarkets;
+                });
+              }
+            });
+          }
 
-        final isLoading = state is GetReelMarketsLoading;
-        final itemCount = isLoading ? 5 : stores.length;
-        return AnimatedCrossFade(
-          duration: const Duration(milliseconds: 380),
-          firstCurve: Curves.easeOut,
-          secondCurve: Curves.easeIn,
-          sizeCurve: Curves.easeInOut,
-          crossFadeState: itemCount != 0 ? CrossFadeState.showFirst : CrossFadeState.showSecond,
-          firstChild: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 120,
-                child: Skeletonizer(
-                  enabled: isLoading,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemBuilder: (context, index) {
-                      // Use dummy store when loading to avoid index errors
-                      final store = isLoading ? null : stores[index];
-                      return Padd(left: index == 0 ? 10 : 0, child: ReelMarketCard(store: store));
-                    },
-                    separatorBuilder: (context, index) => Box(w: 8),
-                    itemCount: itemCount,
+          final isLoading = state is GetReelMarketsLoading;
+          final itemCount = isLoading ? 5 : stores.length;
+          return Padd(
+            top: 20,
+            child: AnimatedCrossFade(
+              duration: const Duration(milliseconds: 380),
+              firstCurve: Curves.easeOut,
+              secondCurve: Curves.easeIn,
+              sizeCurve: Curves.easeInOut,
+              crossFadeState: itemCount != 0 ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              firstChild: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 120,
+                    child: Skeletonizer(
+                      enabled: isLoading,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        controller: productMarketsScrollController,
+                        itemBuilder: (context, index) {
+                          // Use dummy store when loading to avoid index errors
+                          final store = isLoading ? null : stores[index];
+                          return Padd(
+                            left: index == 0 ? 10 : 0,
+                            child: ReelMarketCard(store: store),
+                          );
+                        },
+                        separatorBuilder: (context, index) => Box(w: 8),
+                        itemCount: itemCount,
+                      ),
+                    ),
                   ),
-                ),
+                  Box(h: 20),
+                ],
               ),
-              Box(h: 20),
-            ],
-          ),
-          secondChild: Container(),
-        );
-      },
+              secondChild: Container(),
+            ),
+          );
+        },
+      ),
     );
   }
 

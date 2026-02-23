@@ -31,6 +31,7 @@ import '../features/file_download/data/download_service.dart';
 import '../features/firebase_messaging/bloc/notification_tap/notification_tap_cubit.dart';
 import '../features/firebase_messaging/firebase_mess.dart';
 import '../features/firebase_messaging/local_notification.dart';
+import '../features/global/blocs/delete_items_cubit/delete_items_cubit.dart';
 import '../features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import '../features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import '../features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
@@ -77,6 +78,7 @@ Future<void> init() async {
   sl.registerLazySingleton<SortCubit>(() => SortCubit());
   sl.registerLazySingleton<KeyFilterCubit>(() => KeyFilterCubit());
   sl.registerLazySingleton<TabNavigationCubit>(() => TabNavigationCubit());
+  sl.registerLazySingleton<DeleteItemsCubit>(() => DeleteItemsCubit(sl(), sl()));
 
   //auth
   sl.registerLazySingleton<AuthBloc>(() => AuthBloc(sl(), sl()));
@@ -167,7 +169,7 @@ Future<void> init() async {
   sl.registerLazySingleton<FirebaseMessagingService>(
     () => FirebaseMessagingService(
       localDs: sl(),
-      // remoteDs: sl(),
+      dataSource: sl(),
       notification: sl(),
       // notifCount: sl(),
     ),

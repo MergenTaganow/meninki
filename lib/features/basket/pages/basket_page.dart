@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/core/go.dart';
+import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/basket/bloc/get_basket_cubit/get_basket_cubit.dart';
 import 'package:meninki/features/basket/bloc/my_basket_cubit/my_basket_cubit.dart';
 import 'package:meninki/features/basket/models/basket_product.dart';
@@ -15,7 +17,7 @@ class BasketPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: BasketWidget());
+    return Scaffold(body: SafeArea(child: BasketWidget()));
   }
 }
 
@@ -64,7 +66,6 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
               highlightColor: Colors.black.withOpacity(0.05), // pressed effect
               onTap: () {
                 // Your tap action here
-                print("Мои заказы tapped!");
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -206,30 +207,40 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                                           ),
                                         ),
                                         Box(w: 10),
-                                        Expanded(
-                                          child: Column(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                product.composition?.title?.trans(context) ?? '',
-                                                style: TextStyle(fontWeight: FontWeight.w500),
-                                              ),
-                                              Box(h: 10),
-                                              Text(
-                                                '${product.composition?.product?.price} TMT',
-                                                style: TextStyle(fontWeight: FontWeight.w600),
-                                              ),
-                                              Text(
-                                                '${product.composition?.product?.discount} TMT',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: Color(0xFF969696),
+                                        GestureDetector(
+                                          onTap: () {
+                                            Go.to(
+                                              Routes.publicProductDetailPage,
+                                              argument: {
+                                                "productId": product.composition?.product?.id,
+                                              },
+                                            );
+                                          },
+                                          child: Expanded(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  product.composition?.title?.trans(context) ?? '',
+                                                  style: TextStyle(fontWeight: FontWeight.w500),
                                                 ),
-                                              ),
-                                              Spacer(),
-                                              actionButtons(product),
-                                            ],
+                                                Box(h: 10),
+                                                Text(
+                                                  '${product.composition?.product?.price} TMT',
+                                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                                ),
+                                                Text(
+                                                  '${product.composition?.product?.discount} TMT',
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Color(0xFF969696),
+                                                  ),
+                                                ),
+                                                Spacer(),
+                                                actionButtons(product),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ],

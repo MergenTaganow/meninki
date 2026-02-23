@@ -28,11 +28,13 @@ class PublicStoreDetail extends StatefulWidget {
 }
 
 class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTickerProviderStateMixin {
+  final ScrollController scrollController = ScrollController();
   late TabController tabController;
   MarketColorScheme scheme = MarketColorScheme.fromBackground(Colors.white);
   late final PageController _pageController;
   int _currentPage = 0;
   Timer? _timer;
+  int? marketId;
 
   @override
   void initState() {
@@ -42,6 +44,13 @@ class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTicker
       tabController.animateTo(1, duration: Duration.zero);
     }
     _pageController = PageController();
+
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+        context.read<GetOneStoresProducts>().add(ProductPag(query: Query(market_ids: [marketId])));
+        context.read<GetStoreReelsBloc>().add(ReelPag(query: Query(market_id: marketId)));
+      }
+    });
 
     super.initState();
   }
@@ -87,6 +96,7 @@ class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTicker
       body: BlocConsumer<GetMarketByIdCubit, GetMarketByIdState>(
         listener: (BuildContext context, GetMarketByIdState state) {
           if (state is GetMarketByIdSuccess) {
+            marketId = state.market.id;
             context.read<GetOneStoresProducts>().add(
               GetProduct(Query(market_ids: [state.market.id])),
             );
@@ -109,8 +119,6 @@ class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTicker
             var isFavorite = context.watch<MarketFavoritesCubit>().favoriteMarkets.contains(
               state.market.id,
             );
-
-            print("Here############## ${state.market.files?.last.id}");
 
             return RefreshIndicator(
               onRefresh: () async {

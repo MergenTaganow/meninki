@@ -16,7 +16,6 @@ class GetBasketCubit extends Cubit<GetBasketState> {
     // emit.call(GetBasketLoading());
     var failOrNot = await ds.getMyBasket();
     failOrNot.fold((l) => emit.call(GetBasketFailed(l)), (r) {
-      print(r.length);
       myBasket = r;
       emit.call(GetBasketSuccess(r));
     });

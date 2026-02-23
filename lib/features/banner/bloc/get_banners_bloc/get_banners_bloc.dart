@@ -46,7 +46,7 @@ class GetBannersBloc extends Bloc<GetBannersEvent, GetBannersState> {
       }
 
       if (event is BannerPag) {
-        emit(BannerPagLoading(bannersByPriority));
+        // emit(BannerPagLoading(bannersByPriority));
         emit(await _paginate(event));
       }
 

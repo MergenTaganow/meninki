@@ -34,12 +34,20 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
   late final PageController _pageController;
   int _currentPage = 0;
   Timer? _timer;
+  int? marketId;
 
   @override
   void initState() {
     clearProductSearchFilters();
     tabController = TabController(length: 2, vsync: this);
     _pageController = PageController();
+
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+        context.read<GetOneStoresProducts>().add(ProductPag(query: Query(market_ids: [marketId])));
+        context.read<GetStoreReelsBloc>().add(ReelPag(query: Query(market_id: marketId)));
+      }
+    });
     super.initState();
   }
 
@@ -84,6 +92,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
       body: BlocConsumer<GetMarketByIdCubit, GetMarketByIdState>(
         listener: (BuildContext context, GetMarketByIdState state) {
           if (state is GetMarketByIdSuccess) {
+            marketId = state.market.id;
             context.read<GetOneStoresProducts>().add(
               GetProduct(Query(market_ids: [state.market.id])),
             );
@@ -108,6 +117,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                 context.read<GetMarketByIdCubit>().getStoreById(state.market.id);
               },
               child: CustomScrollView(
+                controller: scrollController,
                 physics: const ClampingScrollPhysics(),
                 slivers: [
                   SliverToBoxAdapter(

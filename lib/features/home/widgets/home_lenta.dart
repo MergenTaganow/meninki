@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
-import 'package:meninki/features/reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:visibility_detector/visibility_detector.dart';
-
 import '../../../core/go.dart';
 import '../../../core/helpers.dart';
 import '../../../core/routes.dart';
@@ -25,8 +22,8 @@ class HomeLenta extends StatefulWidget {
 }
 
 class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixin {
-  // final visibilityKey = Key('reel_visibility_for_home_lenta_page');
-  // bool reelsPlaying = true;
+  final ScrollController realMarketsScrollController = ScrollController();
+  final ScrollController reelsScrollController = ScrollController();
 
   @override
   void initState() {
@@ -36,6 +33,20 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
     );
     context.read<GetReelMarketsBloc>().add(GetReelMarkets(type: 'reel'));
     context.read<GetVerifiedReelsBloc>().add(GetReel());
+
+    realMarketsScrollController.addListener(() {
+      if (realMarketsScrollController.position.pixels ==
+          realMarketsScrollController.position.maxScrollExtent) {
+        context.read<GetReelMarketsBloc>().add(PaginateReelMarkets(type: 'reel'));
+      }
+    });
+
+    reelsScrollController.addListener(() {
+      if (reelsScrollController.position.pixels == reelsScrollController.position.maxScrollExtent) {
+        context.read<GetVerifiedReelsBloc>().add(ReelPag());
+      }
+    });
+
     super.initState();
   }
 
@@ -45,6 +56,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
     var selectedSort = context.watch<SortCubit>().sortMap[SortCubit.reelsSearchSort];
 
     return CustomScrollView(
+      controller: reelsScrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
@@ -80,6 +92,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
                           child: Skeletonizer(
                             enabled: isLoading,
                             child: ListView.separated(
+                              controller: realMarketsScrollController,
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (context, index) {
                                 // Use dummy store when loading to avoid index errors

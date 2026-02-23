@@ -18,9 +18,27 @@ import '../../product/pages/product_search_filter_page.dart';
 import '../../product/widgets/product_card.dart';
 import '../../reels/model/query.dart';
 
-class ProductSearch extends StatelessWidget {
+class ProductSearch extends StatefulWidget {
   final String? text;
   const ProductSearch({super.key, required this.text});
+
+  @override
+  State<ProductSearch> createState() => _ProductSearchState();
+}
+
+class _ProductSearchState extends State<ProductSearch> {
+  final ScrollController productsScrollController = ScrollController();
+
+  @override
+  void initState() {
+    productsScrollController.addListener(() {
+      if (productsScrollController.position.pixels ==
+          productsScrollController.position.maxScrollExtent) {
+        context.read<GetProductsBloc>().add(ProductPag());
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +63,7 @@ class ProductSearch extends StatelessWidget {
       if (maxPrice != null) 'до $maxPrice',
     ];
     return CustomScrollView(
+      controller: productsScrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
@@ -63,14 +82,16 @@ class ProductSearch extends StatelessWidget {
                     Routes.productSearchFilterPage,
                     argument: {
                       "onFilter": () {
-                        context.read<GetProductsBloc>().add(GetProduct(Query(keyword: text)));
+                        context.read<GetProductsBloc>().add(
+                          GetProduct(Query(keyword: widget.text)),
+                        );
                       },
                     },
                   );
                 },
                 onClear: () {
                   clearProductSearchFilters();
-                  context.read<GetProductsBloc>().add(GetProduct(Query(keyword: text)));
+                  context.read<GetProductsBloc>().add(GetProduct(Query(keyword: widget.text)));
                 },
               ),
               Box(h: 10),

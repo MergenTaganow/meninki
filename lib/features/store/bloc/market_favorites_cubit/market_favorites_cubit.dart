@@ -19,12 +19,10 @@ class MarketFavoritesCubit extends Cubit<MarketFavoritesState> {
       emit.call(MarketFavoritesSuccess(r));
     });
 
-    print("object ${favoriteMarkets}");
   }
 
   favoriteTapped(int marketId) async {
     var index = favoriteMarkets.indexWhere((e) => e == marketId);
-    print(index);
     if (index == -1) {
       favoriteMarkets.add(marketId);
       var failOrNot = await ds.addFavoriteMarket(marketId);

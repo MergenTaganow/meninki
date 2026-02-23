@@ -16,14 +16,33 @@ import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import '../../store/bloc/get_store_products/get_store_products_bloc.dart';
 import '../../store/models/market.dart';
 
-class MarketProductsSearch extends StatelessWidget {
+class MarketProductsSearch extends StatefulWidget {
   final String? text;
   const MarketProductsSearch({super.key, this.text});
+
+  @override
+  State<MarketProductsSearch> createState() => _MarketProductsSearchState();
+}
+
+class _MarketProductsSearchState extends State<MarketProductsSearch> {
+  final ScrollController marketsScrollController = ScrollController();
+
+  @override
+  void initState() {
+    marketsScrollController.addListener(() {
+      if (marketsScrollController.position.pixels ==
+          marketsScrollController.position.maxScrollExtent) {
+        context.read<GetStoreProductsSearch>().add(PaginateProductStores());
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     List<Market> storesProducts = [];
     return CustomScrollView(
+      controller: marketsScrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
@@ -39,7 +58,7 @@ class MarketProductsSearch extends StatelessWidget {
                 filterList: [],
                 onFilter: () {},
                 onClear: () {
-                  context.read<GetStoreProductsSearch>().add(GetProductStores(search: text));
+                  context.read<GetStoreProductsSearch>().add(GetProductStores(search: widget.text));
                 },
               ),
 
@@ -112,10 +131,8 @@ class MarketProductsSearch extends StatelessWidget {
                                                       ? IgnorePointer(
                                                         ignoring: true,
                                                         child: MeninkiNetworkImage(
-                                                          file:
-                                                              storesProducts[index].cover_image!,
-                                                          networkImageType:
-                                                              NetworkImageType.small,
+                                                          file: storesProducts[index].cover_image!,
+                                                          networkImageType: NetworkImageType.small,
                                                           fit: BoxFit.cover,
                                                         ),
                                                       )
@@ -147,6 +164,11 @@ class MarketProductsSearch extends StatelessWidget {
                                   itemBuilder: (context, productIndex) {
                                     return Padd(
                                       left: productIndex == 0 ? 10 : 0,
+                                      right:
+                                          productIndex ==
+                                                  (storesProducts[index].products?.length ?? 1) - 1
+                                              ? 10
+                                              : 0,
                                       child: Skeletonizer(
                                         enabled: isLoading,
                                         child: ProductCard(

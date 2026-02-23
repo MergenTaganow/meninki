@@ -4,14 +4,17 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:meninki/core/success.dart';
+import 'package:meninki/features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import 'package:meninki/features/categories/models/brand.dart';
 import 'package:meninki/features/categories/models/category.dart';
 import 'package:meninki/features/comments/models/comment.dart';
+import 'package:meninki/features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'package:meninki/features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import '../../../core/api.dart';
 import '../../../core/failure.dart';
+import '../../../core/injector.dart';
 import '../model/query.dart';
 
 abstract class ReelsRemoteDataSource {
@@ -31,6 +34,7 @@ abstract class ReelsRemoteDataSource {
   Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query);
   Future<Either<Failure, Success>> repostReel(int reelId);
   Future<Either<Failure, Success>> watchReel(int reelId);
+  Future<Either<Failure, Success>> deleteReel(int reelId);
 }
 
 class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
@@ -53,8 +57,15 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
   @override
   Future<Either<Failure, List<Reel>>> getFilteredReels(Query? query) async {
     try {
+      var sort = sl<SortCubit>().sortMap[SortCubit.reelsSearchSort];
+      Map<String, dynamic> param = {
+        if (query != null) ...query.toMap(),
+        if (sort != null) ...sort.toMap(),
+      };
+
+
       ///Todo later need to control verified and other urls
-      var response = await api.dio.get('v1/reels/verified', queryParameters: query?.toMap());
+      var response = await api.dio.get('v1/reels/verified', queryParameters: param);
 
       List<Reel> reels = (response.data['payload'] as List).map((e) => Reel.fromJson(e)).toList();
       return Right(reels);
@@ -266,7 +277,7 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
   @override
   Future<Either<Failure, Success>> repostReel(int reelId) async {
     // try {
-     await api.dio.post('v1/reels/repost/$reelId');
+    await api.dio.post('v1/reels/repost/$reelId');
 
     return Right(Success());
     // } catch (e) {
@@ -276,13 +287,25 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
 
   @override
   Future<Either<Failure, Success>> watchReel(int reelId) async {
-    // try {
+    try {
     var response = await api.dio.post('v1/reel-watchers/$reelId');
-    print(response.data);
 
     return Right(Success());
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> deleteReel(int reelId) async {
+    try {
+      var response = await api.dio.delete('v1/reels/client/$reelId');
+
+      print(response.data);
+
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 }

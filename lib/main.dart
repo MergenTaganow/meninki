@@ -29,6 +29,7 @@ import 'features/firebase_messaging/bloc/notification_tap/notification_tap_cubit
 import 'features/firebase_messaging/firebase_mess.dart';
 import 'features/firebase_messaging/life_sycle.dart';
 import 'features/firebase_messaging/local_notification.dart';
+import 'features/global/blocs/delete_items_cubit/delete_items_cubit.dart';
 import 'features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import 'features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
@@ -163,6 +164,7 @@ void main() async {
         BlocProvider<WatchersCubit>(create: (context) => sl<WatchersCubit>()),
         BlocProvider<GetProductMarketsBloc>(create: (context) => sl<GetProductMarketsBloc>()),
         BlocProvider<NotificationTapCubit>(create: (context) => sl<NotificationTapCubit>()),
+        BlocProvider<DeleteItemsCubit>(create: (context) => sl<DeleteItemsCubit>()),
       ],
       child: const MyApp(),
     ),

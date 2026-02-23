@@ -37,7 +37,7 @@ class GetProductByIdCubit extends Cubit<GetProductByIdState> {
   }
 
   Future<void> refreshMyProduct(int id) async {
-    var failOrNot = await ds.getPublicProductById(id);
+    var failOrNot = await ds.getMyProductById(id);
     failOrNot.fold(
       (l) => emit.call(GetProductByIdFailed(l)),
       (r) => emit.call(GetProductByIdSuccess(r)),

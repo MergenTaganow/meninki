@@ -1,4 +1,5 @@
 import 'package:better_player/better_player.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
@@ -73,6 +74,7 @@ class _ReelCardState extends State<ReelCard> {
                 borderRadius: BorderRadius.circular(16),
                 child: VisibilityDetector(
                   onVisibilityChanged: (VisibilityInfo info) async {
+                    if (!widget.playingReels) return;
                     if (controller == null) return;
 
                     if (!mounted) return;
@@ -88,7 +90,9 @@ class _ReelCardState extends State<ReelCard> {
                     }
                     if (info.visibleFraction * 100 > 80) {
                       if (!(controller.isPlaying() ?? true)) {
-                        await controller.play();
+                        if (kReleaseMode) {
+                          await controller.play();
+                        }
                         playing = true;
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           setState(() {});

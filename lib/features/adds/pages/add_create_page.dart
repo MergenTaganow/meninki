@@ -97,28 +97,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
           builder: (context, state) {
             return InkWell(
               onTap: () {
-                print({
-                  'title': title.text,
-                  'description': description.text,
-                  'price': price.text,
-                  // 'number': numberController.text,
-                  'province_id':
-                      context
-                          .read<ProvinceSelectingCubit>()
-                          .selectedMap[ProvinceSelectingCubit.add_creating_province]
-                          ?.single
-                          .id,
-                  'category_id':
-                      context
-                          .read<CategorySelectingCubit>()
-                          .selectedMap[CategorySelectingCubit.add_creating_category]
-                          ?.single
-                          .id,
-                  'cover_image_id': coverImage?.id,
-                  'file_ids': addPhotos.map((e) => e.id).toList(),
-                  'link_type': 'product',
-                  'link': ' ',
-                });
+
                 context.read<AddCreateCubit>().createAdd({
                   'title': title.text,
                   'description': description.text,

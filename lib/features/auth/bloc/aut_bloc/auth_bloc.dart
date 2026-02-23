@@ -42,6 +42,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await ds.updateUser(data: {"lang": event.lang});
         repo.user?.lang = event.lang;
       }
+      if (event is DeleteUser) {
+        var failOrNot = await ds.deleteUser();
+        failOrNot.fold((l) {}, (r) {
+          repo.saveUser(u: null);
+          repo.signOut();
+          emit(AuthFailed(const Failure()));
+          Go.too(Routes.loginMethodsScreen);
+        });
+      }
     });
   }
 }

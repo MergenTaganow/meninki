@@ -13,9 +13,26 @@ import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import '../../reels/model/query.dart';
 import '../../reels/pages/reels_filter_page.dart';
 
-class ReelsSearch extends StatelessWidget {
+class ReelsSearch extends StatefulWidget {
   final String? text;
   const ReelsSearch({super.key, required this.text});
+
+  @override
+  State<ReelsSearch> createState() => _ReelsSearchState();
+}
+
+class _ReelsSearchState extends State<ReelsSearch> {
+  final ScrollController reelsScrollController = ScrollController();
+
+  @override
+  void initState() {
+    reelsScrollController.addListener(() {
+      if (reelsScrollController.position.pixels == reelsScrollController.position.maxScrollExtent) {
+        context.read<GetSearchedReelsBloc>().add(ReelPag());
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +47,7 @@ class ReelsSearch extends StatelessWidget {
         filteredCategories!.map((e) => e.name?.tk).toList().join(', '),
     ];
     return CustomScrollView(
+      controller: reelsScrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
         CupertinoSliverRefreshControl(
@@ -48,7 +66,7 @@ class ReelsSearch extends StatelessWidget {
                     argument: {
                       "onFilter": () {
                         context.read<GetSearchedReelsBloc>().add(
-                          GetReel(Query(keyword: text, filtered: true)),
+                          GetReel(Query(keyword: widget.text, filtered: true)),
                         );
                       },
                     },
@@ -57,7 +75,7 @@ class ReelsSearch extends StatelessWidget {
                 onClear: () {
                   clearReelsSearchFilters();
                   context.read<GetSearchedReelsBloc>().add(
-                    GetReel(Query(keyword: text, filtered: true)),
+                    GetReel(Query(keyword: widget.text, filtered: true)),
                   );
                 },
               ),

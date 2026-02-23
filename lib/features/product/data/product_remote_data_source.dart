@@ -32,7 +32,8 @@ abstract class ProductRemoteDataSource {
   Future<Either<Failure, Success>> addFavoriteProduct(int productId);
   Future<Either<Failure, Success>> removeFavoriteProduct(int productId);
   Future<Either<Failure, Success>> watchProduct(int productId);
-  Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query);
+  Future<Either<Failure, List<ReelMarket>>> getProductMarkets(Query? query);
+  Future<Either<Failure, Success>> deleteProduct(int productId);
 }
 
 class ProductRemoteDataImpl extends ProductRemoteDataSource {
@@ -237,7 +238,6 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
     try {
       var response = await api.dio.post('v1/compositions/client', data: data);
 
-      print(response.data);
       return Right(Success());
     } catch (e) {
       return Left(handleError(e));
@@ -246,18 +246,17 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
 
   @override
   Future<Either<Failure, Success>> watchProduct(int productId) async {
-    // try {
+    try {
     var response = await api.dio.post('v1/product-watchers/$productId');
 
-    print(response.data);
     return Right(Success());
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
-  Future<Either<Failure, List<ReelMarket>>> getReelMarkets(Query? query) async {
+  Future<Either<Failure, List<ReelMarket>>> getProductMarkets(Query? query) async {
     try {
       var response = await api.dio.get(
         'v1/products/public/market/count',
@@ -267,6 +266,19 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
       List<ReelMarket> reels =
           (response.data['payload'] as List).map((e) => ReelMarket.fromJson(e)).toList();
       return Right(reels);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> deleteProduct(int productId) async {
+    try {
+      var response = await api.dio.delete('v1/products/client/$productId');
+
+      print(response.data);
+
+      return Right(Success());
     } catch (e) {
       return Left(handleError(e));
     }

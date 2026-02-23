@@ -26,10 +26,18 @@ class HomeAdd extends StatefulWidget {
 }
 
 class _HomeAddState extends State<HomeAdd> with AutomaticKeepAliveClientMixin {
+  final ScrollController addsScrollController = ScrollController();
+
   @override
   void initState() {
     context.read<GetCategoriesCubit>().getCategories();
     context.read<GetAddsBloc>().add(GetAdd());
+
+    addsScrollController.addListener(() {
+      if (addsScrollController.position.pixels == addsScrollController.position.maxScrollExtent) {
+        context.read<GetAddsBloc>().add(AddPag());
+      }
+    });
     super.initState();
   }
 
@@ -38,6 +46,7 @@ class _HomeAddState extends State<HomeAdd> with AutomaticKeepAliveClientMixin {
     super.build(context);
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
+      controller: addsScrollController,
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {

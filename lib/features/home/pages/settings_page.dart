@@ -4,8 +4,10 @@ import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/auth/bloc/aut_bloc/auth_bloc.dart';
+import 'package:meninki/features/auth/data/employee_local_data_source.dart';
 import 'package:meninki/features/store/widgets/store_sheet.dart';
 
+import '../../../core/injector.dart';
 import '../../../my_app.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -70,7 +72,23 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                 },
               ),
-              singleLine(title: lg.deleteAccount, value: Svvg.asset('delete', size: 25)),
+              singleLine(
+                title: lg.deleteAccount,
+                value: Svvg.asset('delete', size: 25),
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return AreYouSureSheet(
+                        title: lg.deleteAccount,
+                        onYes: () {
+                          context.read<AuthBloc>().add(DeleteUser());
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -80,11 +98,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
   DropdownMenu<String> languageChange(BuildContext context, AppLocalizations lg) {
     return DropdownMenu<String>(
-      width: MediaQuery.of(context).size.width - 20,
+      width: MediaQuery.of(context).size.width - 16,
+      textStyle: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
       menuStyle: MenuStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
-        contentPadding: const EdgeInsets.only(left: 10),
+        contentPadding: const EdgeInsets.only(left: 14),
         constraints: BoxConstraints.tight(const Size.fromHeight(46)),
         fillColor: Colors.white,
         filled: true,
@@ -132,7 +151,7 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Container(
           height: 44,
           width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 14),
+          padding: EdgeInsets.only(left: 14, right: 18),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),

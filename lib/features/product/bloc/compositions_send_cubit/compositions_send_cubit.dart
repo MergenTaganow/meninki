@@ -69,7 +69,6 @@ class CompositionsSendCubit extends Cubit<CompositionsSendState> {
       });
     }
 
-    print(payload);
 
     var failOrNot = await ds.editComposition({"compositions": payload});
     failOrNot.fold(

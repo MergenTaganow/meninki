@@ -191,5 +191,9 @@
   "addVariant": "Add variant",
   "howToShare": "How to share",
   "choosHowToShare": "Choose how to share",
-  "repost": "Repost"
+  "repost": "Repost",
+  "editProduct": "Edit Product",
+  "deleteProduct": "Delete Product",
+  "deleteReel": "Delete Reel",
+  "deleted": "Deleted"
 }

@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:meninki/features/auth/data/auth_remote_data_source.dart';
 
 import '../../firebase_options.dart';
 import '../auth/data/employee_local_data_source.dart';
@@ -9,12 +10,12 @@ import 'local_notification.dart';
 class FirebaseMessagingService {
   final EmployeeLocalDataSource localDs;
   final LocalNotificationService notification;
-  // final NotificationCountCubit notifCount;
+  final AuthRemoteDataSource dataSource;
 
   FirebaseMessagingService({
     required this.localDs,
     required this.notification,
-    // required this.notifCount,
+    required this.dataSource,
   });
 
   Future<void> initFirebase() async {
@@ -28,15 +29,15 @@ class FirebaseMessagingService {
 
   Future<String?> getToken() async {
     try {
-      print("get token came");
       final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-      String? token = await firebaseMessaging.getToken();
+      String? token = await firebaseMessaging.getToken().timeout(const Duration(seconds: 5));
 
       print("firebase token was $token");
       if (token != null) {
         localDs.saveFirebaseToken = token;
-        // await remoteDs.sendDeviceToken(token);
+        await dataSource.sendFirebaseToken();
       }
+      print("get token finished");
       return token;
     } catch (e) {
       print(e);
@@ -60,60 +61,80 @@ class FirebaseMessagingService {
     if (localDs.user == null) {
       return;
     }
-    final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+    try {
+      print("setupFirebaseMessaging");
+      final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+      print("firebaseMessaging");
 
-    NotificationSettings settings = await firebaseMessaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-      announcement: false,
-      carPlay: false,
-      criticalAlert: false,
-    );
+      NotificationSettings settings = await firebaseMessaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+        announcement: false,
+        carPlay: false,
+        criticalAlert: false,
+      );
 
-    RemoteMessage? initialMessage = await firebaseMessaging.getInitialMessage();
+      print("settings");
 
-    if (initialMessage != null) {
-      await Future.delayed(const Duration(milliseconds: 300));
-      notification.onNotificationTapped(initialMessage.data);
-    }
+      RemoteMessage? initialMessage = await firebaseMessaging.getInitialMessage().timeout(
+        const Duration(seconds: 5),
+      );
+      print("getInitialMessage");
 
-    firebaseMessaging.onTokenRefresh
-        .listen((fcmToken) async {
-          print('Firebase token updated:  $fcmToken');
+      if (initialMessage != null) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        notification.onNotificationTapped(initialMessage.data);
+        print("delayed(const Duration(milliseconds: 300))notification");
+      }
 
-          localDs.saveFirebaseToken = fcmToken;
+      firebaseMessaging.onTokenRefresh
+          .listen((fcmToken) async {
+            print('Firebase token updated:  $fcmToken');
 
-          // await remoteDs.sendDeviceToken(fcmToken);
-        })
-        .onError((err) {
-          // Error getting token.
-        });
+            localDs.saveFirebaseToken = fcmToken;
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('Notification permission granted.');
-    } else {
-      print('Notification permission not granted.');
-    }
+            await dataSource.sendFirebaseToken();
 
-    // Handle incoming messages when the app is in the foreground.
+            // await remoteDs.sendDeviceToken(fcmToken);
+          })
+          .onError((err) {
+            // Error getting token.
+          });
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // if (message.data['type'] == NotifTypes.assignmentComment) return;
-      // if (message.data.containsKey('referenceUuid')) {
-      //   notifCount.addUuid(message.data['referenceUuid']);
-      // }
-      notification.display(message);
-      print("notifcation came");
-      print("notifcation came");
-    });
+      print("firebaseMessaging.onTokenRefresh");
 
-    FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        print('Notification permission granted.');
+      } else {
+        print('Notification permission not granted.');
+      }
 
-    FirebaseMessaging.onMessageOpenedApp.listen((event) {
-      notification.onNotificationTapped(event.data);
-    });
+      // Handle incoming messages when the app is in the foreground.
+
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        // if (message.data['type'] == NotifTypes.assignmentComment) return;
+        // if (message.data.containsKey('referenceUuid')) {
+        //   notifCount.addUuid(message.data['referenceUuid']);
+        // }
+        notification.display(message);
+        print("notifcation came");
+        print("notifcation came");
+      });
+
+      print("FirebaseMessaging.onMessage");
+
+      FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
+
+      print("FirebaseMessaging.onBackgroundMessage");
+
+      FirebaseMessaging.onMessageOpenedApp.listen((event) {
+        notification.onNotificationTapped(event.data);
+      });
+
+      print("FirebaseMessaging.onMessageOpenedApp");
+    } catch (e) {}
   }
 }
 

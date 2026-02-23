@@ -47,7 +47,7 @@ class Product {
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
+    var product = Product(
       id: (json["id"]),
       name: Name.fromJson(json["name"]),
       description: Name.fromJson(json["description"]),
@@ -79,5 +79,10 @@ class Product {
               ? (json["compositions"] as List).map((e) => Composition.fromJson(e)).toList()
               : null,
     );
+    if (product.cover_image != null) {
+      if (product.product_files == null) product.product_files = [];
+      product.product_files?.insert(0, product.cover_image!);
+    }
+    return product;
   }
 }

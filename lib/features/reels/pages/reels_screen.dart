@@ -143,7 +143,6 @@ class _ReelWidgetState extends State<ReelWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.reel.user);
     return BlocListener<LikedReelsCubit, LikedReelsState>(
       listener: (context, state) {
         if (state is LikedReelsSuccess) {
@@ -347,12 +346,10 @@ class _ReelWidgetState extends State<ReelWidget> {
                         // }
                         return InkWell(
                           onTap: () {
-                            print("previously . ${widget.reel.user_favorite_count}");
                             var count =
                                 (widget.reel.user_favorite_count ?? 0) +
                                 (state.reelIds.contains(widget.reel.id) ? -1 : 1);
                             widget.reel.user_favorite_count = count;
-                            print("later . ${widget.reel.user_favorite_count}");
 
                             setState(() {});
                             context.read<LikedReelsCubit>().likeTapped(widget.reel);

@@ -97,7 +97,7 @@ class LocalNotificationService {
       ],
     );
     InitializationSettings initializationSettingsAndroid = InitializationSettings(
-      android: const AndroidInitializationSettings("@mipmap/ic_launcher"),
+      android: const AndroidInitializationSettings("@mipmap/launcher_icon"),
       iOS: initializationSettingsDarwin,
     );
 
@@ -207,9 +207,6 @@ class LocalNotificationService {
       );
 
       String title = notification.title ?? 'Notification';
-      if (sender.isNotEmpty) {
-        title = '${notification.title ?? ''}: $sender';
-      }
       // NotificationTapCubit notifTap = sl();
       notifTap.onMessage(message.data);
 
@@ -272,11 +269,6 @@ class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
-      ..badCertificateCallback = (
-          X509Certificate cert,
-          String host,
-          int port,
-          ) =>
-      true;
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }

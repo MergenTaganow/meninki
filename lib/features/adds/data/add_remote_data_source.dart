@@ -42,7 +42,6 @@ class AddRemoteDataSourceImpl extends AddRemoteDataSource {
         ...query.toMap(),
         if (selectedCategories.isNotEmpty) "category_id": selectedCategories.single.id,
       };
-      print(param);
       var response = await api.dio.get(
         'v1/${query.extraUrl ?? 'advertisements/public'}',
         queryParameters: param,

@@ -45,14 +45,13 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
 
   @override
   Future<Either<Failure, Market>> getStoreByID(int id) async {
-    // try {
+    try {
     var response = await api.dio.get('v1/market/$id');
-    print(response.data);
 
     return Right(Market.fromJson(response.data['payload']));
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
@@ -124,7 +123,6 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   @override
   Future<Either<Failure, Success>> addFavoriteMarket(int id) async {
     try {
-      print({'market_id': id});
       await api.dio.post('v1/market-favorites', data: {'market_id': id});
 
       return Right(Success());
