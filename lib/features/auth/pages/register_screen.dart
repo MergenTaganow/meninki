@@ -55,12 +55,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  lg.registerDescription,
-                  style: TextStyle(color: Color(0xFF969696)),
-                ),
+                Text(lg.registerDescription, style: TextStyle(color: Color(0xFF969696))),
                 Box(h: 20),
-                TitleAndTextField(title: lg.firstName, controller: nameController, hint: lg.enterFirstName),
+                TitleAndTextField(
+                  title: lg.firstName,
+                  controller: nameController,
+                  hint: lg.enterFirstName,
+                ),
                 TitleAndTextField(
                   title: lg.lastName,
                   controller: surnameController,
@@ -108,7 +109,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               "token": widget.temporaryToken,
                               "username": usernameController.text,
                               "lang": "tk",
-                              "fcm_token": "fcm_token1",
                             });
                           }
                         },

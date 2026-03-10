@@ -247,9 +247,9 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, Success>> watchProduct(int productId) async {
     try {
-    var response = await api.dio.post('v1/product-watchers/$productId');
+      var response = await api.dio.post('v1/product-watchers/$productId');
 
-    return Right(Success());
+      return Right(Success());
     } catch (e) {
       return Left(handleError(e));
     }

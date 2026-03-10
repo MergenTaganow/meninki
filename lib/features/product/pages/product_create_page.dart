@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/failure.dart';
 import 'package:meninki/core/go.dart';
@@ -58,6 +59,8 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   Brand? selectedBrand;
 
   Product? createdProduct;
+  bool compositionCreated = false;
+  bool showErrorCompositions = false;
 
   @override
   void deactivate() {
@@ -109,489 +112,512 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
-          listener: (context, state) {
-            if (state is FileUploadCoverImageSuccess) {
-              coverImage = state.file;
-            }
-          },
-        ),
-        BlocListener<FileProcessingCubit, FileProcessingState>(
-          listener: (context, state) {
-            if (state is FileProcessingUpdated) {
-              if (state.file.id == coverImage?.id) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
+    return WillPopScope(
+      onWillPop: () async {
+        if (widget.product != null) {
+          return true;
+        }
+        if (createdProduct != null && compositionCreated == false) {
+          CustomSnackBar.showSnackBar(context: context, title: lg.compositions, isError: true);
+          setState(() {
+            showErrorCompositions = true;
+          });
+          return false;
+        }
+        return true;
+      },
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
+            listener: (context, state) {
+              if (state is FileUploadCoverImageSuccess) {
                 coverImage = state.file;
-                setState(() {});
-              } else {
-                var index = productPhotos.indexWhere((element) => element.id == state.file.id);
-                if (index != -1) {
-                  productPhotos[index] = state.file;
+              }
+            },
+          ),
+          BlocListener<FileProcessingCubit, FileProcessingState>(
+            listener: (context, state) {
+              if (state is FileProcessingUpdated) {
+                if (state.file.id == coverImage?.id) {
+                  coverImage = state.file;
                   setState(() {});
+                } else {
+                  var index = productPhotos.indexWhere((element) => element.id == state.file.id);
+                  if (index != -1) {
+                    productPhotos[index] = state.file;
+                    setState(() {});
+                  }
                 }
               }
-            }
-          },
-        ),
-        BlocListener<ProductCreateCubit, ProductCreateState>(
-          listener: (context, state) {
-            if (state is ProductCreateSuccess) {
-              CustomSnackBar.showSnackBar(
-                context: context,
-                title: AppLocalizations.of(context)!.success,
-                isError: false,
-              );
-              createdProduct = state.product;
-              setState(() {});
-              scrollController.animateTo(
-                0,
-                duration: Duration(seconds: 1),
-                curve: Curves.easeInOut,
-              );
-            }
-            if (state is ProductEditSuccess) {
-              context.read<GetProductByIdCubit>().getPublicProduct(widget.product!.id);
-              CustomSnackBar.showSnackBar(
-                context: context,
-                title: AppLocalizations.of(context)!.success,
-                isError: false,
-              );
-              Go.pop();
-            }
-            if (state is ProductCreateFailed) {
-              CustomSnackBar.showSnackBar(
-                context: context,
-                title: state.failure.message ?? AppLocalizations.of(context)!.error,
-                isError: true,
-              );
-            }
-          },
-        ),
-        BlocListener<FileUplBloc, FileUplState>(
-          listener: (context, state) {
-            if (state is FileUploadSuccess && state.type == UploadingFileTypes.productPhotos) {
-              productPhotos.add(state.file);
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+            },
+          ),
+          BlocListener<ProductCreateCubit, ProductCreateState>(
+            listener: (context, state) {
+              if (state is ProductCreateSuccess) {
+                CustomSnackBar.showSnackBar(
+                  context: context,
+                  title: AppLocalizations.of(context)!.success,
+                  isError: false,
+                );
+                createdProduct = state.product;
                 setState(() {});
-              });
-            }
-          },
-        ),
-        BlocListener<CategorySelectingCubit, CategorySelectingState>(
-          listener: (context, state) {
-            if (state is CategorySelectingSuccess) {
-              selectedSubCategories =
-                  state.selectedMap[CategorySelectingCubit.product_creating_category] ?? [];
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                setState(() {});
-              });
-            }
-          },
-        ),
-        BlocListener<BrandSelectingCubit, BrandSelectingState>(
-          listener: (context, state) {
-            if (state is BrandSelectingSuccess) {
-              selectedBrand =
-                  (state.selectedMap[BrandSelectingCubit.product_creating_brand] ?? []).single;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                setState(() {});
-              });
-            }
-          },
-        ),
-      ],
-      child: Scaffold(
-        appBar: AppBar(title: Text(AppLocalizations.of(context)!.newProduct)),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: createdProduct == null ? createButton() : null,
-        body: SingleChildScrollView(
-          controller: scrollController,
-          child: Padd(
-            hor: 10,
-            ver: 20,
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  coverImageSelection(),
-                  Box(h: 20),
-                  if (createdProduct != null) compositionsCreate(),
+                scrollController.animateTo(
+                  0,
+                  duration: Duration(seconds: 1),
+                  curve: Curves.easeInOut,
+                );
+              }
+              if (state is ProductEditSuccess) {
+                context.read<GetProductByIdCubit>().getPublicProduct(widget.product!.id);
+                CustomSnackBar.showSnackBar(
+                  context: context,
+                  title: AppLocalizations.of(context)!.success,
+                  isError: false,
+                );
+                Go.pop();
+              }
+              if (state is ProductCreateFailed) {
+                CustomSnackBar.showSnackBar(
+                  context: context,
+                  title: state.failure.message ?? AppLocalizations.of(context)!.error,
+                  isError: true,
+                );
+              }
+            },
+          ),
+          BlocListener<FileUplBloc, FileUplState>(
+            listener: (context, state) {
+              if (state is FileUploadSuccess && state.type == UploadingFileTypes.productPhotos) {
+                productPhotos.add(state.file);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {});
+                });
+              }
+            },
+          ),
+          BlocListener<CategorySelectingCubit, CategorySelectingState>(
+            listener: (context, state) {
+              if (state is CategorySelectingSuccess) {
+                selectedSubCategories =
+                    state.selectedMap[CategorySelectingCubit.product_creating_category] ?? [];
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {});
+                });
+              }
+            },
+          ),
+          BlocListener<BrandSelectingCubit, BrandSelectingState>(
+            listener: (context, state) {
+              if (state is BrandSelectingSuccess) {
+                selectedBrand =
+                    (state.selectedMap[BrandSelectingCubit.product_creating_brand] ?? []).single;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {});
+                });
+              }
+            },
+          ),
+        ],
+        child: Scaffold(
+          appBar: AppBar(title: Text(AppLocalizations.of(context)!.newProduct)),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: createdProduct == null ? createButton() : null,
+          body: SingleChildScrollView(
+            controller: scrollController,
+            child: Padd(
+              hor: 10,
+              ver: 20,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    coverImageSelection(),
+                    Box(h: 20),
+                    // if (createdProduct != null)
+                    compositionsCreate(),
 
-                  //name
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(AppLocalizations.of(context)!.name),
-                      TexField(
-                        ctx: context,
-                        cont: nameTMController,
-                        border: true,
-                        borderColor: Color(0xFF474747),
-                        borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
-                        preTex: "TM: ",
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.symmetric(
-                            vertical: BorderSide(color: Color(0xFF474747), width: 1),
+                    //name
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(AppLocalizations.of(context)!.name),
+                        TexField(
+                          ctx: context,
+                          cont: nameTMController,
+                          border: true,
+                          borderColor: Color(0xFF474747),
+                          borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
+                          preTex: "TM: ",
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.symmetric(
+                              vertical: BorderSide(color: Color(0xFF474747), width: 1),
+                            ),
+                          ),
+                          child: TexField(
+                            ctx: context,
+                            cont: nameRuController,
+                            border: false,
+                            borderColor: Color(0xFF474747),
+                            preTex: "RU: ",
                           ),
                         ),
-                        child: TexField(
+                        TexField(
                           ctx: context,
-                          cont: nameRuController,
-                          border: false,
+                          cont: nameENController,
+                          border: true,
                           borderColor: Color(0xFF474747),
-                          preTex: "RU: ",
+                          borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
+                          preTex: "EN: ",
                         ),
-                      ),
-                      TexField(
-                        ctx: context,
-                        cont: nameENController,
-                        border: true,
-                        borderColor: Color(0xFF474747),
-                        borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
-                        preTex: "EN: ",
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
 
-                  //description
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Box(h: 16),
-                      Text(AppLocalizations.of(context)!.description),
-                      TexField(
-                        ctx: context,
-                        cont: descriptionTMController,
-                        border: true,
-                        borderColor: Color(0xFF474747),
-                        borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
-                        preTex: "TM: ",
-                        maxLine: 3,
-                        minLine: 1,
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.symmetric(
-                            vertical: BorderSide(color: Color(0xFF474747), width: 1),
-                          ),
-                        ),
-                        child: TexField(
+                    //description
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Box(h: 16),
+                        Text(AppLocalizations.of(context)!.description),
+                        TexField(
                           ctx: context,
-                          cont: descriptionRuController,
-                          border: false,
+                          cont: descriptionTMController,
+                          border: true,
                           borderColor: Color(0xFF474747),
-                          preTex: "RU: ",
+                          borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
+                          preTex: "TM: ",
                           maxLine: 3,
                           minLine: 1,
                         ),
-                      ),
-                      TexField(
-                        ctx: context,
-                        cont: descriptionENController,
-                        border: true,
-                        borderColor: Color(0xFF474747),
-                        borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
-                        preTex: "EN: ",
-                        maxLine: 3,
-                        minLine: 1,
-                      ),
-                    ],
-                  ),
-
-                  Box(h: 30),
-                  //category
-                  Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(14),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      splashColor: Colors.black.withOpacity(0.08),
-                      highlightColor: Colors.black.withOpacity(0.04),
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        Future.delayed(const Duration(milliseconds: 120), () {
-                          Go.to(
-                            Routes.categoriesSelectingPage,
-                            argument: {
-                              "selectionKey": CategorySelectingCubit.product_creating_category,
-                              "singleSelection": false,
-                            },
-                          );
-                        });
-                      },
-                      child: Ink(
-                        height: 45,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFF474747)),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(child: Text(AppLocalizations.of(context)!.selectCategory)),
-                            Icon(Icons.navigate_next),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Box(h: 10),
-                  Wrap(
-                    children: List.generate(selectedSubCategories.length, (index) {
-                      return InkWell(
-                        onTap: () {
-                          context.read<CategorySelectingCubit>().selectCategory(
-                            key: CategorySelectingCubit.product_creating_category,
-                            category: selectedSubCategories[index],
-                          );
-                        },
-                        child: Container(
+                        Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Col.passiveGreyQuick),
+                            border: Border.symmetric(
+                              vertical: BorderSide(color: Color(0xFF474747), width: 1),
+                            ),
                           ),
-                          margin: EdgeInsets.only(right: 8, bottom: 4),
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          child: TexField(
+                            ctx: context,
+                            cont: descriptionRuController,
+                            border: false,
+                            borderColor: Color(0xFF474747),
+                            preTex: "RU: ",
+                            maxLine: 3,
+                            minLine: 1,
+                          ),
+                        ),
+                        TexField(
+                          ctx: context,
+                          cont: descriptionENController,
+                          border: true,
+                          borderColor: Color(0xFF474747),
+                          borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
+                          preTex: "EN: ",
+                          maxLine: 3,
+                          minLine: 1,
+                        ),
+                      ],
+                    ),
+
+                    Box(h: 30),
+                    //category
+                    Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        splashColor: Colors.black.withOpacity(0.08),
+                        highlightColor: Colors.black.withOpacity(0.04),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          Future.delayed(const Duration(milliseconds: 120), () {
+                            Go.to(
+                              Routes.categoriesSelectingPage,
+                              argument: {
+                                "selectionKey": CategorySelectingCubit.product_creating_category,
+                                "singleSelection": false,
+                              },
+                            );
+                          });
+                        },
+                        child: Ink(
+                          height: 45,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFF474747)),
+                          ),
                           child: Row(
-                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(selectedSubCategories[index].name?.tk ?? ""),
-                              Box(w: 4),
-                              Icon(Icons.clear, size: 14, color: Color(0xFF474747)),
+                              Expanded(child: Text(AppLocalizations.of(context)!.selectCategory)),
+                              Icon(Icons.navigate_next),
                             ],
                           ),
                         ),
-                      );
-                    }),
-                  ),
-                  Box(h: 30),
-                  Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(14),
-                    child: InkWell(
+                      ),
+                    ),
+                    Box(h: 10),
+                    Wrap(
+                      children: List.generate(selectedSubCategories.length, (index) {
+                        return InkWell(
+                          onTap: () {
+                            context.read<CategorySelectingCubit>().selectCategory(
+                              key: CategorySelectingCubit.product_creating_category,
+                              category: selectedSubCategories[index],
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Col.passiveGreyQuick),
+                            ),
+                            margin: EdgeInsets.only(right: 8, bottom: 4),
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(selectedSubCategories[index].name?.tk ?? ""),
+                                Box(w: 4),
+                                Icon(Icons.clear, size: 14, color: Color(0xFF474747)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    Box(h: 30),
+                    Material(
+                      color: Colors.transparent,
                       borderRadius: BorderRadius.circular(14),
-                      splashColor: Colors.black.withOpacity(0.08),
-                      highlightColor: Colors.black.withOpacity(0.04),
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        Future.delayed(const Duration(milliseconds: 120), () {
-                          Go.to(Routes.brandSelectingPage);
-                        });
-                      },
-                      child: Ink(
-                        height: 45,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFF474747)),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                selectedBrand == null
-                                    ? AppLocalizations.of(context)!.selectBrand
-                                    : selectedBrand!.name,
-                                style: const TextStyle(
-                                  color: Color(0xFF474747),
-                                  fontWeight: FontWeight.w500,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        splashColor: Colors.black.withOpacity(0.08),
+                        highlightColor: Colors.black.withOpacity(0.04),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          Future.delayed(const Duration(milliseconds: 120), () {
+                            Go.to(Routes.brandSelectingPage);
+                          });
+                        },
+                        child: Ink(
+                          height: 45,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFF474747)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  selectedBrand == null
+                                      ? AppLocalizations.of(context)!.selectBrand
+                                      : selectedBrand!.name,
+                                  style: const TextStyle(
+                                    color: Color(0xFF474747),
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const Icon(Icons.navigate_next),
-                          ],
+                              const Icon(Icons.navigate_next),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Box(h: 30),
-                  BlocBuilder<FileUplBloc, FileUplState>(
-                    builder: (context, state) {
-                      List<File> uploadingFiles = [];
-                      List<double> uploadingValues = [];
-                      List<File>? errorFiles = [];
-                      List<Failure>? errors = [];
-                      if (state is FileUploading &&
-                          state.type == UploadingFileTypes.productPhotos) {
-                        uploadingFiles = state.uploadingFiles.keys.toList();
-                        uploadingValues = state.uploadingFiles.values.toList();
-                        errorFiles = state.errorMap?.keys.toList();
-                        errors = state.errorMap?.values.toList();
-                      }
+                    Box(h: 30),
+                    BlocBuilder<FileUplBloc, FileUplState>(
+                      builder: (context, state) {
+                        List<File> uploadingFiles = [];
+                        List<double> uploadingValues = [];
+                        List<File>? errorFiles = [];
+                        List<Failure>? errors = [];
+                        if (state is FileUploading &&
+                            state.type == UploadingFileTypes.productPhotos) {
+                          uploadingFiles = state.uploadingFiles.keys.toList();
+                          uploadingValues = state.uploadingFiles.values.toList();
+                          errorFiles = state.errorMap?.keys.toList();
+                          errors = state.errorMap?.values.toList();
+                        }
 
-                      return Wrap(
-                        spacing: 14,
-                        runSpacing: 14,
-                        children: [
-                          ...List.generate(productPhotos.length, (index) {
-                            var photo = productPhotos[index];
-                            return SizedBox(
-                              height: 106,
-                              width: 106,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      height: 106,
-                                      width: 106,
-                                      decoration: BoxDecoration(
-                                        color: Color(0xFF969696),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: UploadingCoverImage(
-                                        coverImage: photo,
-                                        loadingProgress: null,
-                                      ),
-                                    ),
-                                    Align(
-                                      alignment: Alignment.topRight,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          productPhotos.removeAt(index);
-                                          setState(() {});
-                                        },
-                                        child: Icon(Icons.cancel, color: Color(0xFFF3F3F3)),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                          ...List.generate(uploadingFiles.length, (index) {
-                            return UploadingImageCard(
-                              file: uploadingFiles[index],
-                              value: uploadingValues[index],
-                              onRemoveTap: () {
-                                context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
-                              },
-                            );
-                          }),
-                          ...List.generate(errorFiles?.length ?? 0, (index) {
-                            return UploadingImageCard(
-                              file: errorFiles![index],
-                              failure: errors![index],
-                              onRemoveTap: () {
-                                context.read<FileUplBloc>().add(RemoveFile(uploadingFiles[index]));
-                              },
-                              onRetryTap: () {
-                                context.read<FileUplBloc>().add(
-                                  RetryFile(errorFiles![index], UploadingFileTypes.productPhotos),
-                                );
-                              },
-                            );
-                          }),
-                          Material(
-                            color: Colors.transparent,
-                            borderRadius: BorderRadius.circular(30),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(30),
-                              splashColor: Colors.black.withOpacity(0.15),
-                              highlightColor: Colors.black.withOpacity(0.08),
-                              onTap: () async {
-                                HapticFeedback.mediumImpact();
-
-                                // Give ripple time to show
-                                await Future.delayed(const Duration(milliseconds: 120));
-
-                                if (state is! FileUploading) {
-                                  FilePickerResult? result = await FilePicker.platform.pickFiles(
-                                    type: FileType.image,
-                                    lockParentWindow: true,
-                                    allowMultiple: true,
-                                  );
-
-                                  if (result != null) {
-                                    List<File> files =
-                                        result.paths
-                                            .where((path) => path != null)
-                                            .map((path) => File(path!))
-                                            .toList();
-                                    context.read<FileUplBloc>().add(
-                                      UploadFiles(files, UploadingFileTypes.productPhotos),
-                                    );
-                                  }
-                                }
-                              },
-                              child: Ink(
+                        return Wrap(
+                          spacing: 14,
+                          runSpacing: 14,
+                          children: [
+                            ...List.generate(productPhotos.length, (index) {
+                              var photo = productPhotos[index];
+                              return SizedBox(
                                 height: 106,
                                 width: 106,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  color: const Color(0xFFEAEAEA),
-                                ),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Stack(
                                     children: [
-                                      const Icon(Icons.add_circle, color: Colors.black),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        AppLocalizations.of(context)!.addMoreMedia,
-                                        style: const TextStyle(fontSize: 12),
-                                        textAlign: TextAlign.center,
+                                      Container(
+                                        height: 106,
+                                        width: 106,
+                                        decoration: BoxDecoration(
+                                          color: Color(0xFF969696),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: UploadingCoverImage(
+                                          height: 106,
+                                          width: 106,
+                                          coverImage: photo,
+                                          loadingProgress: null,
+                                        ),
+                                      ),
+                                      Align(
+                                        alignment: Alignment.topRight,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            productPhotos.removeAt(index);
+                                            setState(() {});
+                                          },
+                                          child: Icon(Icons.cancel, color: Color(0xFFF3F3F3)),
+                                        ),
                                       ),
                                     ],
                                   ),
                                 ),
+                              );
+                            }),
+                            ...List.generate(uploadingFiles.length, (index) {
+                              return UploadingImageCard(
+                                file: uploadingFiles[index],
+                                value: uploadingValues[index],
+                                onRemoveTap: () {
+                                  context.read<FileUplBloc>().add(
+                                    RemoveFile(uploadingFiles[index]),
+                                  );
+                                },
+                              );
+                            }),
+                            ...List.generate(errorFiles?.length ?? 0, (index) {
+                              return UploadingImageCard(
+                                file: errorFiles![index],
+                                failure: errors![index],
+                                onRemoveTap: () {
+                                  context.read<FileUplBloc>().add(
+                                    RemoveFile(uploadingFiles[index]),
+                                  );
+                                },
+                                onRetryTap: () {
+                                  context.read<FileUplBloc>().add(
+                                    RetryFile(errorFiles![index], UploadingFileTypes.productPhotos),
+                                  );
+                                },
+                              );
+                            }),
+                            Material(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(30),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(30),
+                                splashColor: Colors.black.withOpacity(0.15),
+                                highlightColor: Colors.black.withOpacity(0.08),
+                                onTap: () async {
+                                  HapticFeedback.mediumImpact();
+
+                                  // Give ripple time to show
+                                  await Future.delayed(const Duration(milliseconds: 120));
+
+                                  if (state is! FileUploading) {
+                                    FilePickerResult? result = await FilePicker.platform.pickFiles(
+                                      type: FileType.image,
+                                      lockParentWindow: true,
+                                      allowMultiple: true,
+                                    );
+
+                                    if (result != null) {
+                                      List<File> files =
+                                          result.paths
+                                              .where((path) => path != null)
+                                              .map((path) => File(path!))
+                                              .toList();
+                                      context.read<FileUplBloc>().add(
+                                        UploadFiles(files, UploadingFileTypes.productPhotos),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: Ink(
+                                  height: 106,
+                                  width: 106,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30),
+                                    color: const Color(0xFFEAEAEA),
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        const Icon(Icons.add_circle, color: Colors.black),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          AppLocalizations.of(context)!.addMoreMedia,
+                                          style: const TextStyle(fontSize: 12),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  Box(h: 30),
-
-                  //price
-                  Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.pricing,
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                          ],
+                        );
+                      },
                     ),
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(AppLocalizations.of(context)!.price),
-                      TexField(
-                        ctx: context,
-                        cont: priceController,
-                        border: true,
-                        borderColor: Color(0xFF474747),
-                        hint: AppLocalizations.of(context)!.mandatory,
-                        borderRadiusType: BorderRadius.circular(14),
-                        keyboard: TextInputType.numberWithOptions(decimal: true),
-                        validate:
-                            (text) =>
-                                (text?.isEmpty ?? false)
-                                    ? AppLocalizations.of(context)!.mandatoryField
-                                    : null,
+                    Box(h: 30),
+
+                    //price
+                    Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.pricing,
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      Box(h: 10),
-                      Text(AppLocalizations.of(context)!.priceAfterDiscount),
-                      TexField(
-                        ctx: context,
-                        cont: discountPriceController,
-                        border: true,
-                        hint: AppLocalizations.of(context)!.ifDiscountExists,
-                        borderColor: Color(0xFF474747),
-                        borderRadiusType: BorderRadius.circular(14),
-                        keyboard: TextInputType.numberWithOptions(decimal: true),
-                      ),
-                    ],
-                  ),
-                  Box(h: 100),
-                ],
+                    ),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(AppLocalizations.of(context)!.price),
+                        TexField(
+                          ctx: context,
+                          cont: priceController,
+                          border: true,
+                          borderColor: Color(0xFF474747),
+                          hint: AppLocalizations.of(context)!.mandatory,
+                          borderRadiusType: BorderRadius.circular(14),
+                          keyboard: TextInputType.numberWithOptions(decimal: true),
+                          validate:
+                              (text) =>
+                                  (text?.isEmpty ?? false)
+                                      ? AppLocalizations.of(context)!.mandatoryField
+                                      : null,
+                        ),
+                        Box(h: 10),
+                        Text(AppLocalizations.of(context)!.priceAfterDiscount),
+                        TexField(
+                          ctx: context,
+                          cont: discountPriceController,
+                          border: true,
+                          hint: AppLocalizations.of(context)!.ifDiscountExists,
+                          borderColor: Color(0xFF474747),
+                          borderRadiusType: BorderRadius.circular(14),
+                          keyboard: TextInputType.numberWithOptions(decimal: true),
+                        ),
+                      ],
+                    ),
+                    Box(h: 100),
+                  ],
+                ),
               ),
             ),
           ),
@@ -619,6 +645,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
         InkWell(
           onTap: () {
             Go.to(Routes.productParametersPage, argument: {"product": createdProduct});
+            compositionCreated = true;
           },
           child: Container(
             height: 55,
@@ -626,6 +653,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
             decoration: BoxDecoration(
               color: Color(0xFFF3F3F3),
               borderRadius: BorderRadius.circular(14),
+              border: showErrorCompositions ? Border.all(color: Col.redTask) : null,
             ),
             padding: EdgeInsets.all(14),
             child: Row(
@@ -633,9 +661,12 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
               children: [
                 Text(
                   AppLocalizations.of(context)!.addCharacteristics,
-                  style: TextStyle(color: Color(0xFF474747), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    color: showErrorCompositions ? Col.redTask : Color(0xFF474747),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                Icon(Icons.add_circle_outline),
+                Icon(Icons.add_circle_outline, color: showErrorCompositions ? Col.redTask : null),
               ],
             ),
           ),
@@ -646,6 +677,8 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   }
 
   BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState> coverImageSelection() {
+    AppLocalizations lg = AppLocalizations.of(context)!;
+
     return BlocBuilder<FileUplCoverImageBloc, FileUplCoverImageState>(
       builder: (context, state) {
         return InkWell(
@@ -657,7 +690,38 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
               );
 
               if (result != null) {
-                File file = File(result.files.single.path!);
+                File original = File(result.files.single.path!);
+                if (isVideo(original)) {
+                  CustomSnackBar.showYellowSnackBar(context: context, title: lg.chooseImage);
+                  return;
+                }
+                final croppedFile = await ImageCropper().cropImage(
+                  sourcePath: original.path,
+                  uiSettings: [
+                    AndroidUiSettings(
+                      toolbarTitle: 'Crop Image',
+                      toolbarColor: Colors.black,
+                      toolbarWidgetColor: Colors.white,
+                      initAspectRatio: CropAspectRatioPreset.square,
+                      lockAspectRatio: true,
+                      hideBottomControls: true,
+                    ),
+                    IOSUiSettings(
+                      title: 'Crop Image',
+                      aspectRatioLockEnabled: true,
+                      aspectRatioPickerButtonHidden: true,
+                      rotateButtonsHidden: true,
+                      resetButtonHidden: true,
+                    ),
+                  ],
+                );
+
+                if (croppedFile == null) {
+                  // User cancelled cropping
+                  return;
+                }
+
+                final file = File(croppedFile.path);
                 context.read<FileUplCoverImageBloc>().add(UploadFile(file));
                 coverLoadingImage = file;
               }
@@ -684,6 +748,8 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                             fit: BoxFit.cover,
                           )
                           : UploadingCoverImage(
+                            height: 70,
+                            width: 70,
                             coverImage: coverImage,
                             loadingProgress:
                                 state is FileUploadingCoverImage ? state.progress : null,

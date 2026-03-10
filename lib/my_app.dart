@@ -5,9 +5,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/go.dart';
 import 'core/routes.dart';
+import 'data/dynamic_localization.dart';
 import 'features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'features/auth/pages/splash_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import 'features/firebase_messaging/bloc/notification_tap/notification_tap_cubit.dart';
+import 'features/firebase_messaging/notif_helper.dart';
 
 String version = '';
 
@@ -28,7 +32,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    // DynamicLocalization.init(appLocale);
+    DynamicLocalization.init(appLocale);
     getLang();
     // checkForUpdate();
     super.initState();
@@ -36,15 +40,34 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthSuccess) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Go.popUntil();
-            Go.too(Routes.homePage);
-          });
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthSuccess) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Go.popUntil();
+                Go.too(Routes.homePage);
+              });
+            }
+          },
+        ),
+        // this is for: notification on tap
+        BlocListener<NotificationTapCubit, NotificationTapState>(
+          listener: (context, state) {
+            if (state is NotificationTapSuccess) {
+              NotifHelper.onTap(context: context, notif: state.notification);
+            }
+
+            if (state is NotificationOnMessage) {
+              // NotifHelper.actionOnMessage(
+              //   context: context,
+              //   messData: state.messageData,
+              // );
+            }
+          },
+        ),
+      ],
       child: MaterialApp(
         builder: (context, child) {
           return GestureDetector(
@@ -70,21 +93,17 @@ class _MyAppState extends State<MyApp> {
         ),
         navigatorKey: Routes.mainNavKey,
         onGenerateRoute: Routes.onGenerateRoute,
-        supportedLocales: [
-          Locale('tr'),
-          Locale('ru'),
-          Locale('en'),
-        ],
+        supportedLocales: [Locale('tr'), Locale('ru'), Locale('en')],
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         // scrollBehavior: MyScrollBehavior(),
         locale: appLocale,
         home: SafeArea(
           child: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
-              if (state is AuthLoading) {
-                return SplashScreen();
+              if (state is AuthFailed) {
+                return LoginMethodsScreen();
               }
-              return LoginMethodsScreen();
+              return SplashScreen();
             },
           ),
         ),
@@ -99,7 +118,7 @@ class _MyAppState extends State<MyApp> {
     Future<SharedPreferences> prefs = SharedPreferences.getInstance();
     final SharedPreferences prefes = await prefs;
     prefes.setString('lang', locale.languageCode);
-    // DynamicLocalization.init(locale);
+    DynamicLocalization.init(locale);
   }
 
   getLang() async {

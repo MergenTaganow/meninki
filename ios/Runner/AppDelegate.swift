@@ -3,6 +3,7 @@ import UIKit
 import flutter_downloader
 import Firebase
 import FirebaseMessaging
+import flutter_local_notifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -11,13 +12,9 @@ import FirebaseMessaging
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
 
-    FirebaseApp.configure()
     GeneratedPluginRegistrant.register(with: self)
     FlutterDownloaderPlugin.setPluginRegistrantCallback(registerPlugins)
 
-    if #available(iOS 10.0, *) {
-          UNUserNotificationCenter.current().delegate = self
-        }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

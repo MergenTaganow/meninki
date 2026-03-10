@@ -53,4 +53,7 @@ class ProvinceSelectingCubit extends Cubit<ProvinceSelectingState> {
   static String store_creating_province = 'store_creating_province';
   static String product_searching_province = 'product_searching_province';
   static String add_creating_province = 'add_creating_province';
+  static String add_filter_province = 'add_creating_province';
+  static String storesSearchFilterProvince = 'storesSearchFilterProvince';
+  static String address_creating_province = 'address_creating_province';
 }

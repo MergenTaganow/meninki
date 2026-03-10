@@ -370,17 +370,22 @@ class _ReelWidgetState extends State<ReelWidget> {
                         backgroundColor: Colors.white,
                         isScrollControlled: true,
                         builder: (context) {
-                          return DraggableScrollableSheet(
-                            expand: false,
-                            initialChildSize: 0.5,
-                            minChildSize: 0.5,
-                            maxChildSize: 0.8,
-                            builder: (context, scrollController) {
-                              return CommentsPage(
-                                reel: widget.reel,
-                                scrollController: scrollController,
-                              );
-                            },
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom,
+                            ),
+                            child: DraggableScrollableSheet(
+                              expand: false,
+                              initialChildSize: 0.6,
+                              minChildSize: 0.5,
+                              maxChildSize: 0.8,
+                              builder: (context, scrollController) {
+                                return CommentsPage(
+                                  reel: widget.reel,
+                                  scrollController: scrollController,
+                                );
+                              },
+                            ),
                           );
                         },
                       );

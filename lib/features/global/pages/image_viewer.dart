@@ -60,6 +60,8 @@ class _CustomImageViewerState extends State<CustomImageViewer> {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Col.black,
@@ -297,7 +299,7 @@ class _CustomImageViewerState extends State<CustomImageViewer> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.navigate_before, color: Colors.white),
-                                Text("Yza", style: const TextStyle(color: Colors.white)),
+                                Text(lg.back, style: const TextStyle(color: Colors.white)),
                               ],
                             ),
                           ),

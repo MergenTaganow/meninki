@@ -78,6 +78,8 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     return MultiBlocListener(
       listeners: [
         BlocListener<GetProductByIdCubit, GetProductByIdState>(
@@ -118,7 +120,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
       ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Товар"),
+          title: Text(lg.product),
           actions: [Padd(right: 16, child: Svvg.asset('share'))],
           scrolledUnderElevation: 0,
         ),
@@ -137,6 +139,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
                       product_files: [MeninkiFile(id: 999), MeninkiFile(id: 999)],
                     ); // <-- fake model for skeleton
 
+            print(product.product_files?.map((e) => e.resizedFiles?.medium).toList());
             return Skeletonizer(
               enabled: isLoading,
               ignorePointers: false,

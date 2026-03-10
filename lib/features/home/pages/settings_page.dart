@@ -3,12 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/address/widgets/address_sheet.dart';
 import 'package:meninki/features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'package:meninki/features/auth/data/employee_local_data_source.dart';
+import 'package:meninki/features/home/widgets/language_sheet.dart';
 import 'package:meninki/features/store/widgets/store_sheet.dart';
 
 import '../../../core/injector.dart';
 import '../../../my_app.dart';
+import '../../address/bloc/get_address_cubit/get_address_cubit.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -37,8 +40,20 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Text(lg.general, style: TextStyle(color: Color(0xFF969696), fontSize: 12)),
               Box(h: 10),
-              languageChange(context, lg),
-              Box(h: 10),
+              singleLine(
+                title: lg.selectLanguage,
+                value: Text(lg.localeName),
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Color(0xFFF3F3F3),
+                    builder: (context) {
+                      return LanguageSheet();
+                    },
+                  );
+                },
+              ),
+
               singleLine(
                 title: lg.download,
                 value: Icon(Icons.download, size: 20),
@@ -51,6 +66,27 @@ class _SettingsPageState extends State<SettingsPage> {
               Text(lg.profile, style: TextStyle(color: Color(0xFF969696), fontSize: 12)),
               Box(h: 10),
               singleLine(title: lg.changePhoto, svgIcon: 'change_profile_image'),
+              singleLine(
+                title: lg.fillAddress,
+                value: Icon(Icons.navigate_next),
+                onTap: () {
+                  context.read<GetAddressCubit>().getMyAddresses();
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Color(0xFFF3F3F3),
+                    builder: (context) {
+                      return DraggableScrollableSheet(
+                        expand: false,
+                        maxChildSize: 0.85,
+                        builder: (context, scrollController) {
+                          return AddressSheet(scrollController);
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
               singleLine(title: lg.accountInfo, value: Icon(Icons.navigate_next)),
               Box(h: 10),
               Text(lg.account, style: TextStyle(color: Color(0xFF969696), fontSize: 12)),

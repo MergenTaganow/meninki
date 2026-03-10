@@ -6,6 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'core/injector.dart';
+import 'features/address/bloc/address_create_cubit/address_create_cubit.dart';
+import 'features/address/bloc/get_address_cubit/get_address_cubit.dart';
+import 'features/address/bloc/get_regions_bloc/get_regions_bloc.dart';
+import 'features/address/bloc/region_selection_cubit/region_selecting_cubit.dart';
 import 'features/adds/bloc/add_create_cubit/add_create_cubit.dart';
 import 'features/adds/bloc/add_favorite_cubit/add_favorite_cubit.dart';
 import 'features/adds/bloc/add_uuid_cubit/add_uuid_cubit.dart';
@@ -16,6 +20,7 @@ import 'features/auth/bloc/register_cubit/register_cubit.dart';
 import 'features/banner/bloc/get_banners_bloc/get_banners_bloc.dart';
 import 'features/basket/bloc/get_basket_cubit/get_basket_cubit.dart';
 import 'features/basket/bloc/my_basket_cubit/my_basket_cubit.dart';
+import 'features/basket/bloc/prepare_basket_cubit/prepare_basket_cubit.dart';
 import 'features/categories/bloc/brand_selecting_cubit/brand_selecting_cubit.dart';
 import 'features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import 'features/categories/bloc/get_brands_bloc/get_brands_bloc.dart';
@@ -25,6 +30,8 @@ import 'features/comments/bloc/comment_by_id_cubit/comment_by_id_cubit.dart';
 import 'features/comments/bloc/get_comments_bloc/get_comments_bloc.dart';
 import 'features/comments/bloc/send_comment_cubit/send_comment_cubit.dart';
 import 'features/file_download/bloc/file_download_bloc/file_download_bloc.dart';
+import 'features/firebase_messaging/bloc/get_notifcations_cubit/get_notifications_bloc.dart';
+import 'features/firebase_messaging/bloc/notif_count_cubit/notif_count_cubit.dart';
 import 'features/firebase_messaging/bloc/notification_tap/notification_tap_cubit.dart';
 import 'features/firebase_messaging/firebase_mess.dart';
 import 'features/firebase_messaging/life_sycle.dart';
@@ -34,6 +41,10 @@ import 'features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import 'features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import 'features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
+import 'features/orders/bloc/get_orders_bloc/get_orders_bloc.dart';
+import 'features/orders/bloc/market_orders_bloc/get_market_orders_bloc.dart';
+import 'features/orders/bloc/order_create_cubit/order_create_cubit.dart';
+import 'features/orders/bloc/order_id_cubit/order_id_cubit.dart';
 import 'features/product/bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import 'features/product/bloc/compositions_send_cubit/compositions_send_cubit.dart';
 import 'features/product/bloc/get_attributes_bloc/get_product_attributes_bloc.dart';
@@ -69,7 +80,10 @@ final LifecycleEventHandler lifecycleEventHandler = LifecycleEventHandler();
 Future<void> backgroundMessageHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
   print("notif came when app is on background");
-  var localNotificationService = LocalNotificationService(notifTap: NotificationTapCubit());
+  var localNotificationService = LocalNotificationService(
+    notifTap: NotificationTapCubit(),
+    api: sl(),
+  );
   localNotificationService.initialize().then((value) {
     localNotificationService.display(message);
   });
@@ -165,6 +179,17 @@ void main() async {
         BlocProvider<GetProductMarketsBloc>(create: (context) => sl<GetProductMarketsBloc>()),
         BlocProvider<NotificationTapCubit>(create: (context) => sl<NotificationTapCubit>()),
         BlocProvider<DeleteItemsCubit>(create: (context) => sl<DeleteItemsCubit>()),
+        BlocProvider<GetRegionsBloc>(create: (context) => sl<GetRegionsBloc>()),
+        BlocProvider<RegionSelectingCubit>(create: (context) => sl<RegionSelectingCubit>()),
+        BlocProvider<AddressCreateCubit>(create: (context) => sl<AddressCreateCubit>()),
+        BlocProvider<GetAddressCubit>(create: (context) => sl<GetAddressCubit>()),
+        BlocProvider<GetNotificationsBloc>(create: (context) => sl<GetNotificationsBloc>()),
+        BlocProvider<NotifCountCubit>(create: (context) => sl<NotifCountCubit>()),
+        BlocProvider<PrepareBasketCubit>(create: (context) => sl<PrepareBasketCubit>()),
+        BlocProvider<OrderCreateCubit>(create: (context) => sl<OrderCreateCubit>()),
+        BlocProvider<GetOrdersBloc>(create: (context) => sl<GetOrdersBloc>()),
+        BlocProvider<OrderIdCubit>(create: (context) => sl<OrderIdCubit>()),
+        BlocProvider<GetMarketOrdersBloc>(create: (context) => sl<GetMarketOrdersBloc>()),
       ],
       child: const MyApp(),
     ),

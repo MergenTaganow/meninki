@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/core/helpers.dart';
 
 import '../../../core/colors.dart';
+import '../../store/widgets/store_sheet.dart';
 import '../bloc/file_download_bloc/file_download_bloc.dart';
 import '../widgets/custom_overflow.dart';
 
@@ -431,8 +433,35 @@ class _DownloadCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
 
-                    // Progress badge
                     _ProgressBadge(item: item, accentColor: _accentColor),
+
+                    const SizedBox(width: 8),
+
+                    // 🗑 Remove button
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) {
+                            return AreYouSureSheet(
+                              title: AppLocalizations.of(context)!.deleteConfirmation,
+                              onYes: () {
+                                context.read<FileDownloadBloc>().add(RemoveDownload(item));
+                              },
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: const Icon(Icons.close_rounded, size: 18, color: Colors.black54),
+                      ),
+                    ),
                   ],
                 ),
 

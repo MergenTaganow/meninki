@@ -6,6 +6,11 @@ import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart'
 import 'package:meninki/features/store/bloc/store_create_cubit/store_create_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../features/address/bloc/address_create_cubit/address_create_cubit.dart';
+import '../features/address/bloc/get_address_cubit/get_address_cubit.dart';
+import '../features/address/bloc/get_regions_bloc/get_regions_bloc.dart';
+import '../features/address/bloc/region_selection_cubit/region_selecting_cubit.dart';
+import '../features/address/data/address_remote_data_source.dart';
 import '../features/adds/bloc/add_create_cubit/add_create_cubit.dart';
 import '../features/adds/bloc/add_favorite_cubit/add_favorite_cubit.dart';
 import '../features/adds/bloc/add_uuid_cubit/add_uuid_cubit.dart';
@@ -17,6 +22,7 @@ import '../features/auth/data/employee_local_data_source.dart';
 import '../features/banner/bloc/get_banners_bloc/get_banners_bloc.dart';
 import '../features/basket/bloc/get_basket_cubit/get_basket_cubit.dart';
 import '../features/basket/bloc/my_basket_cubit/my_basket_cubit.dart';
+import '../features/basket/bloc/prepare_basket_cubit/prepare_basket_cubit.dart';
 import '../features/basket/data/basket_remote_data_source.dart';
 import '../features/categories/bloc/brand_selecting_cubit/brand_selecting_cubit.dart';
 import '../features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
@@ -28,6 +34,8 @@ import '../features/comments/bloc/get_comments_bloc/get_comments_bloc.dart';
 import '../features/comments/bloc/send_comment_cubit/send_comment_cubit.dart';
 import '../features/file_download/bloc/file_download_bloc/file_download_bloc.dart';
 import '../features/file_download/data/download_service.dart';
+import '../features/firebase_messaging/bloc/get_notifcations_cubit/get_notifications_bloc.dart';
+import '../features/firebase_messaging/bloc/notif_count_cubit/notif_count_cubit.dart';
 import '../features/firebase_messaging/bloc/notification_tap/notification_tap_cubit.dart';
 import '../features/firebase_messaging/firebase_mess.dart';
 import '../features/firebase_messaging/local_notification.dart';
@@ -35,6 +43,10 @@ import '../features/global/blocs/delete_items_cubit/delete_items_cubit.dart';
 import '../features/global/blocs/key_filter_cubit/key_filter_cubit.dart';
 import '../features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import '../features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
+import '../features/orders/bloc/get_orders_bloc/get_orders_bloc.dart';
+import '../features/orders/bloc/market_orders_bloc/get_market_orders_bloc.dart';
+import '../features/orders/bloc/order_create_cubit/order_create_cubit.dart';
+import '../features/orders/bloc/order_id_cubit/order_id_cubit.dart';
 import '../features/product/bloc/compositions_creating_cubit/compositions_creat_cubit.dart';
 import '../features/product/bloc/compositions_send_cubit/compositions_send_cubit.dart';
 import '../features/product/bloc/get_attributes_bloc/get_product_attributes_bloc.dart';
@@ -164,6 +176,10 @@ Future<void> init() async {
   sl.registerLazySingleton<GetBasketCubit>(() => GetBasketCubit(sl()));
   sl.registerLazySingleton<MyBasketCubit>(() => MyBasketCubit(sl()));
   sl.registerLazySingleton<BasketRemoteDataSource>(() => BasketRemoteDataImpl(sl()));
+  sl.registerLazySingleton<PrepareBasketCubit>(() => PrepareBasketCubit(sl()));
+  sl.registerLazySingleton<OrderCreateCubit>(() => OrderCreateCubit(sl()));
+  sl.registerLazySingleton<GetOrdersBloc>(() => GetOrdersBloc(sl()));
+  sl.registerLazySingleton<GetMarketOrdersBloc>(() => GetMarketOrdersBloc(sl()));
 
   // firebase
   sl.registerLazySingleton<FirebaseMessagingService>(
@@ -176,6 +192,16 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<NotificationTapCubit>(() => NotificationTapCubit());
   sl.registerLazySingleton<LocalNotificationService>(
-    () => LocalNotificationService(notifTap: sl()),
+    () => LocalNotificationService(notifTap: sl(), api: sl()),
   );
+  sl.registerLazySingleton<GetNotificationsBloc>(() => GetNotificationsBloc(sl()));
+  sl.registerLazySingleton<NotifCountCubit>(() => NotifCountCubit(sl()));
+
+  //address
+  sl.registerLazySingleton<AddressRemoteDataSource>(() => AddressRemoteDataSourceImpl(sl()));
+  sl.registerLazySingleton<GetRegionsBloc>(() => GetRegionsBloc(sl()));
+  sl.registerLazySingleton<RegionSelectingCubit>(() => RegionSelectingCubit());
+  sl.registerLazySingleton<AddressCreateCubit>(() => AddressCreateCubit(sl()));
+  sl.registerLazySingleton<GetAddressCubit>(() => GetAddressCubit(sl()));
+  sl.registerLazySingleton<OrderIdCubit>(() => OrderIdCubit(sl()));
 }

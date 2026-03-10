@@ -11,6 +11,7 @@ import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import 'package:meninki/features/store/models/market.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import '../../../data/dynamic_localization.dart';
 import '../../home/widgets/store_reels_list.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../../product/pages/product_search_filter_page.dart';
@@ -241,10 +242,15 @@ class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTicker
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              singleRow(
-                                title: AppLocalizations.of(context)!.phone,
-                                value: "+993 62 66 66 66 ",
-                              ),
+                              ...List.generate(state.market.contact_info?.length ?? 0, (index) {
+                                final key = state.market.contact_info?.keys.elementAt(index);
+                                final value = state.market.contact_info?[key];
+                                return singleRow(
+                                  title: DynamicLocalization.translate(key ?? ''),
+                                  value: value,
+                                );
+                              }),
+
                               singleRow(
                                 title: AppLocalizations.of(context)!.description,
                                 value: state.market.description?.trans(context) ?? '',

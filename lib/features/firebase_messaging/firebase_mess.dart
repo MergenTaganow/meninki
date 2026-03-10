@@ -24,20 +24,27 @@ class FirebaseMessagingService {
       FirebaseOptions? opts = DefaultFirebaseOptions.currentPlatform;
 
       await Firebase.initializeApp(options: opts).timeout(const Duration(seconds: 5));
+
+      await FirebaseMessaging.instance.requestPermission(alert: true, badge: true, sound: true);
     } catch (e) {}
   }
 
   Future<String?> getToken() async {
     try {
+      await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      print("after setForegroundNotificationPresentationOptions");
       final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
       String? token = await firebaseMessaging.getToken().timeout(const Duration(seconds: 5));
 
-      print("firebase token was $token");
+      print("token was $token");
       if (token != null) {
         localDs.saveFirebaseToken = token;
         await dataSource.sendFirebaseToken();
       }
-      print("get token finished");
       return token;
     } catch (e) {
       print(e);
@@ -62,9 +69,7 @@ class FirebaseMessagingService {
       return;
     }
     try {
-      print("setupFirebaseMessaging");
       final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-      print("firebaseMessaging");
 
       NotificationSettings settings = await firebaseMessaging.requestPermission(
         alert: true,
@@ -76,23 +81,8 @@ class FirebaseMessagingService {
         criticalAlert: false,
       );
 
-      print("settings");
-
-      RemoteMessage? initialMessage = await firebaseMessaging.getInitialMessage().timeout(
-        const Duration(seconds: 5),
-      );
-      print("getInitialMessage");
-
-      if (initialMessage != null) {
-        await Future.delayed(const Duration(milliseconds: 300));
-        notification.onNotificationTapped(initialMessage.data);
-        print("delayed(const Duration(milliseconds: 300))notification");
-      }
-
       firebaseMessaging.onTokenRefresh
           .listen((fcmToken) async {
-            print('Firebase token updated:  $fcmToken');
-
             localDs.saveFirebaseToken = fcmToken;
 
             await dataSource.sendFirebaseToken();
@@ -103,13 +93,8 @@ class FirebaseMessagingService {
             // Error getting token.
           });
 
-      print("firebaseMessaging.onTokenRefresh");
-
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        print('Notification permission granted.');
-      } else {
-        print('Notification permission not granted.');
-      }
+      } else {}
 
       // Handle incoming messages when the app is in the foreground.
 
@@ -118,22 +103,17 @@ class FirebaseMessagingService {
         // if (message.data.containsKey('referenceUuid')) {
         //   notifCount.addUuid(message.data['referenceUuid']);
         // }
+        print("message came");
+        print("message came");
+        print(message.toMap());
         notification.display(message);
-        print("notifcation came");
-        print("notifcation came");
       });
 
-      print("FirebaseMessaging.onMessage");
-
       FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
-
-      print("FirebaseMessaging.onBackgroundMessage");
 
       FirebaseMessaging.onMessageOpenedApp.listen((event) {
         notification.onNotificationTapped(event.data);
       });
-
-      print("FirebaseMessaging.onMessageOpenedApp");
     } catch (e) {}
   }
 }

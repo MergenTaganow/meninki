@@ -5,6 +5,7 @@ import 'package:meninki/features/reels/blocs/file_processing_cubit/file_processi
 import 'package:meninki/features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import '../../../core/helpers.dart';
 import '../../reels/model/meninki_file.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
@@ -49,28 +50,37 @@ class _MyReelsListState extends State<MyReelsList> {
 
           return Skeletonizer(
             enabled: isLoading,
-            child: MasonryGridView.count(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 8,
-              itemCount: itemCount,
-              itemBuilder: (context, index) {
-                final reel =
-                    isLoading
-                        ? Reel(
-                          id: index,
-                          type: '',
-                          is_active: false,
-                          is_verified: false,
-                          user_id: 0,
-                          title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
-                          file: MeninkiFile(id: 0, name: '', original_file: ''),
-                        )
-                        : reels[index];
-                return ReelCard(reel: reel, allReels: reels);
-              },
+            child: Column(
+              children: [
+                MasonryGridView.count(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 8,
+                  itemCount: itemCount,
+                  itemBuilder: (context, index) {
+                    final reel =
+                        isLoading
+                            ? Reel(
+                              id: index,
+                              type: '',
+                              is_active: false,
+                              is_verified: false,
+                              user_id: 0,
+                              title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
+                              file: MeninkiFile(id: 0, name: '', original_file: ''),
+                            )
+                            : reels[index];
+                    return ReelCard(reel: reel, allReels: reels);
+                  },
+                ),
+                if (state is MyReelPagLoading)
+                  Padd(
+                    ver: 10,
+                    child: SizedBox(height: 30, width: 30, child: CircularProgressIndicator()),
+                  ),
+              ],
             ),
           );
           // if (state is ReelPagLoading) const CircularProgressIndicator(),

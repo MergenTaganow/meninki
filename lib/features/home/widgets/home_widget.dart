@@ -21,12 +21,10 @@ class _HomeWidgetState extends State<HomeWidget>
     with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<String> tabs = ['Лента', 'Главная', 'Объявления'];
-
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: tabs.length, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       setState(() {});
     });
@@ -41,6 +39,7 @@ class _HomeWidgetState extends State<HomeWidget>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+
     AppLocalizations lg = AppLocalizations.of(context)!;
     return MultiBlocListener(
       listeners: [

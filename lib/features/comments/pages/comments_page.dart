@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/helpers.dart';
+import 'package:meninki/features/comments/bloc/send_comment_cubit/send_comment_cubit.dart';
 import 'package:meninki/features/comments/models/comment.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import '../bloc/get_comments_bloc/get_comments_bloc.dart';
@@ -46,54 +47,76 @@ class _CommentsPageState extends State<CommentsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        /// HEADER
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Text('Комментарии', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        ),
+    final lg = AppLocalizations.of(context)!;
 
-        /// LIST (THIS controls the draggable sheet)
-        Expanded(
-          child: BlocBuilder<GetCommentsBloc, GetCommentsState>(
-            builder: (context, state) {
-              if (state is GetCommentsLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (state is GetCommentsFailed) {
-                return Center(child: Text(state.message ?? AppLocalizations.of(context)!.error));
-              }
-
-              if (state is GetCommentsSuccess) {
-                comments = state.comments;
-              }
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<GetCommentsBloc>().add(GetComment(widget.reel.id));
-                },
-                child: ListView.separated(
-                  controller: widget.scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  itemCount: comments.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: EdgeInsets.only(top: index == 0 ? 10 : 0),
-                      child: MessageCard(comment: comments[index]),
-                    );
-                  },
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                ),
+    return BlocListener<SendCommentCubit, SendCommentState>(
+      listener: (context, state) {
+        if (state is SendCommentSuccess) {
+          commentController.clear();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (widget.scrollController.hasClients) {
+              widget.scrollController.animateTo(
+                0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
               );
-            },
+            }
+            // FocusManager.instance.primaryFocus?.unfocus();
+          });
+        }
+      },
+      child: Column(
+        children: [
+          /// HEADER
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Text(lg.comments, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
-        ),
 
-        /// FIXED INPUT
-        CommentTextField(controller: commentController, reelId: widget.reel.id),
-      ],
+          /// LIST (THIS controls the draggable sheet)
+          Expanded(
+            child: BlocBuilder<GetCommentsBloc, GetCommentsState>(
+              builder: (context, state) {
+                if (state is GetCommentsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is GetCommentsFailed) {
+                  return Center(child: Text(state.message ?? AppLocalizations.of(context)!.error));
+                }
+
+                if (state is GetCommentsSuccess) {
+                  comments = state.comments;
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<GetCommentsBloc>().add(GetComment(widget.reel.id));
+                  },
+                  child: ListView.separated(
+                    controller: widget.scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    itemCount: comments.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: EdgeInsets.only(top: index == 0 ? 10 : 0),
+                        child: MessageCard(comment: comments[index]),
+                      );
+                    },
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          /// FIXED INPUT
+          SafeArea(
+            top: false,
+            child: CommentTextField(controller: commentController, reelId: widget.reel.id),
+          ),
+        ],
+      ),
     );
   }
 }

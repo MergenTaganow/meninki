@@ -15,9 +15,16 @@ class BrandSelectingPage extends StatefulWidget {
 }
 
 class _BrandSelectingPageState extends State<BrandSelectingPage> {
+  final ScrollController scrollController = ScrollController();
+
   @override
   void initState() {
     context.read<GetBrandsBloc>().add(GetBrand());
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+        context.read<GetBrandsBloc>().add(BrandPag());
+      }
+    });
     super.initState();
   }
 
@@ -25,8 +32,7 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
   Widget build(BuildContext context) {
     AppLocalizations lg = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(lg.
-      brands, style: TextStyle(fontWeight: FontWeight.w500))),
+      appBar: AppBar(title: Text(lg.brands, style: TextStyle(fontWeight: FontWeight.w500))),
       body: Padd(
         pad: 10,
         child: BlocBuilder<GetBrandsBloc, GetBrandsState>(
@@ -47,41 +53,55 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
               children: [
                 Expanded(
                   child: ListView.separated(
+                    controller: scrollController,
                     itemBuilder: (context, index) {
-                      return BlocBuilder<BrandSelectingCubit, BrandSelectingState>(
-                        builder: (context, state) {
-                          var selectedIndex =
-                              state is BrandSelectingSuccess
-                                  ? (state.selectedMap[BrandSelectingCubit
-                                              .product_creating_brand] ??
-                                          [])
-                                      .indexWhere((e) => e.id == brands[index].id)
-                                  : -1;
-                          return InkWell(
-                            onTap: () {
-                              context.read<BrandSelectingCubit>().selectBrand(
-                                BrandSelectingCubit.product_creating_brand,
-                                brands[index],
-                                true,
+                      return Column(
+                        children: [
+                          BlocBuilder<BrandSelectingCubit, BrandSelectingState>(
+                            builder: (context, state) {
+                              var selectedIndex =
+                                  state is BrandSelectingSuccess
+                                      ? (state.selectedMap[BrandSelectingCubit
+                                                  .product_creating_brand] ??
+                                              [])
+                                          .indexWhere((e) => e.id == brands[index].id)
+                                      : -1;
+                              return InkWell(
+                                onTap: () {
+                                  context.read<BrandSelectingCubit>().selectBrand(
+                                    BrandSelectingCubit.product_creating_brand,
+                                    brands[index],
+                                    true,
+                                  );
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(14),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        brands[index].name,
+                                        style: TextStyle(fontWeight: FontWeight.w500),
+                                      ),
+                                      Box(w: 14),
+                                      if (selectedIndex != -1)
+                                        Icon(Icons.check, color: Color(0xFF969696), size: 20),
+                                    ],
+                                  ),
+                                ),
                               );
                             },
-                            child: Container(
-                              padding: EdgeInsets.all(14),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    brands[index].name,
-                                    style: TextStyle(fontWeight: FontWeight.w500),
-                                  ),
-                                  Box(w: 14),
-                                  if (selectedIndex != -1)
-                                    Icon(Icons.check, color: Color(0xFF969696), size: 20),
-                                ],
+                          ),
+                          if (index == (brands.length - 1) && state is BrandPagLoading)
+                            Padd(
+                              ver: 10,
+                              child: SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: CircularProgressIndicator(),
                               ),
                             ),
-                          );
-                        },
+                        ],
                       );
                     },
                     separatorBuilder: (context, index) => Box(h: 6),
@@ -104,9 +124,7 @@ class _BrandSelectingPageState extends State<BrandSelectingPage> {
                         color: Col.primary,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Center(
-                        child: Text(lg.save, style: TextStyle(color: Colors.white)),
-                      ),
+                      child: Center(child: Text(lg.save, style: TextStyle(color: Colors.white))),
                     ),
                   ),
                 ),

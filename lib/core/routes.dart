@@ -4,18 +4,26 @@ import 'package:meninki/features/auth/pages/login_methods_screen.dart';
 import 'package:meninki/features/auth/pages/otp_screen.dart';
 import 'package:meninki/features/auth/pages/register_screen.dart';
 import 'package:meninki/features/categories/pages/brand_selecting_page.dart';
+import 'package:meninki/features/firebase_messaging/pages/notifications_page.dart';
 import 'package:meninki/features/home/pages/settings_page.dart';
 import 'package:meninki/features/product/pages/public_product_detail_page.dart';
 import 'package:meninki/features/reels/pages/reels_screen.dart';
 
+import '../features/address/pages/address_create_page.dart';
+import '../features/address/pages/region_selection_cubit.dart';
 import '../features/adds/pages/add_detail_page.dart';
+import '../features/adds/pages/adds_filter_page.dart';
 import '../features/basket/pages/basket_page.dart';
+import '../features/basket/pages/prepared_basket_page.dart';
 import '../features/categories/pages/categories_selecting_page.dart';
 import '../features/categories/pages/sub_category_selecting_page.dart';
 import '../features/file_download/pages/downloads_page.dart';
 import '../features/home/pages/favorites_page.dart';
 import '../features/home/pages/home_page.dart';
 import '../features/home/pages/my_adds_page.dart';
+import '../features/orders/pages/market_orders_page.dart';
+import '../features/orders/pages/order_detail_page.dart';
+import '../features/orders/pages/orders_page.dart';
 import '../features/product/pages/compositions_page.dart';
 import '../features/product/pages/my_product_detail.dart';
 import '../features/product/pages/product_create_page.dart';
@@ -29,6 +37,7 @@ import '../features/store/pages/market_color_selecting_page.dart';
 import '../features/store/pages/my_store_detail.dart';
 import '../features/store/pages/public_store_detail_page.dart';
 import '../features/store/pages/store_create_page.dart';
+import '../features/store/pages/stores_search_filter_page.dart';
 
 class Routes {
   static final GlobalKey<NavigatorState> mainNavKey = GlobalKey();
@@ -45,6 +54,8 @@ class Routes {
   static const String settingsPage = '/settingsPage';
   static const String downloadsPage = '/downloadsPage';
   static const String basketPage = '/basketPage';
+  static const String notificationsPage = '/notificationsPage';
+  static const String preparedBasketPage = '/preparedBasketPage';
 
   //store
   static const String storeCreatePage = '/storeCreatePage';
@@ -52,6 +63,7 @@ class Routes {
   static const String publicStoreDetail = '/publicStoreDetail';
   static const String colorSchemeSelectingPage = '/colorSchemeSelectingPage';
   static const String marketBannersPage = '/marketBannersPage';
+  static const String storesSearchFilterPage = '/storesSearchFilterPage';
 
   //product
   static const String productCreate = '/productCreate';
@@ -75,6 +87,16 @@ class Routes {
   static const String addCreatePage = '/addCreatePage';
   static const String addDetailPage = '/addDetailPage';
   static const String myAddsPage = '/myAddsPage';
+  static const String addsFilterPage = '/addsFilterPage';
+
+  //address
+  static const String address_create_page = '/address_create_page';
+  static const String region_selection_page = '/region_selection_page';
+
+  // orders
+  static const String ordersPage = '/ordersPage';
+  static const String marketOrdersPage = '/clientOrdersPage';
+  static const String orderDetailPage = '/orderDetailPage';
 
   static Route? onGenerateRoute(RouteSettings settings) {
     final Map? data = settings.arguments as Map?;
@@ -171,6 +193,33 @@ class Routes {
         return MaterialPageRoute(builder: (_) => DownloadsPage());
       case basketPage:
         return MaterialPageRoute(builder: (_) => BasketPage());
+      case addsFilterPage:
+        return MaterialPageRoute(builder: (_) => AddsFilterPage(onFilter: data?['onFilter']));
+      case storesSearchFilterPage:
+        return MaterialPageRoute(
+          builder: (_) => StoresSearchFilterPage(onFilter: data?['onFilter']),
+        );
+      case address_create_page:
+        return MaterialPageRoute(builder: (_) => AddressCreatePage());
+      case region_selection_page:
+        return MaterialPageRoute(
+          builder:
+              (_) => RegionSelectingPage(
+                selectionKey: data?['selectionKey'],
+                singleSelection: data?['singleSelection'],
+              ),
+        );
+
+      case notificationsPage:
+        return MaterialPageRoute(builder: (_) => NotificationsPage());
+      case preparedBasketPage:
+        return MaterialPageRoute(builder: (_) => PreparedBasketPage());
+      case ordersPage:
+        return MaterialPageRoute(builder: (_) => OrdersPage());
+      case orderDetailPage:
+        return MaterialPageRoute(builder: (_) => OrderDetailPage());
+      case marketOrdersPage:
+        return MaterialPageRoute(builder: (_) => MarketOrdersPage(data?['marketId']));
     }
 
     return null;

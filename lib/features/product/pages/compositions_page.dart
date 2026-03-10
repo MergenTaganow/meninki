@@ -46,11 +46,12 @@ class _CompositionsPageState extends State<CompositionsPage> {
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return BlocListener<CompositionsSendCubit, CompositionsSendState>(
       listener: (context, state) {
         if (state is CompositionsSendSuccess) {
           Navigator.popUntil(context, (route) => route.isFirst);
-          Go.to(Routes.publicProductDetailPage, argument: {'productId': widget.product.id});
+          Go.to(Routes.myProductDetailPage, argument: {'productId': widget.product.id});
           CustomSnackBar.showSnackBar(
             context: context,
             title: AppLocalizations.of(context)!.success,
@@ -161,7 +162,7 @@ class _CompositionsPageState extends State<CompositionsPage> {
                                     context: context,
                                     builder: (context) {
                                       return AreYouSureSheet(
-                                        title: "Хотите удалить етот композитион?",
+                                        title: lg.deleteComposition,
                                         onYes: () {
                                           setState(() {
                                             compositions.removeAt(compositionIndex);

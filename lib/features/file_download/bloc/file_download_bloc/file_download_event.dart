@@ -23,3 +23,9 @@ class Retry extends FileDownloadEvent {
 
   Retry({required this.item});
 }
+
+class RemoveDownload extends FileDownloadEvent {
+  final DownloadQueueItem item;
+
+  RemoveDownload(this.item);
+}

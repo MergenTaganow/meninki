@@ -53,10 +53,11 @@ class ProductToCard extends StatelessWidget {
                         "${state.product.price} TMT",
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      Text(
-                        "${state.product.discount} TMT",
-                        style: TextStyle(color: Color(0xFF969696), fontSize: 12),
-                      ),
+                      if (state.product.discount != null)
+                        Text(
+                          "${state.product.discount} TMT",
+                          style: TextStyle(color: Color(0xFF969696), fontSize: 12),
+                        ),
                     ],
                   ),
                   Spacer(),

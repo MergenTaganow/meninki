@@ -12,11 +12,13 @@ class CompositionsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Характеристика', style: TextStyle(fontWeight: FontWeight.w500)),
+        Text(lg.characteristics, style: TextStyle(fontWeight: FontWeight.w500)),
         Box(h: 10),
         BlocBuilder<ProductCompositionsCubit, ProductCompositionsState>(
           builder: (context, state) {

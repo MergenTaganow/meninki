@@ -63,6 +63,7 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
         if (sort != null) ...sort.toMap(),
       };
 
+      print(param);
 
       ///Todo later need to control verified and other urls
       var response = await api.dio.get('v1/reels/verified', queryParameters: param);
@@ -214,14 +215,14 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
 
   @override
   Future<Either<Failure, Comment>> sendComment(Map<String, dynamic> map) async {
-    try {
+    // try {
       var response = await api.dio.post('v1/reel-comments', data: map);
 
       var comment = Comment.fromJson(response.data['payload']);
       return Right(comment);
-    } catch (e) {
-      return Left(handleError(e));
-    }
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 
   @override

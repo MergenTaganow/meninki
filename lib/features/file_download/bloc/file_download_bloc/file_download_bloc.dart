@@ -25,6 +25,7 @@ class FileDownloadBloc extends Bloc<FileDownloadEvent, FileDownloadState> {
     on<DownloadProgressUpdated>(_onProgressUpdated);
     on<PauseOrResumeDownload>(_onPauseOrResume);
     on<Retry>(_onRetry);
+    on<RemoveDownload>(_onRemove);
     _sub = downloadService.updates.listen((update) {
       add(
         DownloadProgressUpdated(
@@ -47,6 +48,43 @@ class FileDownloadBloc extends Bloc<FileDownloadEvent, FileDownloadState> {
   }
 
   bool get _hasRunning => _currentRunning != null;
+
+  Future<void> _onRemove(RemoveDownload event, Emitter<FileDownloadState> emit) async {
+    final item = event.item;
+
+    // If item does not exist anymore → ignore
+    if (!_items.contains(item)) return;
+
+    final wasActive =
+        item.status == DownloadItemStatus.running || item.status == DownloadItemStatus.paused;
+
+    // 🔴 If task exists → cancel it in FlutterDownloader
+    if (item.taskId != null &&
+        (item.status == DownloadItemStatus.running ||
+            item.status == DownloadItemStatus.paused ||
+            item.status == DownloadItemStatus.failed)) {
+      try {
+        await FlutterDownloader.cancel(taskId: item.taskId!);
+      } catch (_) {
+        // ignore cancel errors
+      }
+    }
+
+    // 🗑 Remove from queue
+    _items.remove(item);
+
+    // Emit updated queue state
+    if (_items.isEmpty) {
+      emit(FileDownloadInitial());
+    } else {
+      emit(FileDownloading(queue: List.from(_items)));
+    }
+
+    // ▶ If we removed active item → start next
+    if (wasActive) {
+      await _startNextQueued(emit);
+    }
+  }
 
   void _onProgressUpdated(DownloadProgressUpdated event, Emitter<FileDownloadState> emit) async {
     // Find item by taskId

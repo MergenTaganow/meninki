@@ -13,6 +13,7 @@ class AddCreateCubit extends Cubit<AddCreateState> {
   AddCreateCubit(this.ds) : super(AddCreateInitial());
 
   createAdd(Map<String, dynamic> data) async {
+    emit(AddCreateLoading());
     var failOrNot = await ds.createAdd(data);
     failOrNot.fold(
           (l) => emit.call(AddCreateFailed(l)),

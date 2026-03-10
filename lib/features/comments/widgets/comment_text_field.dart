@@ -19,7 +19,7 @@ class CommentTextField extends StatelessWidget {
         return Container(
           // height: 110,
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: Colors.white),
-          padding: EdgeInsets.only(left: 20, top: 20, right: 20, bottom: 50),
+          padding: EdgeInsets.only(left: 20, top: 20, right: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

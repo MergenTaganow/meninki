@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
@@ -136,6 +137,8 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     return MultiBlocListener(
       listeners: [
         BlocListener<StoreCreateCubit, StoreCreateState>(
@@ -225,7 +228,43 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                             );
 
                             if (result != null) {
-                              File file = File(result.files.single.path!);
+                              File original = File(result.files.single.path!);
+                              if (isVideo(original)) {
+                                CustomSnackBar.showYellowSnackBar(
+                                  context: context,
+                                  title: lg.chooseImage,
+                                );
+                                return;
+                              }
+
+                              final croppedFile = await ImageCropper().cropImage(
+                                sourcePath: original.path,
+                                aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+                                uiSettings: [
+                                  AndroidUiSettings(
+                                    toolbarTitle: 'Crop Image',
+                                    toolbarColor: Colors.black,
+                                    toolbarWidgetColor: Colors.white,
+                                    initAspectRatio: CropAspectRatioPreset.square,
+                                    lockAspectRatio: true,
+                                    hideBottomControls: true,
+                                  ),
+                                  IOSUiSettings(
+                                    title: 'Crop Image',
+                                    aspectRatioLockEnabled: true,
+                                    aspectRatioPickerButtonHidden: true,
+                                    rotateButtonsHidden: true,
+                                    resetButtonHidden: true,
+                                  ),
+                                ],
+                              );
+
+                              if (croppedFile == null) {
+                                // User cancelled cropping
+                                return;
+                              }
+
+                              final file = File(croppedFile.path);
                               context.read<FileUplCoverImageBloc>().add(UploadFile(file));
                             }
                           }
@@ -250,6 +289,8 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                                           fit: BoxFit.cover,
                                         )
                                         : UploadingCoverImage(
+                                          height: 70,
+                                          width: 70,
                                           coverImage: coverImage,
                                           loadingProgress:
                                               state is FileUploadingCoverImage
@@ -612,7 +653,7 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                   },
                   "location": {"longitude": 38.7373, "latitude": 52.7373},
                   "cover_image_id": coverImage?.id,
-                  if (provinces.isNotEmpty ) "province_id": provinces.single.id,
+                  if (provinces.isNotEmpty) "province_id": provinces.single.id,
                   "username": usernameController.text.trim(),
                   "file_ids": [1],
                   "contact_info": {
@@ -789,10 +830,18 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
 }
 
 class UploadingCoverImage extends StatelessWidget {
-  const UploadingCoverImage({super.key, required this.coverImage, required this.loadingProgress});
+  const UploadingCoverImage({
+    super.key,
+    required this.coverImage,
+    required this.loadingProgress,
+    this.height,
+    this.width,
+  });
 
   final MeninkiFile? coverImage;
   final double? loadingProgress;
+  final double? height;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -807,12 +856,20 @@ class UploadingCoverImage extends StatelessWidget {
               : (coverImage != null)
               ? ((coverImage?.status == 'ready' &&
                       (coverImage?.resizedFiles?.small?.isNotEmpty ?? false))
-                  ? MeninkiNetworkImage(
-                    file: coverImage!,
-                    networkImageType: NetworkImageType.small,
-                    fit: BoxFit.cover,
+                  ? SizedBox(
+                    height: height,
+                    width: width,
+                    child: MeninkiNetworkImage(
+                      file: coverImage!,
+                      networkImageType: NetworkImageType.small,
+                      fit: BoxFit.cover,
+                    ),
                   )
-                  : Image.asset('assets/images/app_logo.png', fit: BoxFit.cover))
+                  : SizedBox(
+                    height: height,
+                    width: width,
+                    child: Image.asset('assets/images/app_logo.png', fit: BoxFit.cover),
+                  ))
               : Icon(Icons.camera_alt_outlined),
     );
   }

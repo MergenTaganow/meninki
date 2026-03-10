@@ -4,6 +4,8 @@ import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/models/market.dart';
 import '../../../core/api.dart';
 import '../../../core/failure.dart';
+import '../../../core/injector.dart';
+import '../../province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 
 abstract class StoreRemoteDataSource {
   Future<Either<Failure, Success>> storeCreate(Map map);
@@ -24,7 +26,7 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   @override
   Future<Either<Failure, Success>> storeCreate(Map map) async {
     try {
-       await api.dio.post('v1/market', data: map);
+      await api.dio.post('v1/market', data: map);
 
       return Right(Success());
     } catch (e) {
@@ -46,9 +48,9 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   @override
   Future<Either<Failure, Market>> getStoreByID(int id) async {
     try {
-    var response = await api.dio.get('v1/market/$id');
+      var response = await api.dio.get('v1/market/$id');
 
-    return Right(Market.fromJson(response.data['payload']));
+      return Right(Market.fromJson(response.data['payload']));
     } catch (e) {
       return Left(handleError(e));
     }
@@ -73,10 +75,16 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
   Future<Either<Failure, List<Market>>> getStoresProducts(Query query) async {
     try {
       ///Todo later need to add language
-      var response = await api.dio.get(
-        'v1/market/product',
-        queryParameters: {...query.toMap(), "order_direction": "asc"},
-      );
+      var provinces =
+          sl<ProvinceSelectingCubit>().selectedMap[ProvinceSelectingCubit
+              .storesSearchFilterProvince] ??
+          [];
+      var param = {
+        ...query.toMap(),
+        "order_direction": "asc",
+        if (provinces.isNotEmpty) "province_id": provinces.single.id,
+      };
+      var response = await api.dio.get('v1/market/product', queryParameters: param);
 
       var list = (response.data['payload'] as List).map((e) => Market.fromJson(e)).toList();
       return Right(list);

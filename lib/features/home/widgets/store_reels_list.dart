@@ -4,6 +4,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import 'package:meninki/features/store/widgets/store_background_color_selection.dart';
+import '../../../core/helpers.dart';
 import '../../reels/model/reels.dart';
 import '../../reels/widgets/reel_card.dart';
 
@@ -26,6 +27,8 @@ class _StoreReelsListState extends State<StoreReelsList> {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     return BlocBuilder<GetStoreReelsBloc, GetReelsState>(
       builder: (context, state) {
         if (state is GetReelLoading) {
@@ -40,7 +43,7 @@ class _StoreReelsListState extends State<StoreReelsList> {
         }
 
         if (state is GetReelFailed) {
-          return Text("error");
+          return Text(state.message ?? lg.smthWentWrong);
         }
 
         return MasonryGridView.count(

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/api.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/firebase_messaging/bloc/notif_count_cubit/notif_count_cubit.dart';
 import 'package:meninki/features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import 'package:meninki/features/home/model/profile.dart';
 import 'package:meninki/features/home/widgets/reels_list.dart';
@@ -26,6 +27,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
   @override
   void initState() {
     context.read<GetProfileCubit>().getMyProfile();
+    context.read<NotifCountCubit>().init();
     context.read<GetMyReelsBloc>().add(GetMyReel());
     super.initState();
   }
@@ -50,6 +52,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
               CupertinoSliverRefreshControl(
                 onRefresh: () async {
                   context.read<GetMyReelsBloc>().refresh();
+                  context.read<NotifCountCubit>().refresh();
                   await context.read<GetProfileCubit>().refreshMyProfile();
                 },
               ),
@@ -66,17 +69,33 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                             children: [
                               profile_name_settings(profile),
                               const Divider(height: 1, color: Color(0xFFF3F3F3), thickness: 1),
-                              Padd(
-                                pad: 10,
-                                child: Row(
-                                  children: [
-                                    Text(lg.notifications),
-                                    const Spacer(),
-                                    Text("13"),
-                                    const Box(w: 10),
-                                    const Icon(Icons.navigate_next),
-                                  ],
-                                ),
+                              BlocBuilder<NotifCountCubit, NotifCountState>(
+                                builder: (context, state) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Go.to(Routes.notificationsPage);
+                                    },
+                                    child: Padd(
+                                      pad: 10,
+                                      child: Row(
+                                        children: [
+                                          Text(lg.notifications),
+                                          const Spacer(),
+                                          if (state is NotifCountSuccess)
+                                            Text(state.count.toString()),
+                                          if (state is NotifCountLoading)
+                                            SizedBox(
+                                              height: 18,
+                                              width: 18,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            ),
+                                          const Box(w: 10),
+                                          const Icon(Icons.navigate_next),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

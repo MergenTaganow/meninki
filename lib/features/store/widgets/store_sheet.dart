@@ -15,6 +15,8 @@ class MarketSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     return Padd(
       hor: 16,
       ver: 30,
@@ -23,7 +25,7 @@ class MarketSheet extends StatelessWidget {
         children: [
           singleLine(
             context: context,
-            title: "Редактировать профиль",
+            title: lg.editStore,
             value: Svvg.asset("profile"),
             onTap: () {
               Go.to(Routes.storeCreatePage, argument: {"market": market});
@@ -31,7 +33,7 @@ class MarketSheet extends StatelessWidget {
           ),
           singleLine(
             context: context,
-            title: "Цветовая схема",
+            title: lg.colorPattern,
             value: Svvg.asset("schemePicker"),
             onTap: () {
               Go.to(Routes.colorSchemeSelectingPage, argument: {'market': market});
@@ -39,10 +41,18 @@ class MarketSheet extends StatelessWidget {
           ),
           singleLine(
             context: context,
-            title: "Обявлния магазина",
+            title: lg.marketAdds,
             value: Svvg.asset("schemePicker"),
             onTap: () {
               Go.to(Routes.marketBannersPage, argument: {'market': market});
+            },
+          ),
+          singleLine(
+            context: context,
+            title: lg.marketOrders,
+            value: Svvg.asset("schemePicker"),
+            onTap: () {
+              Go.to(Routes.marketOrdersPage, argument: {'marketId': market.id});
             },
           ),
           singleLine(
@@ -53,7 +63,7 @@ class MarketSheet extends StatelessWidget {
           ),
           singleLine(
             context: context,
-            title: "Удалить магазин",
+            title: lg.deleteStore,
             value: Svvg.asset("delete"),
             textColor: Col.redTask,
           ),
@@ -203,6 +213,7 @@ class AreYouSureSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
     return Padd(
       hor: 16,
       ver: 30,
@@ -212,7 +223,7 @@ class AreYouSureSheet extends StatelessWidget {
         children: [
           Text(title, style: TextStyle(fontWeight: FontWeight.w500)),
           Box(h: 10),
-          Text("Вы уверены в своем решении?"),
+          Text(lg.areYouSure),
           Box(h: 20),
           singleLine(
             context: context,

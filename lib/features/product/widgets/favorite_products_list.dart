@@ -5,6 +5,8 @@ import 'package:meninki/features/product/bloc/get_products_bloc/get_products_blo
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/product/widgets/product_card.dart';
 
+import '../../../core/helpers.dart';
+
 class FavoriteProductsList extends StatefulWidget {
   const FavoriteProductsList({super.key});
 
@@ -17,6 +19,8 @@ class _FavoriteProductsListState extends State<FavoriteProductsList> {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     return BlocBuilder<GetFavoriteProductsBloc, GetProductsState>(
       builder: (context, state) {
         if (state is GetProductLoading) {
@@ -37,7 +41,7 @@ class _FavoriteProductsListState extends State<FavoriteProductsList> {
           //     context.read<GetOrdersBloc>().add(RefreshLastOrders());
           //   },
           // );
-          return Text("error");
+          return Text(state.message ?? lg.smthWentWrong);
         }
 
         return MasonryGridView.count(

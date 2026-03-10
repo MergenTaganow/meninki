@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/features/adds/bloc/add_create_cubit/add_create_cubit.dart';
 import 'package:meninki/features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
@@ -52,6 +53,13 @@ class _AddCreatePageState extends State<AddCreatePage> {
               CustomSnackBar.showSnackBar(context: context, title: lg.addPublishedAfterReview);
               Go.pop();
             }
+            if (state is AddCreateFailed) {
+              CustomSnackBar.showSnackBar(
+                context: context,
+                title: state.failure.message ?? lg.smthWentWrong,
+                isError: true,
+              );
+            }
           },
         ),
         BlocListener<FileUplCoverImageBloc, FileUplCoverImageState>(
@@ -89,15 +97,12 @@ class _AddCreatePageState extends State<AddCreatePage> {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(
-          title: Text("Новый обзор на товар", style: TextStyle(fontWeight: FontWeight.w500)),
-        ),
+        appBar: AppBar(title: Text(lg.createAdd, style: TextStyle(fontWeight: FontWeight.w500))),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         floatingActionButton: BlocBuilder<AddCreateCubit, AddCreateState>(
           builder: (context, state) {
             return InkWell(
               onTap: () {
-
                 context.read<AddCreateCubit>().createAdd({
                   'title': title.text,
                   'description': description.text,
@@ -132,7 +137,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                 child: Center(
                   child:
                       state is AddCreateLoading
-                          ? CircularProgressIndicator()
+                          ? Padd(hor: 8, child: CircularProgressIndicator(color: Colors.white))
                           : Text(lg.publish, style: TextStyle(color: Colors.white)),
                 ),
               ),
@@ -157,14 +162,42 @@ class _AddCreatePageState extends State<AddCreatePage> {
                           );
 
                           if (result != null) {
-                            File file = File(result.files.single.path!);
-                            if (isVideo(file)) {
+                            File original = File(result.files.single.path!);
+                            if (isVideo(original)) {
                               CustomSnackBar.showYellowSnackBar(
                                 context: context,
-                                title: 'вуберите фотографию',
+                                title: lg.chooseImage,
                               );
                               return;
                             }
+                            final croppedFile = await ImageCropper().cropImage(
+                              sourcePath: original.path,
+                              aspectRatio: CropAspectRatio(ratioX: 1, ratioY: 1),
+                              uiSettings: [
+                                AndroidUiSettings(
+                                  toolbarTitle: 'Crop Image',
+                                  toolbarColor: Colors.black,
+                                  toolbarWidgetColor: Colors.white,
+                                  initAspectRatio: CropAspectRatioPreset.square,
+                                  lockAspectRatio: true,
+                                  hideBottomControls: true,
+                                ),
+                                IOSUiSettings(
+                                  title: 'Crop Image',
+                                  aspectRatioLockEnabled: true,
+                                  aspectRatioPickerButtonHidden: true,
+                                  rotateButtonsHidden: true,
+                                  resetButtonHidden: true,
+                                ),
+                              ],
+                            );
+
+                            if (croppedFile == null) {
+                              // User cancelled cropping
+                              return;
+                            }
+
+                            final file = File(croppedFile.path);
                             context.read<FileUplCoverImageBloc>().add(UploadFile(file));
                           }
                         }
@@ -185,6 +218,8 @@ class _AddCreatePageState extends State<AddCreatePage> {
                               child:
                                   coverImage?.status != 'ready'
                                       ? UploadingCoverImage(
+                                        height: 70,
+                                        width: 70,
                                         coverImage: coverImage,
                                         loadingProgress:
                                             state is FileUploadingCoverImage
@@ -331,6 +366,8 @@ class _AddCreatePageState extends State<AddCreatePage> {
                                     child: UploadingCoverImage(
                                       coverImage: photo,
                                       loadingProgress: null,
+                                      height: 106,
+                                      width: 106,
                                     ),
                                   ),
                                   Align(
@@ -414,11 +451,11 @@ class _AddCreatePageState extends State<AddCreatePage> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: const [
+                                  children: [
                                     Icon(Icons.add_circle, color: Colors.black),
                                     SizedBox(height: 4),
                                     Text(
-                                      "Добавить еще медиа",
+                                      lg.addMoreMedia,
                                       style: TextStyle(fontSize: 12),
                                       textAlign: TextAlign.center,
                                     ),

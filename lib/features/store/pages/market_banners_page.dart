@@ -77,7 +77,7 @@ class _MarketBannersPageState extends State<MarketBannersPage> {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(title: Text("Обявлния магазина")),
+        appBar: AppBar(title: Text(lg.marketAdds)),
         body: Padd(
           hor: 10,
           ver: 14,
@@ -87,8 +87,8 @@ class _MarketBannersPageState extends State<MarketBannersPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Вы можете выбырать последоватолностъ обявлений",
+                    Text(
+                      lg.selectOrderOfImages,
                       style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
                     ),
                     const SizedBox(height: 20),

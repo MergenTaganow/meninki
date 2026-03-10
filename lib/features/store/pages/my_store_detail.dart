@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/data/dynamic_localization.dart';
 import 'package:meninki/features/global/widgets/images_back_button.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/reels/model/query.dart';
@@ -87,6 +88,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    AppLocalizations lg = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: scheme.bgMain,
       body: BlocConsumer<GetMarketByIdCubit, GetMarketByIdState>(
@@ -254,10 +256,15 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              singleRow(
-                                title: AppLocalizations.of(context)!.phone,
-                                value: "+993 62 66 66 66 ",
-                              ),
+                              ...List.generate(state.market.contact_info?.length ?? 0, (index) {
+                                final key = state.market.contact_info?.keys.elementAt(index);
+                                final value = state.market.contact_info?[key];
+                                return singleRow(
+                                  title: DynamicLocalization.translate(key ?? ''),
+                                  value: value,
+                                );
+                              }),
+
                               singleRow(
                                 title: AppLocalizations.of(context)!.description,
                                 value: state.market.description?.trans(context) ?? '',
@@ -276,7 +283,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              "Подписчики",
+                                              lg.followers,
                                               style: TextStyle(color: scheme.textSecondary),
                                             ),
                                             Text(
@@ -301,7 +308,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              "Место в рейтинге",
+                                              lg.ratingPlace,
                                               style: TextStyle(color: scheme.textSecondary),
                                             ),
                                             Text(

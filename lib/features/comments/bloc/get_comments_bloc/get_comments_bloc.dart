@@ -33,7 +33,7 @@ class GetCommentsBloc extends Bloc<GetCommentsEvent, GetCommentsState> {
         emit.call(await _paginate(event));
       }
       if (event is AddSentComment) {
-        comments.add(event.comment);
+        comments.insert(0, event.comment);
         emit.call(GetCommentsSuccess(comments, true));
       }
     });
@@ -44,7 +44,12 @@ class GetCommentsBloc extends Bloc<GetCommentsEvent, GetCommentsState> {
 
     final failOrNot = await ds.getComments(
       reelId: event.reelId,
-      query: (event.query ?? Query()).copyWith(offset: page, limit: limit, orderDirection: "asc"),
+      query: (event.query ?? Query()).copyWith(
+        offset: page,
+        limit: limit,
+        orderDirection: "desc",
+        // orderBy: 'id',
+      ),
     );
 
     return failOrNot.fold((l) => GetCommentsFailed(message: l.message, statusCode: l.statusCode), (
@@ -61,7 +66,12 @@ class GetCommentsBloc extends Bloc<GetCommentsEvent, GetCommentsState> {
 
     final failOrNot = await ds.getComments(
       reelId: event.reelId,
-      query: (event.query ?? Query()).copyWith(offset: page, limit: limit, orderDirection: "asc"),
+      query: (event.query ?? Query()).copyWith(
+        offset: page,
+        limit: limit,
+        orderDirection: "desc",
+        // orderBy: 'id',
+      ),
     );
 
     return failOrNot.fold((l) => GetCommentsFailed(message: l.message, statusCode: l.statusCode), (

@@ -29,7 +29,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
   void initState() {
     context.read<SortCubit>().selectSort(
       key: SortCubit.reelsSearchSort,
-      newSort: Sort(orderBy: 'id', orderDirection: "desc", text: "По дате - сначала новые"),
+      newSort: Sort(orderBy: 'created_at', orderDirection: "desc", text: "По дате - сначала новые"),
     );
     context.read<GetReelMarketsBloc>().add(GetReelMarkets(type: 'reel'));
     context.read<GetVerifiedReelsBloc>().add(GetReel());
@@ -54,6 +54,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
   Widget build(BuildContext context) {
     super.build(context);
     var selectedSort = context.watch<SortCubit>().sortMap[SortCubit.reelsSearchSort];
+    final lg = AppLocalizations.of(context)!;
 
     return CustomScrollView(
       controller: reelsScrollController,
@@ -135,7 +136,7 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Обзоры",
+                            lg.reels,
                             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                           ),
                           Row(
@@ -162,35 +163,48 @@ class _HomeLentaState extends State<HomeLenta> with AutomaticKeepAliveClientMixi
                     final isLoading = state is GetReelLoading;
                     final reels = state is GetReelSuccess ? state.reels : <Reel>[];
 
-                    final itemCount = isLoading ? 6 : reels.length;
+                    final itemCount = isLoading ? 8 : reels.length;
                     // final isLoading = state is GetReelLoading;
                     // final itemCount = isLoading ? 6 : reels.length;
 
                     return Skeletonizer(
                       enabled: isLoading,
-                      child: MasonryGridView.count(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 8,
-                        itemCount: itemCount,
-                        itemBuilder: (context, index) {
-                          // Use dummy reel when loading to avoid index errors
-                          final reel =
-                              isLoading
-                                  ? Reel(
-                                    id: 999999999999999999,
-                                    type: '',
-                                    is_active: false,
-                                    is_verified: false,
-                                    user_id: 0,
-                                    title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
-                                    file: MeninkiFile(id: 0, name: '', original_file: ''),
-                                  )
-                                  : reels[index];
-                          return ReelCard(reel: reel, allReels: reels, playingReels: true);
-                        },
+                      child: Column(
+                        children: [
+                          MasonryGridView.count(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 14,
+                            crossAxisSpacing: 8,
+                            itemCount: itemCount,
+                            itemBuilder: (context, index) {
+                              // Use dummy reel when loading to avoid index errors
+                              final reel =
+                                  isLoading
+                                      ? Reel(
+                                        id: 999999999999999999,
+                                        type: '',
+                                        is_active: false,
+                                        is_verified: false,
+                                        user_id: 0,
+                                        title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
+                                        file: MeninkiFile(id: 0, name: '', original_file: ''),
+                                      )
+                                      : reels[index];
+                              return ReelCard(reel: reel, allReels: reels, playingReels: true);
+                            },
+                          ),
+                          if (state is ReelPagLoading)
+                            Padd(
+                              ver: 10,
+                              child: SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                        ],
                       ),
                     );
                   },

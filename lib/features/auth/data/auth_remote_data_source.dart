@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:meninki/features/firebase_messaging/models/notification_meninki.dart';
 import 'package:meninki/features/home/model/profile.dart';
+import 'package:meninki/features/reels/model/query.dart';
 import '../../../core/api.dart';
 import '../../../core/failure.dart';
 import '../../../core/success.dart';
@@ -24,6 +26,8 @@ abstract class AuthRemoteDataSource {
   Future<Either<Failure, Success>> updateUser({required Map<String, dynamic> data});
   Future<Either<Failure, Success>> sendFirebaseToken();
   Future<Either<Failure, Success>> deleteUser();
+  Future<Either<Failure, List<NotificationMeninki>>> getNotifications(Query query);
+  Future<Either<Failure, int>> getNotifCount();
 }
 
 class AuthRemoteDataImpl extends AuthRemoteDataSource {
@@ -184,9 +188,6 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
         data: {"firebase_token": local.firebaseToken, "refresh_token": local.user?.token?.refresh},
       );
 
-      print("firebase token set");
-      print(response.data);
-
       return Right(Success());
     } catch (e) {
       return Left(handleError(e));
@@ -203,5 +204,30 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
     } catch (e) {
       return Left(handleError(e));
     }
+  }
+
+  @override
+  Future<Either<Failure, List<NotificationMeninki>>> getNotifications(Query query) async {
+    // try {
+
+    var response = await api.dio.get('v1/push-notifications', queryParameters: query.toMap());
+    var list =
+        (response.data['payload'] as List).map((e) => NotificationMeninki.fromMap(e)).toList();
+    return Right(list);
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
+  }
+
+  @override
+  Future<Either<Failure, int>> getNotifCount() async {
+    // try {
+    var response = await api.dio.get('v1/push-notifications/count');
+
+    print(response.data);
+    return Right(response.data['payload']['unread_count']);
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 }

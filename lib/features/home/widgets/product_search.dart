@@ -103,23 +103,36 @@ class _ProductSearchState extends State<ProductSearch> {
                   final itemCount = isLoading ? 6 : products.length;
                   return Skeletonizer(
                     enabled: isLoading,
-                    child: MasonryGridView.count(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final product =
-                            isLoading ? Product(id: 9999, name: Name()) : products[index];
-                        return ProductCard(
-                          product: product,
-                          height: 340,
-                          width: MediaQuery.of(context).size.width / 2,
-                        );
-                      },
-                      itemCount: itemCount,
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 14,
-                      crossAxisSpacing: 8,
-                      // separatorBuilder: (BuildContext context, int index) => Box(w: 8),
+                    child: Column(
+                      children: [
+                        MasonryGridView.count(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            final product =
+                                isLoading ? Product(id: 9999, name: Name()) : products[index];
+                            return ProductCard(
+                              product: product,
+                              height: 340,
+                              width: MediaQuery.of(context).size.width / 2,
+                            );
+                          },
+                          itemCount: itemCount,
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 14,
+                          crossAxisSpacing: 8,
+                          // separatorBuilder: (BuildContext context, int index) => Box(w: 8),
+                        ),
+                        if (state is ProductPagLoading)
+                          Padd(
+                            ver: 10,
+                            child: SizedBox(
+                              height: 30,
+                              width: 30,
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                      ],
                     ),
                   );
                 },

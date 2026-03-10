@@ -1,17 +1,15 @@
 import 'package:buttons_tabbar/buttons_tabbar.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/colors.dart';
-import 'package:meninki/features/global/widgets/filter_widget.dart';
-import 'package:meninki/features/home/widgets/home_adds.dart';
+import 'package:meninki/data/dynamic_localization.dart';
 import 'package:meninki/features/home/widgets/product_search.dart';
 import 'package:meninki/features/home/widgets/reels_screen_search.dart';
 import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
 import '../../../core/helpers.dart';
 import '../../adds/bloc/get_public_adds_bloc/get_adds_bloc.dart';
+import '../../adds/pages/adds_search_page.dart';
 import '../../product/bloc/get_products_bloc/get_products_bloc.dart';
 import '../../product/pages/product_search_filter_page.dart';
 import '../../store/bloc/get_store_products/get_store_products_bloc.dart';
@@ -31,8 +29,8 @@ class _SearchPageState extends State<SearchPage>
 
   final ScrollController addsScrollController = ScrollController();
   TextEditingController search = TextEditingController();
-  List<String> searchTypes = ['Обзоры', 'Товары', 'Объявления', 'Магазины'];
-  String selectedType = 'Обзоры';
+  List<String> searchTypes = ['reels', 'products', 'adds', 'stores'];
+  String selectedType = 'reels';
 
   @override
   void initState() {
@@ -75,6 +73,8 @@ class _SearchPageState extends State<SearchPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final lg = AppLocalizations.of(context)!;
+
     return BlocListener<TabNavigationCubit, TabNavigationState>(
       listener: (context, state) {
         if (state is NavigateTab && state.page == TabPages.search) {
@@ -114,7 +114,7 @@ class _SearchPageState extends State<SearchPage>
                                       ),
                                     )
                                     : null,
-                            hintText: "Поиск",
+                            hintText: lg.search,
                             hintStyle: TextStyle(color: Color(0xFF969696)),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -167,7 +167,10 @@ class _SearchPageState extends State<SearchPage>
                               fontSize: 14,
                             ),
                             // Add your tabs here
-                            tabs: searchTypes.map((e) => Tab(text: e)).toList(),
+                            tabs:
+                                searchTypes
+                                    .map((e) => Tab(text: DynamicLocalization.translate(e)))
+                                    .toList(),
                           ),
                         );
                       },
@@ -190,26 +193,7 @@ class _SearchPageState extends State<SearchPage>
                   children: [
                     ReelsSearch(text: search.text.trim()),
                     ProductSearch(text: search.text.trim()),
-                    CustomScrollView(
-                      controller: addsScrollController,
-                      physics: const BouncingScrollPhysics(),
-                      slivers: [
-                        CupertinoSliverRefreshControl(
-                          onRefresh: () async {
-                            await context.read<GetAddsBloc>().refresh();
-                          },
-                        ),
-                        SliverToBoxAdapter(
-                          child: Column(
-                            children: [
-                              FilterWidget(filterList: [], onFilter: () {}, onClear: () {}),
-                              Box(h: 10),
-                              PublicAddsList(),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    AddsSearchPage(addsScrollController: addsScrollController),
                     MarketProductsSearch(text: search.text.trim()),
                   ],
                 ),

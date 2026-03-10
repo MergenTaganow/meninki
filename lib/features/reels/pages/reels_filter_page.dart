@@ -15,11 +15,13 @@ class ReelsFilterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     var listSort = [
-      Sort(text: "Sonky gosulanlar", orderBy: 'created_at', orderDirection: 'desc'),
-      Sort(text: "Ilki gosulanlar", orderBy: 'created_at', orderDirection: 'asc'),
-      Sort(text: "Like sany kopler", orderBy: 'user_favorite_count', orderDirection: 'desc'),
-      Sort(text: "Like sany azlar", orderBy: 'user_favorite_count', orderDirection: 'asc'),
+      Sort(text: lg.sortNewest, orderBy: 'created_at', orderDirection: 'desc'),
+      Sort(text: lg.sortOldest, orderBy: 'created_at', orderDirection: 'asc'),
+      Sort(text: lg.likeCountDesc, orderBy: 'user_favorite_count', orderDirection: 'desc'),
+      Sort(text: lg.likeCountAsc, orderBy: 'user_favorite_count', orderDirection: 'asc'),
     ];
     return Scaffold(
       appBar: AppBar(

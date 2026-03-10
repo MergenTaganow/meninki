@@ -6,6 +6,8 @@ import '../../../core/failure.dart';
 import '../../../core/injector.dart';
 import '../../../core/success.dart';
 import '../../categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
+import '../../global/blocs/key_filter_cubit/key_filter_cubit.dart';
+import '../../province/blocks/province_selecting_cubit/province_selecting_cubit.dart';
 import '../../reels/model/query.dart';
 
 abstract class AddRemoteDataSource {
@@ -23,13 +25,14 @@ class AddRemoteDataSourceImpl extends AddRemoteDataSource {
 
   @override
   Future<Either<Failure, Add>> createAdd(Map<String, dynamic> data) async {
-    try {
+    // try {
+    print(data);
       var response = await api.dio.post('v1/advertisements', data: data);
 
       return Right(Add.fromJson(response.data['payload']));
-    } catch (e) {
-      return Left(handleError(e));
-    }
+    // } catch (e) {
+    //   return Left(handleError(e));
+    // }
   }
 
   @override
@@ -37,10 +40,19 @@ class AddRemoteDataSourceImpl extends AddRemoteDataSource {
     try {
       var selectedCategories =
           sl<CategorySelectingCubit>().selectedMap[CategorySelectingCubit.adds_page_category] ?? [];
+      var provinces =
+          sl<ProvinceSelectingCubit>().selectedMap[ProvinceSelectingCubit.add_filter_province] ??
+          [];
+      var keyFilters = sl<KeyFilterCubit>().selectedMap;
 
       var param = {
         ...query.toMap(),
         if (selectedCategories.isNotEmpty) "category_id": selectedCategories.single.id,
+        if (provinces.isNotEmpty) "province_ids": provinces.map((e) => e.id).toList(),
+        if (keyFilters[KeyFilterCubit.adds_search_max_price] != null)
+          "max_price": keyFilters[KeyFilterCubit.adds_search_max_price],
+        if (keyFilters[KeyFilterCubit.adds_search_min_price] != null)
+          "min_price": keyFilters[KeyFilterCubit.adds_search_min_price],
       };
       var response = await api.dio.get(
         'v1/${query.extraUrl ?? 'advertisements/public'}',

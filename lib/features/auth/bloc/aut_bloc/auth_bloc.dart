@@ -32,7 +32,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           return;
           // }
         }
-        emit.call(AuthInitial());
+        emit(AuthFailed(const Failure()));
       }
       if (event is SetUser) {
         repo.saveUser(u: event.user);

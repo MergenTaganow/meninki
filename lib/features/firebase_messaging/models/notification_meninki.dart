@@ -3,14 +3,16 @@ import 'dart:developer';
 import 'package:meninki/features/auth/models/user.dart';
 
 class NotificationMeninki {
-  int? id;
+  String? id;
   String? title;
   String? description;
   bool? is_read;
   String? image_url;
-  int? user_id;
+  String? user_id;
   User? user;
   DateTime? createdAt;
+  String? type;
+  String? entity;
   NotificationMeninki({
     this.id,
     this.user_id,
@@ -20,18 +22,20 @@ class NotificationMeninki {
     this.image_url,
     this.user,
     this.createdAt,
-    // this.sender,
-    // this.extras,
+    this.type,
+    this.entity,
   });
 
   NotificationMeninki copyWith({
-    int? id,
+    String? id,
     String? model,
-    int? user_id,
+    String? user_id,
     String? title,
     String? body,
     bool? is_read,
     String? image_url,
+    String? type,
+    String? entity,
     User? user,
     DateTime? createdAt,
   }) {
@@ -44,31 +48,58 @@ class NotificationMeninki {
       image_url: image_url ?? this.image_url,
       user: user ?? this.user,
       createdAt: createdAt ?? this.createdAt,
+      type: type ?? this.type,
+      entity: entity ?? this.entity,
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'uuid': id,
-      'type': user_id,
+      'user_id': user_id,
       'title': title,
       'body': description,
       'deliveryFrom': is_read,
       'deliveryTo': image_url,
       'status': user,
       'createdAt': createdAt,
+      'type': type,
+      'entity': entity,
     };
   }
 
   factory NotificationMeninki.fromMap(Map<String, dynamic> map) {
-    log(map.toString());
     return NotificationMeninki(
-      id: map['id'] != null ? map['id'] as int : null,
-      user_id: map['type'] != null ? map['type'] as int : null,
+      id:
+          map['id'] != null
+              ? map['id'] is String
+                  ? map['id']
+                  : map['id'].toString()
+              : null,
+      user_id:
+          map['user_id'] != null
+              ? map['user_id'] is String
+                  ? map['user_id']
+                  : map['user_id'].toString()
+              : null,
       title: map['title'] != null ? map['title'] as String : null,
-      description: map['body'] != null ? map['body'] as String : null,
-      is_read: map['deliveryFrom'] != null ? map['deliveryFrom'] as bool : null,
-      image_url: map['deliveryTo'] != null ? map['deliveryTo'] as String : null,
+      description:
+          (map['body'] ?? map['description']) != null
+              ? (map['body'] ?? map['description']) as String
+              : null,
+      is_read: map['is_read'] != null ? map['is_read'] as bool : null,
+      image_url:
+          (map['image_url'] ?? map['android']['imageUrl']) != null
+              ? (map['image_url'] ?? map['android']['imageUrl']) as String
+              : null,
+      type:
+          (map['type'] ?? map['data']['type']) != null
+              ? (map['type'] ?? map['data']['type']) as String
+              : null,
+      entity:
+          (map['entity'] ?? map['data']['entity']) != null
+              ? (map['entity'] ?? map['data']['entity']) as String
+              : null,
       user: map['status'] != null ? User.fromJson(map['status']) : null,
       createdAt: map['createdAt'] != null ? DateTime.tryParse(map['createdAt']) : null,
     );

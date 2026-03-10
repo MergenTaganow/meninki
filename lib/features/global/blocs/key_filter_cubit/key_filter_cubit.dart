@@ -16,6 +16,8 @@ class KeyFilterCubit extends Cubit<KeyFilterState> {
 
   static String product_search_min_price = "product_search_min_price";
   static String product_search_max_price = "product_search_max_price";
+  static String adds_search_min_price = "adds_search_min_price";
+  static String adds_search_max_price = "adds_search_max_price";
 
   // static showRadioSelectionSheet(
   //     {required BuildContext context,

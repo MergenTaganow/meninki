@@ -13,7 +13,7 @@ apply(plugin = "com.google.gms.google-services")
 
 android {
     namespace = "com.example.meninki"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -52,4 +52,6 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation("androidx.exifinterface:exifinterface:1.3.6")
 }

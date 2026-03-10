@@ -3,13 +3,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/address/widgets/address_sheet.dart';
 import 'package:meninki/features/basket/bloc/get_basket_cubit/get_basket_cubit.dart';
 import 'package:meninki/features/basket/bloc/my_basket_cubit/my_basket_cubit.dart';
+import 'package:meninki/features/basket/bloc/prepare_basket_cubit/prepare_basket_cubit.dart';
 import 'package:meninki/features/basket/models/basket_product.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
+import '../../address/bloc/get_address_cubit/get_address_cubit.dart';
 import '../../global/widgets/custom_snack_bar.dart';
 
 class BasketPage extends StatelessWidget {
@@ -39,22 +42,33 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
   Widget build(BuildContext context) {
     AppLocalizations lg = AppLocalizations.of(context)!;
     super.build(context);
-    return BlocListener<MyBasketCubit, MyBasketState>(
-      listener: (context, state) {
-        if (state is ProductAdded) {
-          CustomSnackBar.showSnackBar(context: context, title: lg.productUpdated);
-        }
-        if (state is ProductRemoved) {
-          CustomSnackBar.showSnackBar(context: context, title: lg.productRemoved);
-        }
-        if (state is MyBasketFailed) {
-          CustomSnackBar.showSnackBar(
-            isError: true,
-            context: context,
-            title: state.failure.message ?? lg.smthWentWrong,
-          );
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<MyBasketCubit, MyBasketState>(
+          listener: (context, state) {
+            if (state is ProductAdded) {
+              CustomSnackBar.showSnackBar(context: context, title: lg.productUpdated);
+            }
+            if (state is ProductRemoved) {
+              CustomSnackBar.showSnackBar(context: context, title: lg.productRemoved);
+            }
+            if (state is MyBasketFailed) {
+              CustomSnackBar.showSnackBar(
+                isError: true,
+                context: context,
+                title: state.failure.message ?? lg.smthWentWrong,
+              );
+            }
+          },
+        ),
+        BlocListener<PrepareBasketCubit, PrepareBasketState>(
+          listener: (context, state) {
+            if (state is PrepareBasketSuccess) {
+              Go.to(Routes.preparedBasketPage);
+            }
+          },
+        ),
+      ],
       child: Column(
         children: [
           Material(
@@ -65,7 +79,7 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
               splashColor: Colors.black.withOpacity(0.15), // ripple effect
               highlightColor: Colors.black.withOpacity(0.05), // pressed effect
               onTap: () {
-                // Your tap action here
+                Go.to(Routes.ordersPage);
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -101,7 +115,7 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                   }
                   num sum = 0;
                   for (var i in state.products) {
-                    sum += i.composition?.product?.price ?? 0;
+                    sum += i.composition?.product?.discount ?? i.composition?.product?.price ?? 0;
                   }
                   return SafeArea(
                     child: Column(
@@ -148,7 +162,22 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                                 splashColor: Colors.white.withOpacity(0.25),
                                 highlightColor: Colors.white.withOpacity(0.15),
                                 onTap: () {
+                                  context.read<GetAddressCubit>().getMyAddresses();
                                   HapticFeedback.mediumImpact();
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Color(0xFFF3F3F3),
+                                    builder: (context) {
+                                      return DraggableScrollableSheet(
+                                        expand: false,
+                                        maxChildSize: 0.85,
+                                        builder: (context, scrollController) {
+                                          return AddressSheet(scrollController, selectable: true);
+                                        },
+                                      );
+                                    },
+                                  );
                                 },
                                 child: Ink(
                                   height: 46,
@@ -157,9 +186,9 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                                     color: Col.primary,
                                     borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child: const Center(
+                                  child:  Center(
                                     child: Text(
-                                      "Продолжить",
+                                      lg.next,
                                       style: TextStyle(
                                         fontWeight: FontWeight.w500,
                                         color: Colors.white,
@@ -230,13 +259,14 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                                                   '${product.composition?.product?.price} TMT',
                                                   style: TextStyle(fontWeight: FontWeight.w600),
                                                 ),
-                                                Text(
-                                                  '${product.composition?.product?.discount} TMT',
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Color(0xFF969696),
+                                                if (product.composition?.product?.discount != null)
+                                                  Text(
+                                                    '${product.composition?.product?.discount} TMT',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Color(0xFF969696),
+                                                    ),
                                                   ),
-                                                ),
                                                 Spacer(),
                                                 actionButtons(product),
                                               ],

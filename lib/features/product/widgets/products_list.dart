@@ -6,6 +6,7 @@ import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/product/widgets/product_card.dart';
 import 'package:meninki/features/reels/model/query.dart';
 
+import '../../../core/helpers.dart';
 import '../../store/widgets/store_background_color_selection.dart';
 
 class StoreProductsList extends StatefulWidget {
@@ -28,6 +29,8 @@ class _StoreProductsListState extends State<StoreProductsList> {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
+
     return BlocBuilder<GetOneStoresProducts, GetProductsState>(
       builder: (context, state) {
         if (state is GetProductLoading) {
@@ -48,7 +51,7 @@ class _StoreProductsListState extends State<StoreProductsList> {
           //     context.read<GetOrdersBloc>().add(RefreshLastOrders());
           //   },
           // );
-          return Text("error");
+          return Text(state.message ?? lg.smthWentWrong);
         }
 
         return MasonryGridView.count(

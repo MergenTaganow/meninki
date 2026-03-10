@@ -45,7 +45,9 @@ class Add {
       is_verified: json["is_verified"],
       created_at:
           json["created_at"] != null
-              ? DateTime.fromMillisecondsSinceEpoch(int.parse(json["created_at"])).toLocal()
+              ? DateTime.fromMillisecondsSinceEpoch(
+                json["created_at"] is String ? int.parse(json["created_at"]) : json["created_at"],
+              ).toLocal()
               : null,
       link: json["link"],
       link_type: json["link_type"],

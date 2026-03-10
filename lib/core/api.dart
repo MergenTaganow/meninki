@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import '../features/auth/bloc/aut_bloc/auth_bloc.dart';
 import '../features/auth/data/employee_local_data_source.dart';
 import '../features/auth/models/user.dart';
 import 'failure.dart';
+import 'injector.dart';
 
 String baseUrl = 'https://meninki.asuda.agency';
 
@@ -37,7 +39,10 @@ class Api {
         onError: (e, handler) async {
           print((e.response?.statusCode).toString());
           print(e.response?.data.toString());
-          if (e.response?.statusCode == 401) {
+          if (e.requestOptions.path.contains("change-token") && (e.response?.statusCode == 401)) {
+            sl<AuthBloc>().add(LogoutEvent());
+            return handler.reject(e);
+          } else if (e.response?.statusCode == 401) {
             String? token = await _refreshToken(emplDs.user?.token?.refresh);
 
             if (token != null) {
@@ -70,8 +75,7 @@ class Api {
                         ),
                       ),
                     );
-                  } else {
-                  }
+                  } else {}
                 }
 
                 newData = rebuilt;

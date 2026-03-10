@@ -12,6 +12,7 @@ import 'package:meninki/features/adds/models/add.dart';
 import 'package:meninki/features/categories/bloc/category_selecting_cubit/category_selecting_cubit.dart';
 import 'package:meninki/features/categories/bloc/get_categories_cubit/get_categories_cubit.dart';
 import 'package:meninki/features/categories/models/category.dart';
+import 'package:meninki/features/global/blocs/sort_cubit/sort_cubit.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -44,6 +45,7 @@ class _HomeAddState extends State<HomeAdd> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final lg = AppLocalizations.of(context)!;
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       controller: addsScrollController,
@@ -67,16 +69,16 @@ class _HomeAddState extends State<HomeAdd> with AutomaticKeepAliveClientMixin {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Обзоры", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                        Row(
-                          children: [
-                            Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
-                            Text(
-                              "По дате - сначала новые",
-                              style: TextStyle(color: Color(0xFF969696)),
-                            ),
-                          ],
-                        ),
+                        Text(lg.adds, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                        // Row(
+                        //   children: [
+                        //     Svvg.asset("sort", size: 20, color: Color(0xFF969696)),
+                        //     Text(
+                        //       "По дате - сначала новые",
+                        //       style: TextStyle(color: Color(0xFF969696)),
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     ),
                     GestureDetector(
@@ -218,60 +220,69 @@ class PublicAddsList extends StatelessWidget {
             baseColor: const Color(0xFFEAEAEA),
             highlightColor: const Color(0xFFF5F5F5),
           ),
-          child: MasonryGridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 14,
-            crossAxisSpacing: 8,
-            itemCount: adds.length,
-            itemBuilder: (context, index) {
-              final add = adds[index];
+          child: Column(
+            children: [
+              MasonryGridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 8,
+                itemCount: adds.length,
+                itemBuilder: (context, index) {
+                  final add = adds[index];
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  InkWell(
-                    onTap: () {
-                      context.read<AddUuidCubit>().getAdd(add.id ?? 0);
-                      Go.to(Routes.addDetailPage, argument: {'add': add});
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        height: 168,
-                        width: MediaQuery.of(context).size.width / 2,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEAEAEA),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          context.read<AddUuidCubit>().getAdd(add.id ?? 0);
+                          Go.to(Routes.addDetailPage, argument: {'add': add});
+                        },
+                        child: ClipRRect(
                           borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            height: 168,
+                            width: MediaQuery.of(context).size.width / 2,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEAEAEA),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child:
+                                add.cover_image != null
+                                    ? IgnorePointer(
+                                      ignoring: true,
+                                      child: MeninkiNetworkImage(
+                                        file: add.cover_image!,
+                                        networkImageType: NetworkImageType.medium,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                    : null,
+                          ),
                         ),
-                        child:
-                            add.cover_image != null
-                                ? IgnorePointer(
-                                  ignoring: true,
-                                  child: MeninkiNetworkImage(
-                                    file: add.cover_image!,
-                                    networkImageType: NetworkImageType.medium,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                                : null,
                       ),
-                    ),
-                  ),
-                  const Box(h: 6),
-                  Text(
-                    add.title ?? '',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const Box(h: 4),
-                  Text("${add.price} TMT", style: const TextStyle(fontWeight: FontWeight.w600)),
-                ],
-              );
-            },
+                      const Box(h: 6),
+                      Text(
+                        add.title ?? '',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Box(h: 4),
+                      Text("${add.price} TMT", style: const TextStyle(fontWeight: FontWeight.w600)),
+                    ],
+                  );
+                },
+              ),
+              if (state is AddPagLoading)
+                Padd(
+                  ver: 10,
+                  child: SizedBox(height: 30, width: 30, child: CircularProgressIndicator()),
+                ),
+            ],
           ),
         );
       },

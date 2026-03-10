@@ -32,6 +32,7 @@ class _MarketColorSelectingPageState extends State<MarketColorSelectingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final lg = AppLocalizations.of(context)!;
     return BlocListener<StoreCreateCubit, StoreCreateState>(
       listener: (context, state) {
         if (state is StoreCreateFailed) {
@@ -54,7 +55,7 @@ class _MarketColorSelectingPageState extends State<MarketColorSelectingPage> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: false,
-          title: Text("Цветовая схема"),
+          title: Text(lg.colorPattern),
           actions: [
             BlocBuilder<StoreCreateCubit, StoreCreateState>(
               builder: (context, state) {
@@ -72,7 +73,7 @@ class _MarketColorSelectingPageState extends State<MarketColorSelectingPage> {
                     child:
                         state is StoreCreateLoading
                             ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator())
-                            : Text("done"),
+                            : Text(lg.done),
                   ),
                 );
               },
