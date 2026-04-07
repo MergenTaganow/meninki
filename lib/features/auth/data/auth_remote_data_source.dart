@@ -22,12 +22,16 @@ abstract class AuthRemoteDataSource {
   Future<Either<Failure, Success>> sendOtp({required String phoneNumber});
   Future<Either<Failure, User>> checkOtp({required String phoneNumber, required int otp});
   Future<Either<Failure, User>> register(Map<String, dynamic> data);
+  Future<Either<Failure, Success>> updateProfile(Map<String, dynamic> data);
   Future<Either<Failure, Profile>> getMyProfile();
+  Future<Either<Failure, Profile>> getPublicProfile(int id);
   Future<Either<Failure, Success>> updateUser({required Map<String, dynamic> data});
   Future<Either<Failure, Success>> sendFirebaseToken();
   Future<Either<Failure, Success>> deleteUser();
   Future<Either<Failure, List<NotificationMeninki>>> getNotifications(Query query);
   Future<Either<Failure, int>> getNotifCount();
+  Future<Either<Failure, Success>> doAppeal(Map<String, dynamic> data);
+  Future<Either<Failure, Success>> changeLang(String locale);
 }
 
 class AuthRemoteDataImpl extends AuthRemoteDataSource {
@@ -157,6 +161,18 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
   }
 
   @override
+  Future<Either<Failure, Success>> updateProfile(Map<String, dynamic> data) async {
+    try {
+      var response = await api.dio.patch('v1/profiles', data: data);
+
+      // User user = User.fromJson(response.data['payload']);
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
   Future<Either<Failure, Profile>> getMyProfile() async {
     try {
       var response = await api.dio.get('v1/profiles');
@@ -169,9 +185,23 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
   }
 
   @override
+  Future<Either<Failure, Profile>> getPublicProfile(int id) async {
+    try {
+      var response = await api.dio.get('v1/profiles/specific/$id');
+
+      Profile profile = Profile.fromJson(response.data['payload']);
+      return Right(profile);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
   Future<Either<Failure, Success>> updateUser({required Map<String, dynamic> data}) async {
     try {
-      await api.dio.patch('v1/profiles', data: data);
+
+     await api.dio.patch('v1/profiles', data: data);
+
 
       return Right(Success());
     } catch (e) {
@@ -198,7 +228,8 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
   Future<Either<Failure, Success>> deleteUser() async {
     try {
       if (local.user == null) return Left(Failure());
-      var response = await api.dio.post('v1/profiles/deactivate');
+      var response = await api.dio.delete('v1/profiles/deactivate');
+      print(response.data);
 
       return Right(Success());
     } catch (e) {
@@ -208,26 +239,51 @@ class AuthRemoteDataImpl extends AuthRemoteDataSource {
 
   @override
   Future<Either<Failure, List<NotificationMeninki>>> getNotifications(Query query) async {
-    // try {
+    try {
+      var response = await api.dio.get('v1/push-notifications', queryParameters: query.toMap());
 
-    var response = await api.dio.get('v1/push-notifications', queryParameters: query.toMap());
-    var list =
-        (response.data['payload'] as List).map((e) => NotificationMeninki.fromMap(e)).toList();
-    return Right(list);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      var list =
+          (response.data['payload'] as List).map((e) => NotificationMeninki.fromMap(e)).toList();
+      print("${query.toMap()} ${list.length}");
+      return Right(list);
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, int>> getNotifCount() async {
-    // try {
-    var response = await api.dio.get('v1/push-notifications/count');
+    try {
+      var response = await api.dio.get('v1/push-notifications/count');
 
-    print(response.data);
-    return Right(response.data['payload']['unread_count']);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      print(response.data);
+      return Right(response.data['payload']['unread_count']);
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> doAppeal(Map<String, dynamic> data) async {
+    try {
+      var response = await api.dio.post('v1/appeals', data: data);
+
+      print(response.data);
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Success>> changeLang(String locale) async {
+    try {
+      var response = await api.dio.patch('v1/profiles', data: {'lang': locale});
+
+      print(response.data);
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 }

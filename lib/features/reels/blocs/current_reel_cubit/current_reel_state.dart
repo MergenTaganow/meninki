@@ -4,6 +4,12 @@ part of 'current_reel_cubit.dart';
 sealed class CurrentReelState {}
 
 final class CurrentReelSuccess extends CurrentReelState {
-  final Reel? reel;
-  CurrentReelSuccess(this.reel);
+  final List<Reel>? reels;
+  final String? reelType;
+  CurrentReelSuccess(this.reelType, this.reels);
+}
+
+final class PaginateReels extends CurrentReelState {
+  final String? reelType;
+  PaginateReels(this.reelType);
 }

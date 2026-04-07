@@ -16,7 +16,7 @@ class GetNotificationsBloc extends Bloc<GetNotificationsEvent, GetNotificationsS
   List<NotificationMeninki> notifications = [];
 
   int page = 1;
-  int limit = 20;
+  int limit = 10;
   bool canPag = false;
   Query? lastQuery;
 

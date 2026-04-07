@@ -89,6 +89,7 @@ class _SearchPageState extends State<SearchPage>
             return [
               SliverToBoxAdapter(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ///search
                     Padd(

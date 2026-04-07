@@ -31,7 +31,7 @@ class CategorySelectingCubit extends Cubit<CategorySelectingState> {
   }
 
   selectList({required String key, required List<Category> categories}) {
-    selectedMap[key] = categories;
+    selectedMap[key] = categories.whereType<Category>().map((e) => e).toList();
     emit.call(CategorySelectingSuccess(selectedMap));
   }
 

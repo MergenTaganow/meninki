@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/colors.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
-import 'package:meninki/features/global/blocs/delete_items_cubit/delete_items_cubit.dart';
-import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/store/models/market.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/helpers.dart';
+import '../../../data/deep_link.dart';
+import '../../appeal/bloc/appeal_cubit/appeal_cubit.dart';
+import '../../appeal/widgets/appeal_sheet.dart';
+import '../../global/widgets/custom_snack_bar.dart';
 
-class MarketSheet extends StatelessWidget {
+class MyMarketSheet extends StatelessWidget {
   final Market market;
-  const MarketSheet(this.market, {super.key});
+  const MyMarketSheet(this.market, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -112,13 +114,14 @@ class MarketSheet extends StatelessWidget {
   }
 }
 
-class ProductSheet extends StatelessWidget {
-  final Product product;
-  const ProductSheet(this.product, {super.key});
+class PublicMarketSheet extends StatelessWidget {
+  final Market market;
+  const PublicMarketSheet(this.market, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    AppLocalizations lg = AppLocalizations.of(context)!;
+    final lg = AppLocalizations.of(context)!;
+
     return Padd(
       hor: 16,
       ver: 30,
@@ -127,35 +130,25 @@ class ProductSheet extends StatelessWidget {
         children: [
           singleLine(
             context: context,
-            title: lg.editProduct,
-            value: Svvg.asset("profile"),
-            onTap: () {
-              Go.to(
-                Routes.productCreate,
-                argument: {"storeId": product.market?.id, "product": product},
-              );
+            title: AppLocalizations.of(context)!.deeplink,
+            value: Svvg.asset("url"),
+            onTap: () async {
+              var link = DeepLink().createDeepLink(id: market.id, type: DeepLink.market);
+              SharePlus.instance.share(ShareParams(text: '${lg.checkThis} $link'));
             },
           ),
           singleLine(
             context: context,
-            title: AppLocalizations.of(context)!.copyLink,
-            value: Svvg.asset("url"),
-            onTap: () {},
-          ),
-          singleLine(
-            context: context,
-            title: lg.deleteProduct,
-            value: Svvg.asset("delete", size: 24),
-            textColor: Col.redTask,
+            title: AppLocalizations.of(context)!.complaint,
+            value: Svvg.asset("danger_light"),
             onTap: () {
               showModalBottomSheet(
                 context: context,
                 builder: (context) {
-                  return AreYouSureSheet(
-                    title: lg.deleteProduct,
-                    onYes: () {
-                      context.read<DeleteItemsCubit>().deleteProduct(product.id);
-                    },
+                  return AppealSheet(
+                    type: Appeal.market,
+                    typeId: market.id.toString(),
+                    typeName: market.name,
                   );
                 },
               );
@@ -191,7 +184,7 @@ class ProductSheet extends StatelessWidget {
           },
           child: Container(
             height: 46,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: const EdgeInsets.all(14),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

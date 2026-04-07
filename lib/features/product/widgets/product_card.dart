@@ -48,6 +48,7 @@ class ProductCard extends StatelessWidget {
                               ignoring: true,
                               child: MeninkiNetworkImage(
                                 file: product.cover_image!,
+                                borderRadius: 14,
                                 networkImageType: NetworkImageType.small,
                                 fit: BoxFit.cover,
                               ),

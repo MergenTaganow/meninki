@@ -33,7 +33,15 @@ class GetCommentsBloc extends Bloc<GetCommentsEvent, GetCommentsState> {
         emit.call(await _paginate(event));
       }
       if (event is AddSentComment) {
-        comments.insert(0, event.comment);
+        if (event.comment.reply_to_comment_id != null) {
+          var index = comments.indexWhere((e) => e.id == event.comment.reply_to_comment_id);
+          if (index != -1) {
+            comments[index].reply_count = (comments[index].reply_count ?? 0) + 1;
+            comments[index].children?.add(event.comment);
+          }
+        } else {
+          comments.insert(0, event.comment);
+        }
         emit.call(GetCommentsSuccess(comments, true));
       }
     });

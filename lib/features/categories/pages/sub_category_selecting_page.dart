@@ -69,7 +69,7 @@ class SubCategorySelectingPage extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                category.name?.tk ?? '',
+                                category.name?.trans(context) ?? '',
                                 style: TextStyle(fontWeight: FontWeight.w500),
                               ),
                               Box(w: 14),
@@ -100,9 +100,7 @@ class SubCategorySelectingPage extends StatelessWidget {
                         color: Col.primary,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Center(
-                        child: Text(lg.save, style: TextStyle(color: Colors.white)),
-                      ),
+                      child: Center(child: Text(lg.save, style: TextStyle(color: Colors.white))),
                     ),
                   ),
                 ),

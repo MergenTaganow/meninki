@@ -13,11 +13,13 @@ class MeninkiNetworkImage extends StatelessWidget {
   final MeninkiFile file;
   final NetworkImageType networkImageType;
   final BoxFit? fit;
+  final double? borderRadius;
   const MeninkiNetworkImage({
     required this.file,
     required this.networkImageType,
     this.otherFiles,
     this.fit,
+    this.borderRadius,
     super.key,
   });
 
@@ -46,15 +48,18 @@ class MeninkiNetworkImage extends StatelessWidget {
           ),
         );
       },
-      child: CachedNetworkImage(
-        imageUrl: url,
-        fit: fit,
-        placeholder:
-            (context, url) =>
-                ((file.blurhash?.isNotEmpty ?? false))
-                    ? BlurHash(hash: file.blurhash ?? "")
-                    : Container(),
-        errorWidget: (context, url, error) => const Icon(Icons.error),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius ?? 0),
+        child: CachedNetworkImage(
+          imageUrl: url,
+          fit: fit,
+          placeholder:
+              (context, url) =>
+                  ((file.blurhash?.isNotEmpty ?? false))
+                      ? BlurHash(hash: file.blurhash ?? "")
+                      : Container(),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
+        ),
       ),
     );
   }

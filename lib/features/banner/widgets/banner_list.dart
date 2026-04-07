@@ -192,6 +192,7 @@ class BannerListWidget extends StatelessWidget {
                       IgnorePointer(
                         ignoring: true,
                         child: MeninkiNetworkImage(
+                          borderRadius: 14,
                           file: list[index].file!,
                           networkImageType: imageType,
                           fit: BoxFit.contain,

@@ -62,6 +62,8 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   bool compositionCreated = false;
   bool showErrorCompositions = false;
 
+  bool varEditChanges = false;
+
   @override
   void deactivate() {
     context.read<FileUplCoverImageBloc>().add(Clear());
@@ -97,6 +99,22 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
       descriptionENController.text = widget.product!.description?.en ?? '';
       priceController.text = widget.product!.price.toString();
       discountPriceController.text = widget.product!.discount.toString();
+      if (widget.product?.brand != null) {
+        context.read<BrandSelectingCubit>().selectBrand(
+          BrandSelectingCubit.product_creating_brand,
+          widget.product!.brand!,
+        );
+        selectedBrand = widget.product!.brand;
+      }
+      if (widget.product?.categories?.isNotEmpty ?? false) {
+        selectedSubCategories =
+            widget.product!.categories!.whereType<Category>().map((e) => e).toList();
+
+        context.read<CategorySelectingCubit>().selectList(
+          key: CategorySelectingCubit.product_creating_category,
+          categories: widget.product!.categories!,
+        );
+      }
       if (widget.product?.cover_image != null) {
         coverImage = widget.product!.cover_image?.copyWith(status: 'ready');
       }
@@ -155,27 +173,10 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
           BlocListener<ProductCreateCubit, ProductCreateState>(
             listener: (context, state) {
               if (state is ProductCreateSuccess) {
-                CustomSnackBar.showSnackBar(
-                  context: context,
-                  title: AppLocalizations.of(context)!.success,
-                  isError: false,
-                );
-                createdProduct = state.product;
-                setState(() {});
-                scrollController.animateTo(
-                  0,
-                  duration: Duration(seconds: 1),
-                  curve: Curves.easeInOut,
-                );
+                Go.popGo(Routes.productParametersPage, argument: {"product": state.product});
               }
               if (state is ProductEditSuccess) {
-                context.read<GetProductByIdCubit>().getPublicProduct(widget.product!.id);
-                CustomSnackBar.showSnackBar(
-                  context: context,
-                  title: AppLocalizations.of(context)!.success,
-                  isError: false,
-                );
-                Go.pop();
+                Go.to(Routes.productParametersPage, argument: {"product": widget.product});
               }
               if (state is ProductCreateFailed) {
                 CustomSnackBar.showSnackBar(
@@ -189,6 +190,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
           BlocListener<FileUplBloc, FileUplState>(
             listener: (context, state) {
               if (state is FileUploadSuccess && state.type == UploadingFileTypes.productPhotos) {
+                varEditChanges = true;
                 productPhotos.add(state.file);
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   setState(() {});
@@ -199,6 +201,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
           BlocListener<CategorySelectingCubit, CategorySelectingState>(
             listener: (context, state) {
               if (state is CategorySelectingSuccess) {
+                varEditChanges = true;
                 selectedSubCategories =
                     state.selectedMap[CategorySelectingCubit.product_creating_category] ?? [];
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -210,6 +213,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
           BlocListener<BrandSelectingCubit, BrandSelectingState>(
             listener: (context, state) {
               if (state is BrandSelectingSuccess) {
+                varEditChanges = true;
                 selectedBrand =
                     (state.selectedMap[BrandSelectingCubit.product_creating_brand] ?? []).single;
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -222,7 +226,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
         child: Scaffold(
           appBar: AppBar(title: Text(AppLocalizations.of(context)!.newProduct)),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: createdProduct == null ? createButton() : null,
+          floatingActionButton: createButton(),
           body: SingleChildScrollView(
             controller: scrollController,
             child: Padd(
@@ -235,9 +239,6 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                   children: [
                     coverImageSelection(),
                     Box(h: 20),
-                    // if (createdProduct != null)
-                    compositionsCreate(),
-
                     //name
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,6 +252,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                           borderColor: Color(0xFF474747),
                           borderRadiusType: BorderRadius.vertical(top: Radius.circular(14)),
                           preTex: "TM: ",
+                          onChange: (str) {
+                            if (str != widget.product?.name.tk) {
+                              varEditChanges = true;
+                            } else {
+                              varEditChanges = false;
+                            }
+                            setState(() {});
+                          },
                         ),
                         Container(
                           decoration: BoxDecoration(
@@ -264,6 +273,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                             border: false,
                             borderColor: Color(0xFF474747),
                             preTex: "RU: ",
+                            onChange: (str) {
+                              if (str != widget.product?.name.ru) {
+                                varEditChanges = true;
+                              } else {
+                                varEditChanges = false;
+                              }
+                              setState(() {});
+                            },
                           ),
                         ),
                         TexField(
@@ -273,6 +290,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                           borderColor: Color(0xFF474747),
                           borderRadiusType: BorderRadius.vertical(bottom: Radius.circular(14)),
                           preTex: "EN: ",
+                          onChange: (str) {
+                            if (str != widget.product?.name.en) {
+                              varEditChanges = true;
+                            } else {
+                              varEditChanges = false;
+                            }
+                            setState(() {});
+                          },
                         ),
                       ],
                     ),
@@ -293,6 +318,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                           preTex: "TM: ",
                           maxLine: 3,
                           minLine: 1,
+                          onChange: (str) {
+                            if (str != widget.product?.description?.tk) {
+                              varEditChanges = true;
+                            } else {
+                              varEditChanges = false;
+                            }
+                            setState(() {});
+                          },
                         ),
                         Container(
                           decoration: BoxDecoration(
@@ -308,6 +341,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                             preTex: "RU: ",
                             maxLine: 3,
                             minLine: 1,
+                            onChange: (str) {
+                              if (str != widget.product?.description?.ru) {
+                                varEditChanges = true;
+                              } else {
+                                varEditChanges = false;
+                              }
+                              setState(() {});
+                            },
                           ),
                         ),
                         TexField(
@@ -319,6 +360,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                           preTex: "EN: ",
                           maxLine: 3,
                           minLine: 1,
+                          onChange: (str) {
+                            if (str != widget.product?.description?.en) {
+                              varEditChanges = true;
+                            } else {
+                              varEditChanges = false;
+                            }
+                            setState(() {});
+                          },
                         ),
                       ],
                     ),
@@ -380,7 +429,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(selectedSubCategories[index].name?.tk ?? ""),
+                                Text(selectedSubCategories[index].name?.trans(context) ?? ""),
                                 Box(w: 4),
                                 Icon(Icons.clear, size: 14, color: Color(0xFF474747)),
                               ],
@@ -601,6 +650,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                                   (text?.isEmpty ?? false)
                                       ? AppLocalizations.of(context)!.mandatoryField
                                       : null,
+                          onChange: (str) {
+                            if (str != widget.product?.price.toString()) {
+                              varEditChanges = true;
+                            } else {
+                              varEditChanges = false;
+                            }
+                            setState(() {});
+                          },
                         ),
                         Box(h: 10),
                         Text(AppLocalizations.of(context)!.priceAfterDiscount),
@@ -612,6 +669,14 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                           borderColor: Color(0xFF474747),
                           borderRadiusType: BorderRadius.circular(14),
                           keyboard: TextInputType.numberWithOptions(decimal: true),
+                          onChange: (str) {
+                            if (str != widget.product?.discount.toString()) {
+                              varEditChanges = true;
+                            } else {
+                              varEditChanges = false;
+                            }
+                            setState(() {});
+                          },
                         ),
                       ],
                     ),
@@ -623,56 +688,6 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
           ),
         ),
       ),
-    );
-  }
-
-  Column compositionsCreate() {
-    return Column(
-      children: [
-        Center(
-          child: Text(
-            AppLocalizations.of(context)!.productCharacteristics,
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-
-        Text(
-          AppLocalizations.of(context)!.hereYouCanAddCharacteristics,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Color(0xFF969696)),
-        ),
-        Box(h: 10),
-        InkWell(
-          onTap: () {
-            Go.to(Routes.productParametersPage, argument: {"product": createdProduct});
-            compositionCreated = true;
-          },
-          child: Container(
-            height: 55,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Color(0xFFF3F3F3),
-              borderRadius: BorderRadius.circular(14),
-              border: showErrorCompositions ? Border.all(color: Col.redTask) : null,
-            ),
-            padding: EdgeInsets.all(14),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.addCharacteristics,
-                  style: TextStyle(
-                    color: showErrorCompositions ? Col.redTask : Color(0xFF474747),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Icon(Icons.add_circle_outline, color: showErrorCompositions ? Col.redTask : null),
-              ],
-            ),
-          ),
-        ),
-        Box(h: 20),
-      ],
     );
   }
 
@@ -743,6 +758,8 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                   child:
                       coverImage?.status == 'ready'
                           ? MeninkiNetworkImage(
+                            borderRadius: 100,
+
                             file: coverImage!,
                             networkImageType: NetworkImageType.small,
                             fit: BoxFit.cover,
@@ -776,6 +793,7 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   }
 
   BlocBuilder<ProductCreateCubit, ProductCreateState> createButton() {
+    var lg = AppLocalizations.of(context)!;
     return BlocBuilder<ProductCreateCubit, ProductCreateState>(
       builder: (context, state) {
         return Container(
@@ -890,7 +908,11 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
                             ),
                           )
                           : Text(
-                            AppLocalizations.of(context)!.publish,
+                            widget.product == null
+                                ? lg.publish
+                                : varEditChanges
+                                ? lg.save
+                                : lg.continueProcess,
                             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                           ),
                 ),
@@ -903,6 +925,10 @@ class _ProductCreatePageState extends State<ProductCreatePage> {
   }
 
   editLogic() {
+    if (!varEditChanges) {
+      Go.to(Routes.productParametersPage, argument: {"product": widget.product});
+      return;
+    }
     var data = {
       "name": {
         "tk": nameTMController.text.trim(),

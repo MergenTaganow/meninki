@@ -110,3 +110,7 @@ class GetMyAddsBloc extends GetAddsBloc {
 class GetFavoriteAddsBloc extends GetAddsBloc {
   GetFavoriteAddsBloc(super.ds);
 }
+
+class GetUsersAddsBloc extends GetAddsBloc {
+  GetUsersAddsBloc(super.ds);
+}

@@ -14,6 +14,7 @@ import 'features/adds/bloc/add_create_cubit/add_create_cubit.dart';
 import 'features/adds/bloc/add_favorite_cubit/add_favorite_cubit.dart';
 import 'features/adds/bloc/add_uuid_cubit/add_uuid_cubit.dart';
 import 'features/adds/bloc/get_public_adds_bloc/get_adds_bloc.dart';
+import 'features/appeal/bloc/appeal_cubit/appeal_cubit.dart';
 import 'features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'features/auth/bloc/otp_cubit/otp_cubit.dart';
 import 'features/auth/bloc/register_cubit/register_cubit.dart';
@@ -64,6 +65,7 @@ import 'features/reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc
 import 'features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import 'features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 import 'features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
+import 'features/reels/blocs/reel_by_id/reel_by_id_cubit.dart';
 import 'features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
 import 'features/reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import 'features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
@@ -79,11 +81,7 @@ final LifecycleEventHandler lifecycleEventHandler = LifecycleEventHandler();
 @pragma('vm:entry-point')
 Future<void> backgroundMessageHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
-  print("notif came when app is on background");
-  var localNotificationService = LocalNotificationService(
-    notifTap: NotificationTapCubit(),
-    api: sl(),
-  );
+  var localNotificationService = LocalNotificationService(notifTap: NotificationTapCubit());
   localNotificationService.initialize().then((value) {
     localNotificationService.display(message);
   });
@@ -190,6 +188,9 @@ void main() async {
         BlocProvider<GetOrdersBloc>(create: (context) => sl<GetOrdersBloc>()),
         BlocProvider<OrderIdCubit>(create: (context) => sl<OrderIdCubit>()),
         BlocProvider<GetMarketOrdersBloc>(create: (context) => sl<GetMarketOrdersBloc>()),
+        BlocProvider<AppealCubit>(create: (context) => sl<AppealCubit>()),
+        BlocProvider<GetUsersReelsBloc>(create: (context) => sl<GetUsersReelsBloc>()),
+        BlocProvider<ReelByIdCubit>(create: (context) => sl<ReelByIdCubit>()),
       ],
       child: const MyApp(),
     ),

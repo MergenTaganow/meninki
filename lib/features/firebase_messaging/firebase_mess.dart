@@ -36,12 +36,19 @@ class FirebaseMessagingService {
         badge: true,
         sound: true,
       );
-      print("after setForegroundNotificationPresentationOptions");
+      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+      print("apns token is ok::$apnsToken");
+      if (apnsToken != null) {
+        // APNS token is available, make FCM plugin API requests...
+      }
+
       final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
       String? token = await firebaseMessaging.getToken().timeout(const Duration(seconds: 5));
 
-      print("token was $token");
       if (token != null) {
+
+        print("token was $token");
+
         localDs.saveFirebaseToken = token;
         await dataSource.sendFirebaseToken();
       }
@@ -81,6 +88,8 @@ class FirebaseMessagingService {
         criticalAlert: false,
       );
 
+      print("permnssionRequest success");
+
       firebaseMessaging.onTokenRefresh
           .listen((fcmToken) async {
             localDs.saveFirebaseToken = fcmToken;
@@ -93,8 +102,8 @@ class FirebaseMessagingService {
             // Error getting token.
           });
 
-      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      } else {}
+    print("onTokenRefresh is listening");
+
 
       // Handle incoming messages when the app is in the foreground.
 
@@ -105,15 +114,23 @@ class FirebaseMessagingService {
         // }
         print("message came");
         print("message came");
-        print(message.toMap());
         notification.display(message);
       });
 
+    print("onMessage is listening");
+
+
       FirebaseMessaging.onBackgroundMessage(backgroundMessageHandler);
+
+    print("onBackgroundMessage is listening");
+
 
       FirebaseMessaging.onMessageOpenedApp.listen((event) {
         notification.onNotificationTapped(event.data);
       });
+
+    print("onMessageOpenedApp is listening");
+
     } catch (e) {}
   }
 }

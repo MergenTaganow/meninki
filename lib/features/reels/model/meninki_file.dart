@@ -34,7 +34,7 @@ class MeninkiFile {
 
   factory MeninkiFile.fromJson(Map<String, dynamic> json) {
     return MeninkiFile(
-      id: (json["id"]),
+      id: (json["id"] ?? 999),
       name: json["name"],
       size: (json["size"]),
       blurhash: json["blurhash"],
@@ -78,6 +78,23 @@ class MeninkiFile {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      "id": this.id,
+      "name": this.name,
+      "size": this.size,
+      "blurhash": this.blurhash,
+      "mimetype": this.mimetype,
+      "original_file": this.original_file,
+      "user_id": this.user_id,
+      "search_column": this.search_column,
+      "playlists": this.playlists,
+      "thumbnail_url": this.thumbnail_url,
+      "status": this.status,
+      "resizedFiles": this.resizedFiles,
+    };
+  }
+
   //
 }
 
@@ -105,22 +122,30 @@ bool isVideo(File file) {
 }
 
 Future<Directory> getGalleryDirectory() async {
-  final directory = await getExternalStorageDirectory();
+  late Directory baseDir;
 
-  if (directory == null) {
-    throw Exception("External storage not available");
+  if (Platform.isAndroid) {
+    final dir = await getExternalStorageDirectory();
+
+    if (dir == null) {
+      throw Exception("External storage not available");
+    }
+
+    final basePath = dir.path.split('Android').first;
+
+    baseDir = Directory(p.join(basePath, 'Download', 'Meninki'));
+  } else if (Platform.isIOS) {
+    final dir = await getApplicationDocumentsDirectory();
+    baseDir = Directory(p.join(dir.path, 'Meninki'));
+  } else {
+    throw UnsupportedError("Platform not supported");
   }
 
-  // This gives:
-  // /storage/emulated/0/Android/data/<package>/files
-  final basePath = directory.path.split('Android').first;
-
-  final downloadDir = Directory(p.join(basePath, 'Download', 'Meninki'));
-
-  if (!await downloadDir.exists()) {
-    await downloadDir.create(recursive: true);
+  if (!await baseDir.exists()) {
+    await baseDir.create(recursive: true);
   }
-  return downloadDir;
+
+  return baseDir;
 }
 
 Future<bool> fileExists(MeninkiFile meninkiFile) async {

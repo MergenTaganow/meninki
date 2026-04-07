@@ -5,22 +5,30 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
+import 'package:meninki/features/home/bloc/tab_navigation_cubit/tab_navigation_cubit.dart';
+import 'package:meninki/features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
+import 'package:meninki/features/reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import 'package:meninki/features/reels/widgets/reel_sheet.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../../core/helpers.dart';
+import '../../../core/injector.dart';
+import '../blocs/reel_by_id/reel_by_id_cubit.dart';
 import '../blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
+import '../data/reels_remote_data_source.dart';
 import '../model/reels.dart';
 
 class ReelCard extends StatefulWidget {
   const ReelCard({
     super.key,
     required this.reel,
+    required this.reelType,
     required this.allReels,
     this.primaryText,
     this.playingReels = false,
   });
 
   final Reel reel;
+  final String reelType;
   final List<Reel> allReels;
   final Color? primaryText;
   final bool playingReels;
@@ -123,14 +131,14 @@ class _ReelCardState extends State<ReelCard> {
                               controller: controller,
                             ),
                           ),
-                        if (!playing)
+                        if (!playing && widget.reel.file != null)
                           SizedBox(
                             height: 240,
                             width: MediaQuery.of(context).size.width / 2,
                             child: IgnorePointer(
                               ignoring: true,
                               child: MeninkiNetworkImage(
-                                file: widget.reel.file,
+                                file: widget.reel.file!,
                                 networkImageType: NetworkImageType.small,
                                 fit: BoxFit.cover,
                               ),
@@ -150,9 +158,18 @@ class _ReelCardState extends State<ReelCard> {
                   highlightColor: Colors.black.withOpacity(0.08),
                   onTap: () async {
                     await Future.delayed(const Duration(milliseconds: 120));
+                    context.read<CurrentReelCubit>().setCurrentReel(
+                      type: widget.reelType,
+                      reels: widget.allReels,
+                    );
                     Go.to(
                       Routes.reelScreen,
-                      argument: {"reel": widget.reel, "reels": widget.allReels},
+                      argument: {
+                        "initialPosition": widget.allReels.indexWhere(
+                          (e) => e.id == widget.reel.id,
+                        ),
+                        "reelType": widget.reelType,
+                      },
                     );
                   },
                 ),
@@ -174,7 +191,17 @@ class _ReelCardState extends State<ReelCard> {
         ),
         GestureDetector(
           onTap: () {
-            Go.to(Routes.reelScreen, argument: {"reel": widget.reel, "reels": widget.allReels});
+            context.read<CurrentReelCubit>().setCurrentReel(
+              type: widget.reelType,
+              reels: widget.allReels,
+            );
+            Go.to(
+              Routes.reelScreen,
+              argument: {
+                "initialPosition": widget.allReels.indexWhere((e) => e.id == widget.reel.id),
+                "reelType": widget.reelType,
+              },
+            );
           },
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +221,7 @@ class _ReelCardState extends State<ReelCard> {
                     backgroundColor: Color(0xFFF3F3F3),
                     context: context,
                     builder: (context) {
-                      return ReelsSheet(widget.reel);
+                      return PublicReelsSheet(widget.reel);
                     },
                   );
                 },

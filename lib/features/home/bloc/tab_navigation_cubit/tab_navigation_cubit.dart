@@ -14,4 +14,12 @@ class TabNavigationCubit extends Cubit<TabNavigationState> {
     emit(NavigateTab(page: TabPages.search, index: 1));
     emit(TabNavigationInitial());
   }
+
+  homeToProfilePage() async {
+    await Future.delayed(Duration(milliseconds: 100));
+    emit(NavigateTab(page: TabPages.main, index: 3));
+    await Future.delayed(Duration(milliseconds: 100));
+
+    emit(TabNavigationInitial());
+  }
 }

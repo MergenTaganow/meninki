@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_image_gallery_saver/flutter_image_gallery_saver.dart';
 import 'package:media_scanner/media_scanner.dart';
 import 'package:meninki/core/api.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
@@ -105,7 +107,7 @@ class FileDownloadBloc extends Bloc<FileDownloadEvent, FileDownloadState> {
       item.progress = 100;
       item.status = DownloadItemStatus.completed;
 
-      MediaScanner.loadMedia(path: item.saveDir);
+      await saveToGalleryIfMedia("${item.saveDir}/${item.file.name}");
 
       emit(FileDownloadInitial());
 
@@ -175,6 +177,8 @@ class FileDownloadBloc extends Bloc<FileDownloadEvent, FileDownloadState> {
     );
 
     _items.add(item);
+    print(item.file.original_file);
+    print(directory.path);
 
     // 🔹 If nothing running → start immediately
     if (!_hasRunning) {
@@ -224,6 +228,24 @@ class FileDownloadBloc extends Bloc<FileDownloadEvent, FileDownloadState> {
     emit(FileDownloadInitial());
 
     await _startNextQueued(emit);
+  }
+
+  Future<void> saveToGalleryIfMedia(String filePath) async {
+    if (Platform.isAndroid) {
+      MediaScanner.loadMedia(path: filePath);
+      return;
+    }
+
+    if (Platform.isIOS) {
+      final isImage =
+          filePath.endsWith(".jpg") || filePath.endsWith(".jpeg") || filePath.endsWith(".png");
+
+      final isVideo = filePath.endsWith(".mp4") || filePath.endsWith(".mov");
+
+      if (isImage || isVideo) {
+        await ImageGallerySaver().saveFile(filePath);
+      }
+    }
   }
 
   @override

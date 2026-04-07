@@ -31,6 +31,7 @@ class ReelMarketCard extends StatelessWidget {
                 child: IgnorePointer(
                   ignoring: true,
                   child: MeninkiNetworkImage(
+                    borderRadius: radius,
                     file: store!.market!.cover_image!,
                     networkImageType: NetworkImageType.small,
                     fit: BoxFit.cover,

@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/core/routes.dart';
+import 'package:meninki/data/dynamic_localization.dart';
 import 'package:meninki/features/address/widgets/address_sheet.dart';
 import 'package:meninki/features/auth/bloc/aut_bloc/auth_bloc.dart';
 import 'package:meninki/features/auth/data/employee_local_data_source.dart';
+import 'package:meninki/features/home/model/profile.dart';
 import 'package:meninki/features/home/widgets/language_sheet.dart';
 import 'package:meninki/features/store/widgets/store_sheet.dart';
 
@@ -14,7 +16,8 @@ import '../../../my_app.dart';
 import '../../address/bloc/get_address_cubit/get_address_cubit.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final Profile profile;
+  const SettingsPage(this.profile, {super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -42,7 +45,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Box(h: 10),
               singleLine(
                 title: lg.selectLanguage,
-                value: Text(lg.localeName),
+                value: Text(DynamicLocalization.translate(lg.localeName)),
                 onTap: () {
                   showModalBottomSheet(
                     context: context,
@@ -55,7 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
 
               singleLine(
-                title: lg.download,
+                title: lg.downloads,
                 value: Icon(Icons.download, size: 20),
                 onTap: () {
                   Go.to(Routes.downloadsPage);
@@ -65,7 +68,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
               Text(lg.profile, style: TextStyle(color: Color(0xFF969696), fontSize: 12)),
               Box(h: 10),
-              singleLine(title: lg.changePhoto, svgIcon: 'change_profile_image'),
+              singleLine(
+                title: lg.updateProfile,
+                svgIcon: 'change_profile_image',
+                onTap: () {
+                  Go.to(Routes.profileUpdateScreen, argument: {'profile': widget.profile});
+                },
+              ),
               singleLine(
                 title: lg.fillAddress,
                 value: Icon(Icons.navigate_next),
@@ -87,8 +96,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                 },
               ),
-              singleLine(title: lg.accountInfo, value: Icon(Icons.navigate_next)),
-              Box(h: 10),
+              // singleLine(title: lg.accountInfo, value: Icon(Icons.navigate_next)),
+              // Box(h: 10),
               Text(lg.account, style: TextStyle(color: Color(0xFF969696), fontSize: 12)),
               Box(h: 10),
               singleLine(

@@ -232,6 +232,7 @@ class MarketOrderProductTile extends StatelessWidget {
                                     width: 80,
                                     height: 80,
                                     child: MeninkiNetworkImage(
+                                      borderRadius: 13,
                                       file: product.file!,
                                       networkImageType: NetworkImageType.small,
                                       fit: BoxFit.cover,

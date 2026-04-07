@@ -1,44 +1,47 @@
 import 'package:meninki/features/auth/models/user.dart';
 import 'package:meninki/features/product/models/product.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
+import 'package:meninki/features/store/models/market.dart';
 
 class Reel {
-  int id;
+  int? id;
   String? title;
   String? description;
   int? user_favorite_count;
   int? reel_watchers_count;
   String? link;
   int? link_id;
-  String type;
-  bool is_active;
-  bool is_verified;
-  int user_id;
+  String? type;
+  bool? is_active;
+  bool? is_verified;
+  int? user_id;
   DateTime? created_at;
   num? comment_count;
   num? repost_count;
-  MeninkiFile file;
+  MeninkiFile? file;
   Product? product;
   User? user;
+  Market? market;
 
   Reel({
-    required this.id,
+    this.id,
     this.title,
     this.description,
     this.user_favorite_count,
     this.link,
     this.link_id,
-    required this.type,
-    required this.is_active,
-    required this.is_verified,
-    required this.user_id,
+    this.type,
+    this.is_active,
+    this.is_verified,
+    this.user_id,
     this.created_at,
     this.comment_count,
     this.repost_count,
-    required this.file,
+    this.file,
     this.product,
     this.user,
     this.reel_watchers_count,
+    this.market,
   });
 
   factory Reel.fromJson(Map<String, dynamic> json) {
@@ -63,6 +66,7 @@ class Reel {
       file: MeninkiFile.fromJson(json["file"]),
       product: json["product"] != null ? Product.fromJson(json["product"]) : null,
       user: json["user"] != null ? User.fromJson(json["user"]) : null,
+      market: json["market"] != null ? Market.fromJson(json["market"]) : null,
     );
   }
 
@@ -82,6 +86,7 @@ class Reel {
     num? comment_count,
     num? repost_count,
     MeninkiFile? file,
+    Market? market,
   }) {
     return Reel(
       id: id ?? this.id,
@@ -99,6 +104,7 @@ class Reel {
       repost_count: repost_count ?? this.repost_count,
       file: file ?? this.file,
       reel_watchers_count: reel_watchers_count ?? this.reel_watchers_count,
+      market: market ?? this.market,
     );
   }
 }

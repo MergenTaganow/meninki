@@ -195,6 +195,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
                                     height: 45,
                                     width: 45,
                                     child: MeninkiNetworkImage(
+                                      borderRadius: 100,
                                       file: state.market.cover_image!,
                                       networkImageType: NetworkImageType.small,
                                       fit: BoxFit.cover,
@@ -441,7 +442,7 @@ class _MyStoreDetailState extends State<MyStoreDetail> with SingleTickerProvider
             showModalBottomSheet(
               context: context,
               builder: (context) {
-                return MarketSheet(market);
+                return MyMarketSheet(market);
               },
             );
           },

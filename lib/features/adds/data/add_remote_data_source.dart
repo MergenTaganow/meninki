@@ -25,14 +25,14 @@ class AddRemoteDataSourceImpl extends AddRemoteDataSource {
 
   @override
   Future<Either<Failure, Add>> createAdd(Map<String, dynamic> data) async {
-    // try {
+    try {
     print(data);
       var response = await api.dio.post('v1/advertisements', data: data);
 
       return Right(Add.fromJson(response.data['payload']));
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override

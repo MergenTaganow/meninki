@@ -6,7 +6,10 @@ import 'package:meninki/features/auth/bloc/otp_cubit/otp_cubit.dart';
 import '../../../core/colors.dart';
 import '../../../core/go.dart';
 import '../../../core/helpers.dart';
+import '../../../core/injector.dart';
 import '../../global/widgets/custom_snack_bar.dart';
+import '../../sign_in_methods/apple_sign_in.dart';
+import '../../sign_in_methods/google_sign_in.dart';
 import '../widgets/change_lang.dart';
 
 class LoginMethodsScreen extends StatefulWidget {
@@ -209,20 +212,32 @@ class _LoginMethodsScreenState extends State<LoginMethodsScreen> {
   }
 
   Widget signWithButton({required bool withGoogle, required AppLocalizations lg}) {
-    return Container(
-      height: 45,
-      width: double.infinity,
-      decoration: BoxDecoration(color: Color(0xFFF4EFEB), borderRadius: BorderRadius.circular(50)),
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            withGoogle ? lg.signInWithGoogle : lg.signInWithApple,
-            style: TextStyle(color: Color(0xFF3B353F), fontWeight: FontWeight.w500),
-          ),
-          Svvg.asset(withGoogle ? 'google' : 'apple'),
-        ],
+    return GestureDetector(
+      onTap: () async {
+        if (withGoogle) {
+          await sl<GoogleService>().signIn();
+        } else {
+          await sl<AppleService>().signIn();
+        }
+      },
+      child: Container(
+        height: 45,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Color(0xFFF4EFEB),
+          borderRadius: BorderRadius.circular(50),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              withGoogle ? lg.signInWithGoogle : lg.signInWithApple,
+              style: TextStyle(color: Color(0xFF3B353F), fontWeight: FontWeight.w500),
+            ),
+            Svvg.asset(withGoogle ? 'google' : 'apple'),
+          ],
+        ),
       ),
     );
   }

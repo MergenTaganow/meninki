@@ -130,6 +130,7 @@ class _MarketBannersPageState extends State<MarketBannersPage> {
                                               ((e.status == 'ready' &&
                                                       (e.resizedFiles?.small?.isNotEmpty ?? false))
                                                   ? MeninkiNetworkImage(
+                                                    borderRadius: 10,
                                                     file: e,
                                                     networkImageType: NetworkImageType.small,
                                                     fit: BoxFit.cover,

@@ -56,7 +56,7 @@ class _ProductSearchState extends State<ProductSearch> {
     var filterList = [
       if (filteredSort != null) filteredSort.text ?? '',
       if (filteredCategories?.isNotEmpty ?? false)
-        filteredCategories!.map((e) => e.name?.tk).toList().join(', '),
+        filteredCategories!.map((e) => e.name?.trans(context)).toList().join(', '),
       // if (filteredProvinces?.isNotEmpty ?? false)
       //   filteredProvinces!.map((e) => e.name.tk).toList().join(', '),
       if (minPrice != null) 'от $minPrice',
@@ -64,7 +64,7 @@ class _ProductSearchState extends State<ProductSearch> {
     ];
     return CustomScrollView(
       controller: productsScrollController,
-      physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {

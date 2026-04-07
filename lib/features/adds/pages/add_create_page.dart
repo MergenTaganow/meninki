@@ -227,6 +227,7 @@ class _AddCreatePageState extends State<AddCreatePage> {
                                                 : null,
                                       )
                                       : MeninkiNetworkImage(
+                                        borderRadius: 100,
                                         file: coverImage!,
                                         networkImageType: NetworkImageType.small,
                                         fit: BoxFit.cover,

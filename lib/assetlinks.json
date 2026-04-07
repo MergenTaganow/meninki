@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.example.meninki",
+      "sha256_cert_fingerprints": [
+        "A0:62:F7:32:CA:A0:EB:BA:70:50:8B:5C:89:96:BF:90:81:6D:4E:02:60:26:7C:2D:5A:46:F2:67:B9:1E:66:D8",
+        "E3:A5:A5:F6:84:D1:20:B2:CF:5F:C8:17:3E:57:FC:FE:14:AF:F5:C9:5B:B1:86:C0:A4:AE:96:41:3D:C1:2D:FB"
+      ]
+    }
+  }
+]

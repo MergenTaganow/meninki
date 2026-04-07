@@ -26,6 +26,9 @@ class _AddressCreatePageState extends State<AddressCreatePage> {
   @override
   Widget build(BuildContext context) {
     AppLocalizations lg = AppLocalizations.of(context)!;
+    var province =
+        context.watch<ProvinceSelectingCubit>().selectedMap[ProvinceSelectingCubit
+            .address_creating_province];
 
     return BlocListener<AddressCreateCubit, AddressCreateState>(
       listener: (context, state) {
@@ -61,6 +64,7 @@ class _AddressCreatePageState extends State<AddressCreatePage> {
                 RegionSelection(
                   selectionKey: RegionSelectingCubit.address_creating_region,
                   singleSelection: true,
+                  provinceId: (province?.isNotEmpty ?? false) ? province?.single.id : null,
                 ),
                 Box(h: 20),
                 Form(
@@ -150,7 +154,7 @@ class _AddressCreatePageState extends State<AddressCreatePage> {
               if (region.isEmpty) {
                 CustomSnackBar.showYellowSnackBar(
                   context: context,
-                  title: "AppLocalizations.of(context)!.regionNotSelected",
+                  title: AppLocalizations.of(context)!.regionNotSelected,
                 );
                 return;
               }

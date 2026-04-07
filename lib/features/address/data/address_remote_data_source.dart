@@ -50,6 +50,9 @@ class AddressRemoteDataSourceImpl extends AddressRemoteDataSource {
       var response = await api.dio.get('v1/addresses');
       final payload = response.data['payload'];
 
+      if (payload is Map<String, dynamic> && payload.isEmpty) {
+        return Right([]);
+      }
       final List<Address> list =
           (payload is List ? payload : [payload])
               .map((e) => Address.fromJson(e as Map<String, dynamic>))

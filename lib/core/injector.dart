@@ -15,6 +15,7 @@ import '../features/adds/bloc/add_create_cubit/add_create_cubit.dart';
 import '../features/adds/bloc/add_favorite_cubit/add_favorite_cubit.dart';
 import '../features/adds/bloc/add_uuid_cubit/add_uuid_cubit.dart';
 import '../features/adds/bloc/get_public_adds_bloc/get_adds_bloc.dart';
+import '../features/appeal/bloc/appeal_cubit/appeal_cubit.dart';
 import '../features/auth/bloc/aut_bloc/auth_bloc.dart';
 import '../features/auth/bloc/register_cubit/register_cubit.dart';
 import '../features/auth/data/auth_remote_data_source.dart';
@@ -67,9 +68,12 @@ import '../features/reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_b
 import '../features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import '../features/reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 import '../features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
+import '../features/reels/blocs/reel_by_id/reel_by_id_cubit.dart';
 import '../features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
 import '../features/reels/blocs/reels_controllers_bloc/reels_controllers_bloc.dart';
 import '../features/reels/data/reels_remote_data_source.dart';
+import '../features/sign_in_methods/apple_sign_in.dart';
+import '../features/sign_in_methods/google_sign_in.dart';
 import '../features/store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import '../features/store/bloc/get_my_stores_bloc/get_my_stores_bloc.dart';
 import '../features/store/bloc/get_store_products/get_store_products_bloc.dart';
@@ -114,6 +118,8 @@ Future<void> init() async {
   sl.registerLazySingleton<GetReelMarketsBloc>(() => GetReelMarketsBloc(sl(), sl()));
   sl.registerLazySingleton<GetProductMarketsBloc>(() => GetProductMarketsBloc(sl(), sl()));
   sl.registerLazySingleton<WatchersCubit>(() => WatchersCubit(sl(), sl()));
+  sl.registerLazySingleton<GetUsersReelsBloc>(() => GetUsersReelsBloc(sl()));
+  sl.registerLazySingleton<ReelByIdCubit>(() => ReelByIdCubit(sl()));
 
   //store
   sl.registerLazySingleton<StoreRemoteDataSource>(() => StoreRemoteDataImpl(sl()));
@@ -192,7 +198,7 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<NotificationTapCubit>(() => NotificationTapCubit());
   sl.registerLazySingleton<LocalNotificationService>(
-    () => LocalNotificationService(notifTap: sl(), api: sl()),
+    () => LocalNotificationService(notifTap: sl()),
   );
   sl.registerLazySingleton<GetNotificationsBloc>(() => GetNotificationsBloc(sl()));
   sl.registerLazySingleton<NotifCountCubit>(() => NotifCountCubit(sl()));
@@ -204,4 +210,9 @@ Future<void> init() async {
   sl.registerLazySingleton<AddressCreateCubit>(() => AddressCreateCubit(sl()));
   sl.registerLazySingleton<GetAddressCubit>(() => GetAddressCubit(sl()));
   sl.registerLazySingleton<OrderIdCubit>(() => OrderIdCubit(sl()));
+
+  //appeal
+  sl.registerLazySingleton<AppealCubit>(() => AppealCubit(sl()));
+  sl.registerLazySingleton<GoogleService>(() => GoogleService());
+  sl.registerLazySingleton<AppleService>(() => AppleService());
 }

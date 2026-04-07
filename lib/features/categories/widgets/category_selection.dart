@@ -55,7 +55,7 @@ class CategorySelection extends StatelessWidget {
                         child: Text(
                           selecteds.isEmpty
                               ? lg.selectCategory
-                              : selecteds.map((e) => e.name?.tk).join(', '),
+                              : selecteds.map((e) => e.name?.trans(context)).join(', '),
                           style: TextStyle(color: Color(0xFF969696)),
                         ),
                       ),

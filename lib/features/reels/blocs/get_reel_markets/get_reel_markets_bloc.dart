@@ -97,8 +97,7 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
                 limit: limit,
                 offset: page,
                 keyword: event.search ?? '',
-                orderDirection: 'asc',
-                orderBy: 'created_at',
+                orderDirection: 'desc',
               ),
             ));
     return failOrNot.fold((l) => GetReelMarketsFailed(l), (r) {
@@ -128,8 +127,7 @@ class GetReelMarketsBloc extends Bloc<GetReelMarketsEvent, GetReelMarketsState> 
                 offset: page,
                 limit: limit,
                 keyword: event.search,
-                orderDirection: 'asc',
-                orderBy: 'created_at',
+                orderDirection: 'desc',
               ),
             );
 

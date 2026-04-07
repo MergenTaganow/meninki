@@ -101,7 +101,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
     super.build(context);
     return CustomScrollView(
       controller: marketsScrollController,
-      physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {
@@ -212,6 +212,7 @@ class _HomeMainState extends State<HomeMain> with AutomaticKeepAliveClientMixin 
                                                     ? IgnorePointer(
                                                       ignoring: true,
                                                       child: MeninkiNetworkImage(
+                                                        borderRadius: 100,
                                                         file: storesProducts[index].cover_image!,
                                                         networkImageType: NetworkImageType.small,
                                                         fit: BoxFit.cover,

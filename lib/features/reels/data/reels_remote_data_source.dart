@@ -35,6 +35,7 @@ abstract class ReelsRemoteDataSource {
   Future<Either<Failure, Success>> repostReel(int reelId);
   Future<Either<Failure, Success>> watchReel(int reelId);
   Future<Either<Failure, Success>> deleteReel(int reelId);
+  Future<Either<Failure, Reel>> reelById(int reelId);
 }
 
 class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
@@ -62,8 +63,6 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
         if (query != null) ...query.toMap(),
         if (sort != null) ...sort.toMap(),
       };
-
-      print(param);
 
       ///Todo later need to control verified and other urls
       var response = await api.dio.get('v1/reels/verified', queryParameters: param);
@@ -96,6 +95,10 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
         final response = await api.dio.post(
           'media/v1/files',
           data: formData,
+          options: Options(
+            sendTimeout: const Duration(minutes: 10),
+            receiveTimeout: const Duration(minutes: 10),
+          ),
           onSendProgress: (sent, total) {
             if (total > 0 && !controller.isClosed) {
               controller.add((sent / total, null)); // ✅ progress update
@@ -159,9 +162,13 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
   @override
   Future<Either<Failure, List<Category>>> getCategories() async {
     try {
-      var response = await api.dio.get('v1/categories', queryParameters: {"lang": "tk"});
+      var response = await api.dio.get('v1/categories');
 
       final payload = response.data['payload'];
+
+      if (payload is Map<String, dynamic> && payload.isEmpty) {
+        return Right([]);
+      }
 
       final List<Category> list =
           (payload is List ? payload : [payload])
@@ -215,14 +222,15 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
 
   @override
   Future<Either<Failure, Comment>> sendComment(Map<String, dynamic> map) async {
-    // try {
+    try {
+      print(map);
       var response = await api.dio.post('v1/reel-comments', data: map);
 
       var comment = Comment.fromJson(response.data['payload']);
       return Right(comment);
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
@@ -277,21 +285,21 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
 
   @override
   Future<Either<Failure, Success>> repostReel(int reelId) async {
-    // try {
-    await api.dio.post('v1/reels/repost/$reelId');
+    try {
+      await api.dio.post('v1/reels/repost/$reelId');
 
-    return Right(Success());
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+      return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, Success>> watchReel(int reelId) async {
     try {
-    var response = await api.dio.post('v1/reel-watchers/$reelId');
+      var response = await api.dio.post('v1/reel-watchers/$reelId');
 
-    return Right(Success());
+      return Right(Success());
     } catch (e) {
       return Left(handleError(e));
     }
@@ -305,6 +313,19 @@ class ReelsRemoteDataImpl extends ReelsRemoteDataSource {
       print(response.data);
 
       return Right(Success());
+    } catch (e) {
+      return Left(handleError(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Reel>> reelById(int reelId) async {
+    try {
+      var response = await api.dio.get('v1/reels/$reelId');
+
+      print(response.data);
+
+      return Right(Reel.fromJson(response.data['payload']));
     } catch (e) {
       return Left(handleError(e));
     }

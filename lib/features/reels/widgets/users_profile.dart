@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/core/go.dart';
+import 'package:meninki/core/routes.dart';
+import 'package:meninki/features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 
 import '../../auth/models/user.dart';
+import '../../global/widgets/meninki_network_image.dart';
 
 class UsersProfile extends StatelessWidget {
   final User user;
@@ -8,18 +13,34 @@ class UsersProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          height: 40,
-          width: 40,
-          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-          // child: MeninkiNetworkImage(file: user., networkImageType: networkImageType),
-        ),
-        Positioned(bottom: -10, child: Icon(Icons.add_circle, color: Color(0xFFC7281F))),
-      ],
+    return GestureDetector(
+      onTap: () {
+        context.read<GetProfileCubit>().getPublicProfile(user.id ?? 999);
+        Go.to(Routes.publicProfilePage);
+      },
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        clipBehavior: Clip.none,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: Container(
+              height: 40,
+              width: 40,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+              child:
+                  user.cover_image != null
+                      ? MeninkiNetworkImage(
+                        borderRadius: 100,
+                        file: user.cover_image!,
+                        networkImageType: NetworkImageType.small,
+                      )
+                      : Container(),
+            ),
+          ),
+          // Positioned(bottom: -10, child: Icon(Icons.add_circle, color: Color(0xFFC7281F))),
+        ],
+      ),
     );
   }
 }

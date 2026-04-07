@@ -17,7 +17,10 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      throw UnsupportedError(
+        'DefaultFirebaseOptions have not been configured for web - '
+        'you can reconfigure this by running the FlutterFire CLI again.',
+      );
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -25,9 +28,15 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -40,16 +49,6 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBwDbl8o7ZRowpiHNBG0WoIqevrciS37Os',
-    appId: '1:86845493759:web:c97c0182aa23d62cad97ca',
-    messagingSenderId: '86845493759',
-    projectId: 'meninki-903d5',
-    authDomain: 'meninki-903d5.firebaseapp.com',
-    storageBucket: 'meninki-903d5.firebasestorage.app',
-    measurementId: 'G-19Z3X1KLDQ',
-  );
-
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDQ3WNTXYZg5Vhvahh37SbDCIcyYoxVOhk',
     appId: '1:86845493759:android:b3668d09f1353a55ad97ca',
@@ -60,29 +59,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBMorEvIYf8OfbdBCEqZqUVdpzHtua7lwM',
-    appId: '1:86845493759:ios:4a8d2fd9f2728bf0ad97ca',
+    appId: '1:86845493759:ios:715d7006c6b52f38ad97ca',
     messagingSenderId: '86845493759',
     projectId: 'meninki-903d5',
     storageBucket: 'meninki-903d5.firebasestorage.app',
-    iosBundleId: 'com.example.meninki',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBMorEvIYf8OfbdBCEqZqUVdpzHtua7lwM',
-    appId: '1:86845493759:ios:4a8d2fd9f2728bf0ad97ca',
-    messagingSenderId: '86845493759',
-    projectId: 'meninki-903d5',
-    storageBucket: 'meninki-903d5.firebasestorage.app',
-    iosBundleId: 'com.example.meninki',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBwDbl8o7ZRowpiHNBG0WoIqevrciS37Os',
-    appId: '1:86845493759:web:03086d2f398ac7f3ad97ca',
-    messagingSenderId: '86845493759',
-    projectId: 'meninki-903d5',
-    authDomain: 'meninki-903d5.firebaseapp.com',
-    storageBucket: 'meninki-903d5.firebasestorage.app',
-    measurementId: 'G-S2PQJ0WTV0',
+    iosBundleId: 'com.meninki',
   );
 }

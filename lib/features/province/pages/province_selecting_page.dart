@@ -119,7 +119,7 @@ class _ProvinceSelectingPageState extends State<ProvinceSelectingPage> {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        province.name.tk ?? '',
+                                        province.name.trans(context) ?? '',
                                         style: const TextStyle(fontWeight: FontWeight.w500),
                                       ),
                                       if (isSelected)

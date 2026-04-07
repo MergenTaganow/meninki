@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:meninki/core/api.dart';
@@ -52,9 +53,8 @@ void notificationTapBackground(NotificationResponse res) async {
 
 class LocalNotificationService {
   final NotificationTapCubit notifTap;
-  final Api api;
 
-  LocalNotificationService({required this.notifTap, required this.api});
+  LocalNotificationService({required this.notifTap});
   static bool initialized = false;
   final FlutterLocalNotificationsPlugin _localNotifPlugin = FlutterLocalNotificationsPlugin();
 
@@ -110,9 +110,7 @@ class LocalNotificationService {
     print("here is what we get:${message.toMap()}");
 
     // Handle image if present in notification data
-    NotificationMeninki? notification = NotificationMeninki.fromMap(
-      message.notification?.toMap() ?? message.data,
-    );
+    NotificationMeninki? notification = NotificationMeninki.fromMap(message.data);
     final String? imageUrl = notification.image_url;
     String title = notification.title ?? 'Notification';
     String? localImagePath;
@@ -121,6 +119,12 @@ class LocalNotificationService {
       // Download and cache the image
       localImagePath = await _downloadAndCacheImage(imageUrl);
       print("localImagePath--$localImagePath");
+    }
+
+    List<DarwinNotificationAttachment> iosAttachments = [];
+
+    if (localImagePath != null) {
+      iosAttachments.add(DarwinNotificationAttachment(localImagePath));
     }
 
     id += 1;
@@ -141,12 +145,12 @@ class LocalNotificationService {
         ),
         playSound: true,
       ),
-      iOS: const DarwinNotificationDetails(
+      iOS: DarwinNotificationDetails(
         sound: 'default.wav',
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
-        attachments: [], // for iOS image attachments, see below
+        // attachments: iosAttachments,
       ),
     );
 
@@ -155,33 +159,32 @@ class LocalNotificationService {
     await _localNotifPlugin.show(
       id,
       title,
-      notification.description?.trim().replaceAll('\n', ''),
+      notification.description?.trim().replaceAll('\n', '').replaceAll("  ", ' '),
       notificationDetails,
       payload: message.data.isNotEmpty ? jsonEncode(message.data) : null,
     );
   }
 
-  Future<String?> _downloadAndCacheImage(String imageUrl) async {
+  Future<String?> _downloadAndCacheImage(String url) async {
     try {
-      final Directory cacheDir = await getTemporaryDirectory();
-      final String fileName = imageUrl.hashCode.toString();
-      final File file = File('${cacheDir.path}/$fileName.jpg');
+      final dir = await getTemporaryDirectory();
+      final fileName = Uri.parse(url).pathSegments.last;
+      final file = File('${dir.path}/$fileName');
 
-      // Return cached file if it already exists
-      if (await file.exists()) return file.path;
+      if (await file.exists()) {
+        return file.path;
+      }
 
-      await api.dio.download(
-        imageUrl,
-        file.path,
-        options: Options(
-          receiveTimeout: const Duration(seconds: 10),
-          sendTimeout: const Duration(seconds: 10),
-        ),
-      );
+      final request = await HttpClient().getUrl(Uri.parse(url));
+      final response = await request.close();
+
+      final bytes = await consolidateHttpClientResponseBytes(response);
+
+      await file.writeAsBytes(bytes);
 
       return file.path;
     } catch (e) {
-      debugPrint('Failed to download notification image: $e');
+      print("Download error: $e");
       return null;
     }
   }

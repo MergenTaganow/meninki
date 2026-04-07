@@ -6,7 +6,7 @@ import '../features/auth/models/user.dart';
 import 'failure.dart';
 import 'injector.dart';
 
-String baseUrl = 'https://meninki.asuda.agency';
+String baseUrl = 'https://meninki.com';
 
 class Api {
   final EmployeeLocalDataSource emplDs;
@@ -37,7 +37,7 @@ class Api {
           return handler.next(options);
         },
         onError: (e, handler) async {
-          print((e.response?.statusCode).toString());
+          print("${e.requestOptions.path} --- ${e.response?.statusCode}");
           print(e.response?.data.toString());
           if (e.requestOptions.path.contains("change-token") && (e.response?.statusCode == 401)) {
             sl<AuthBloc>().add(LogoutEvent());

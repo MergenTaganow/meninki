@@ -39,11 +39,29 @@ class GetVerifiedReelsBloc extends Bloc<GetReelsEvent, GetReelsState> {
         page = 1;
         emit.call(GetReelInitial());
       }
+
+      if (event is SetAndGetReel) {
+        canPag = false;
+        page = 1;
+        final failOrNot = await ds.getReels(
+          Query(offset: page, limit: limit, orderDirection: 'desc', orderBy: 'created_at'),
+        );
+
+        failOrNot.fold((l) => emit(GetReelFailed(message: l.message, statusCode: l.statusCode)), (
+          r,
+        ) {
+          if (r.length == limit) canPag = true;
+          r.removeWhere((e) => e.id == event.reel.id);
+          reels = [event.reel, ...r];
+          emit(GetReelSuccess(reels, canPag));
+        });
+      }
+
       if (event is UpdateReels) {
         var index = reels.indexWhere((e) => e.id == event.reel.id);
         if (index == -1) return;
         reels[index] = event.reel;
-        emit.call(GetReelSuccess(reels, true));
+        emit.call(GetReelSuccess(reels, canPag));
       }
     });
   }
@@ -137,4 +155,8 @@ class GetStoreReelsBloc extends GetVerifiedReelsBloc {
 
 class GetSearchedReelsBloc extends GetVerifiedReelsBloc {
   GetSearchedReelsBloc(super.ds);
+}
+
+class GetUsersReelsBloc extends GetVerifiedReelsBloc {
+  GetUsersReelsBloc(super.ds);
 }

@@ -103,12 +103,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         onPressed: () {
                           if (state is! RegisterLoading) {
+                            var lang = lg.localeName;
+                            if (lang == 'tr') lang = 'tk';
                             context.read<RegisterCubit>().register({
                               'first_name': nameController.text,
                               "last_name": surnameController.text,
                               "token": widget.temporaryToken,
                               "username": usernameController.text,
-                              "lang": "tk",
+                              "lang": lang,
                             });
                           }
                         },

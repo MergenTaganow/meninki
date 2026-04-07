@@ -115,7 +115,7 @@ class _ReelCreatePageState extends State<ReelCreatePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.product.name.tk ?? "",
+                        widget.product.name.trans(context) ?? "",
                         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                       ),
                       Box(h: 10),

@@ -18,7 +18,7 @@ import '../../reels/blocs/get_reel_markets/get_reel_markets_bloc.dart';
 
 abstract class ProductRemoteDataSource {
   Future<Either<Failure, Product>> createProduct(Map<String, dynamic> data);
-  Future<Either<Failure, Success>> editProduct(int productId, Map<String, dynamic> data);
+  Future<Either<Failure, Product>> editProduct(int productId, Map<String, dynamic> data);
   Future<Either<Failure, Product>> getPublicProductById(int id);
   Future<Either<Failure, Product>> getMyProductById(int id);
   Future<Either<Failure, List<Product>>> getProducts(Query query);
@@ -53,33 +53,30 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
 
   @override
   Future<Either<Failure, Product>> getPublicProductById(int id) async {
-    // try {
+    try {
     var response = await api.dio.get('v1/products/public/$id');
 
     return Right(Product.fromJson(response.data['payload']));
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, Product>> getMyProductById(int id) async {
-    // try {
+    try {
     var response = await api.dio.get('v1/products/client/$id');
 
     return Right(Product.fromJson(response.data['payload']));
-    // } catch (e) {
-    //   return Left(handleError(e));
-    // }
+    } catch (e) {
+      return Left(handleError(e));
+    }
   }
 
   @override
   Future<Either<Failure, List<ProductParameter>>> getParameters(Query query) async {
     try {
-      var response = await api.dio.get(
-        'v1/parameters',
-        queryParameters: {...query.toMap(), "lang": "tk"},
-      );
+      var response = await api.dio.get('v1/parameters', queryParameters: query.toMap());
 
       List<ProductParameter> reels =
           (response.data['payload'] as List).map((e) => ProductParameter.fromJson(e)).toList();
@@ -92,10 +89,7 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   @override
   Future<Either<Failure, List<ProductAttribute>>> getAttributes(Query query) async {
     try {
-      var response = await api.dio.get(
-        'v1/attributes',
-        queryParameters: {...query.toMap(), "lang": "tk"},
-      );
+      var response = await api.dio.get('v1/attributes', queryParameters: query.toMap());
 
       List<ProductAttribute> reels =
           (response.data['payload'] as List).map((e) => ProductAttribute.fromJson(e)).toList();
@@ -188,11 +182,11 @@ class ProductRemoteDataImpl extends ProductRemoteDataSource {
   }
 
   @override
-  Future<Either<Failure, Success>> editProduct(int productId, Map<String, dynamic> data) async {
+  Future<Either<Failure, Product>> editProduct(int productId, Map<String, dynamic> data) async {
     try {
-      await api.dio.patch('v1/products/client/$productId', data: data);
+      var response = await api.dio.patch('v1/products/$productId', data: data);
 
-      return Right(Success());
+      return Right(Product.fromJson(response.data['payload']));
     } catch (e) {
       return Left(handleError(e));
     }

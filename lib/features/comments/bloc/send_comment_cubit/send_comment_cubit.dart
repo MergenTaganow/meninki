@@ -23,4 +23,8 @@ class SendCommentCubit extends Cubit<SendCommentState> {
       emit.call(SendCommentSuccess(r));
     });
   }
+
+  clear() {
+    emit(SendCommentInitial());
+  }
 }

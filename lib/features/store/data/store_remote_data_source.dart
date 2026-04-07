@@ -61,7 +61,7 @@ class StoreRemoteDataImpl extends StoreRemoteDataSource {
     try {
       var response = await api.dio.get(
         'v1/market',
-        queryParameters: {...query.toMap(), "order_direction": "asc", "lang": "tk"},
+        queryParameters: {...query.toMap(), "order_direction": "asc"},
       );
 
       var list = (response.data['payload'] as List).map((e) => Market.fromJson(e)).toList();

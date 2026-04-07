@@ -2,8 +2,8 @@
 // import 'package:flutter_map/flutter_map.dart';
 //
 class LatLng {
-  final double? latitude;
-  final double? longitude;
+  final num? latitude;
+  final num? longitude;
 
   LatLng({this.latitude, this.longitude});
 

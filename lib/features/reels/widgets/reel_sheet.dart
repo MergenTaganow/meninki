@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/data/deep_link.dart';
+import 'package:meninki/features/appeal/bloc/appeal_cubit/appeal_cubit.dart';
+import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/go.dart';
 import '../../../core/helpers.dart';
 import '../../../core/routes.dart';
+import '../../appeal/widgets/appeal_sheet.dart';
 import '../../file_download/bloc/file_download_bloc/file_download_bloc.dart';
 import '../blocs/like_reels_cubit/liked_reels_cubit.dart';
 import '../model/reels.dart';
 
-class ReelsSheet extends StatelessWidget {
+class PublicReelsSheet extends StatelessWidget {
   final Reel reel;
-  const ReelsSheet(this.reel, {super.key});
+  const PublicReelsSheet(this.reel, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +95,16 @@ class ReelsSheet extends StatelessWidget {
                         ),
                         singleLine(
                           context: context,
-                          title: "deeplink",
+                          title: AppLocalizations.of(context)!.deeplink,
                           value: Svvg.asset("share"),
-                          onTap: () {
-                            context.read<ReelCreateCubit>().repostReel(reel);
+                          onTap: () async {
+                            var link = DeepLink().createDeepLink(
+                              id: reel.id ?? 999,
+                              type: DeepLink.reel,
+                            );
+                            SharePlus.instance.share(
+                              ShareParams(text: '${AppLocalizations.of(context)!.checkThis} $link'),
+                            );
                           },
                         ),
                       ],
@@ -109,7 +120,7 @@ class ReelsSheet extends StatelessWidget {
             title: AppLocalizations.of(context)!.download,
             value: Svvg.asset("download"),
             onTap: () {
-              context.read<FileDownloadBloc>().add(DownloadFile(reel.file));
+              if (reel.file != null) context.read<FileDownloadBloc>().add(DownloadFile(reel.file!));
             },
           ),
           if (reel.product?.id != null)
@@ -126,6 +137,18 @@ class ReelsSheet extends StatelessWidget {
             context: context,
             title: AppLocalizations.of(context)!.complaint,
             value: Svvg.asset("danger_light"),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return AppealSheet(
+                    type: Appeal.reel,
+                    typeId: reel.id.toString(),
+                    typeName: reel.title,
+                  );
+                },
+              );
+            },
           ),
         ],
       ),

@@ -409,7 +409,7 @@ class _AdditionalFields extends StatelessWidget {
             const SizedBox(height: 8),
             _StyledTextField(
               controller: infoCont,
-              hint: 'e.g. Come after 4 o\'clock',
+              hint: lg.orderExtraInfoExample,
               maxLines: 3,
               icon: Icons.notes_rounded,
             ),
@@ -515,6 +515,7 @@ class _ProductTile extends StatelessWidget {
               child:
                   prod?.cover_image != null
                       ? MeninkiNetworkImage(
+                        borderRadius: 12,
                         file: prod!.cover_image!,
                         networkImageType: NetworkImageType.medium,
                         fit: BoxFit.cover,

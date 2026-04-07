@@ -1,5 +1,7 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/data/deep_link.dart';
 import 'package:meninki/features/auth/pages/login_methods_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,13 +31,24 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   static Locale? appLocale = const Locale('tr');
+  final appLinks = AppLinks();
 
   @override
   void initState() {
     DynamicLocalization.init(appLocale);
     getLang();
+    initDeepLink();
+    final sub = appLinks.uriLinkStream.listen((uri) {
+      DeepLink().handleNavigation(uri);
+    });
     // checkForUpdate();
     super.initState();
+  }
+
+  initDeepLink() async {
+    final initialUri = await appLinks.getInitialLink();
+    if (initialUri == null) return;
+    DeepLink().handleNavigation(initialUri);
   }
 
   @override

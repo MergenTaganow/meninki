@@ -1,0 +1,14 @@
+{
+  "applinks": {
+      "details": [
+           {
+             "appIDs": [ "T4V6X2GJGQ.com.meninki" ],
+             "components": [
+                {
+                  "/": "/*"
+                }
+             ]
+           }
+       ]
+   }
+}

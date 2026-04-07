@@ -5,6 +5,7 @@ import 'package:meninki/core/api.dart';
 import 'package:meninki/core/go.dart';
 import 'package:meninki/core/routes.dart';
 import 'package:meninki/features/firebase_messaging/bloc/notif_count_cubit/notif_count_cubit.dart';
+import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 import 'package:meninki/features/home/bloc/get_profile_cubit/get_profile_cubit.dart';
 import 'package:meninki/features/home/model/profile.dart';
 import 'package:meninki/features/home/widgets/reels_list.dart';
@@ -47,7 +48,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
         return Skeletonizer(
           enabled: isLoading,
           child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             slivers: [
               CupertinoSliverRefreshControl(
                 onRefresh: () async {
@@ -71,30 +72,34 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                               const Divider(height: 1, color: Color(0xFFF3F3F3), thickness: 1),
                               BlocBuilder<NotifCountCubit, NotifCountState>(
                                 builder: (context, state) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Go.to(Routes.notificationsPage);
-                                    },
-                                    child: Padd(
-                                      pad: 10,
-                                      child: Row(
-                                        children: [
-                                          Text(lg.notifications),
-                                          const Spacer(),
-                                          if (state is NotifCountSuccess)
-                                            Text(state.count.toString()),
-                                          if (state is NotifCountLoading)
-                                            SizedBox(
-                                              height: 18,
-                                              width: 18,
-                                              child: CircularProgressIndicator(strokeWidth: 2),
-                                            ),
-                                          const Box(w: 10),
-                                          const Icon(Icons.navigate_next),
-                                        ],
+                                  if ((state is NotifCountSuccess && state.count > 0) ||
+                                      state is NotifCountLoading) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Go.to(Routes.notificationsPage);
+                                      },
+                                      child: Padd(
+                                        pad: 10,
+                                        child: Row(
+                                          children: [
+                                            Text(lg.notifications),
+                                            const Spacer(),
+                                            if (state is NotifCountSuccess)
+                                              Text(state.count.toString()),
+                                            if (state is NotifCountLoading)
+                                              SizedBox(
+                                                height: 18,
+                                                width: 18,
+                                                child: CircularProgressIndicator(strokeWidth: 2),
+                                              ),
+                                            const Box(w: 10),
+                                            const Icon(Icons.navigate_next),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
+                                    );
+                                  }
+                                  return Container();
                                 },
                               ),
                             ],
@@ -157,8 +162,8 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
                                 Go.to(Routes.favoritesPage);
                               },
                             ),
-                            const Box(w: 10),
-                            iconTextCardButton(icon: "messages", text: lg.messages),
+                            // const Box(w: 10),
+                            // iconTextCardButton(icon: "messages", text: lg.messages),
                             const Box(w: 10),
                             iconTextCardButton(
                               icon: "news",
@@ -302,10 +307,21 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
       pad: 10,
       child: Row(
         children: [
-          Container(
-            height: 50,
-            width: 50,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: Container(
+              height: 50,
+              width: 50,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+              child:
+                  profile.cover_image != null
+                      ? MeninkiNetworkImage(
+                        borderRadius: 100,
+                        file: profile.cover_image!,
+                        networkImageType: NetworkImageType.small,
+                      )
+                      : Container(),
+            ),
           ),
           Box(w: 10),
           Expanded(
@@ -322,7 +338,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget> {
           ),
           InkWell(
             onTap: () {
-              Go.to(Routes.settingsPage);
+              Go.to(Routes.settingsPage, argument: {"profile": profile});
             },
             child: Icon(Icons.settings, color: Col.primary),
           ),

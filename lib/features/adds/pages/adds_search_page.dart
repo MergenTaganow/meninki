@@ -34,15 +34,15 @@ class AddsSearchPage extends StatelessWidget {
 
     var filterList = [
       if (filteredCategories?.isNotEmpty ?? false)
-        filteredCategories!.map((e) => e.name?.tk).toList().join(', '),
+        filteredCategories!.map((e) => e.name?.trans(context)).toList().join(', '),
       if (filteredProvinces?.isNotEmpty ?? false)
-        filteredProvinces!.map((e) => e.name.tk).toList().join(', '),
+        filteredProvinces!.map((e) => e.name.trans(context)).toList().join(', '),
       if (minPrice != null) '${lg.from} $minPrice',
       if (maxPrice != null) '${lg.to} $maxPrice',
     ];
     return CustomScrollView(
       controller: addsScrollController,
-      physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {

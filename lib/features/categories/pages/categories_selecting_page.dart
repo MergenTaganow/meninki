@@ -122,7 +122,7 @@ class _CategoriesSelectingPageState extends State<CategoriesSelectingPage> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(category.name?.tk ?? '', style: TextStyle(fontWeight: FontWeight.w500)),
+            Text(category.name?.trans(context) ?? '', style: TextStyle(fontWeight: FontWeight.w500)),
             Box(w: 14),
             if (widget.rootCategorySelection)
               BlocBuilder<CategorySelectingCubit, CategorySelectingState>(

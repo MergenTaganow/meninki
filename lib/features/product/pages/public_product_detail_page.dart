@@ -15,6 +15,7 @@ import 'package:meninki/features/product/bloc/get_product_by_id/get_product_by_i
 import 'package:meninki/features/product/bloc/product_compositions_cubit/product_compositions_cubit.dart';
 import 'package:meninki/features/product/bloc/product_watched_cubit/product_watched_cubit.dart';
 import 'package:meninki/features/product/models/product.dart';
+import 'package:meninki/features/product/widgets/product_sheet.dart';
 import 'package:meninki/features/reels/blocs/reel_create_cubit/reel_create_cubit.dart';
 import 'package:meninki/features/reels/model/meninki_file.dart';
 import 'package:meninki/features/reels/model/query.dart';
@@ -23,6 +24,7 @@ import '../../global/widgets/meninki_network_image.dart';
 import '../../home/widgets/product_reels_list.dart';
 import '../../reels/blocs/file_upl_cover_image_bloc/file_upl_cover_image_bloc.dart';
 import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
+import '../../store/bloc/get_market_by_id/get_market_by_id_cubit.dart';
 import '../widgets/compositions_list.dart';
 import '../widgets/later_uploading_reel.dart';
 import '../widgets/product_to_card.dart';
@@ -114,6 +116,9 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
           listener: (context, state) {
             if (state is GetProductByIdSuccess) {
               context.read<GetProductReelsBloc>().add(GetReel(Query(product_id: state.product.id)));
+              setState(() {
+                product = state.product;
+              });
             }
           },
         ),
@@ -121,7 +126,20 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(lg.product),
-          actions: [Padd(right: 16, child: Svvg.asset('share'))],
+          actions: [
+            GestureDetector(
+              onTap: () {
+                showModalBottomSheet(
+                  backgroundColor: Color(0xFFF3F3F3),
+                  context: context,
+                  builder: (context) {
+                    return PublicProductSheet(product!);
+                  },
+                );
+              },
+              child: Padd(right: 16, child: Icon(Icons.more_vert_outlined)),
+            ),
+          ],
           scrolledUnderElevation: 0,
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -139,13 +157,13 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
                       product_files: [MeninkiFile(id: 999), MeninkiFile(id: 999)],
                     ); // <-- fake model for skeleton
 
-            print(product.product_files?.map((e) => e.resizedFiles?.medium).toList());
+
             return Skeletonizer(
               enabled: isLoading,
               ignorePointers: false,
               child: CustomScrollView(
                 controller: scrollController,
-                physics: const BouncingScrollPhysics(),
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 slivers: [
                   CupertinoSliverRefreshControl(
                     onRefresh: () async {
@@ -171,6 +189,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(14),
                                       child: MeninkiNetworkImage(
+                                        borderRadius: 14,
                                         file: product.product_files![index],
                                         networkImageType: NetworkImageType.large,
                                         fit: BoxFit.cover,
@@ -192,7 +211,7 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
                             children: [
                               Box(h: 20),
                               Text(
-                                product.name.tk ?? '',
+                                product.name.trans(context) ?? '',
                                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                               ),
                               Box(h: 10),
@@ -201,58 +220,70 @@ class _PublicProductDetailPageState extends State<PublicProductDetailPage> {
                               Box(h: 20),
 
                               // Market card
-                              Container(
-                                height: 66,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFF3F3F3),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                                child: Row(
-                                  children: [
-                                    if (product.market?.cover_image != null)
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(100),
-                                        child: Container(
-                                          height: 36,
-                                          width: 36,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(color: Colors.black, width: 2),
-                                          ),
-                                          child: MeninkiNetworkImage(
-                                            file: product.market!.cover_image!,
-                                            networkImageType: NetworkImageType.small,
-                                            fit: BoxFit.cover,
+                              GestureDetector(
+                                onTap: () {
+                                  context.read<GetMarketByIdCubit>().getStoreById(
+                                    product.market?.id ?? 0,
+                                  );
+                                  Go.to(Routes.publicStoreDetail);
+                                },
+                                child: Container(
+                                  height: 66,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFF3F3F3),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                                  child: Row(
+                                    children: [
+                                      if (product.market?.cover_image != null)
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(100),
+                                          child: Container(
+                                            height: 36,
+                                            width: 36,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: Colors.black, width: 2),
+                                            ),
+                                            child: MeninkiNetworkImage(
+                                              borderRadius: 100,
+                                              file: product.market!.cover_image!,
+                                              networkImageType: NetworkImageType.small,
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
+                                      Box(w: 10),
+                                      Expanded(
+                                        child: Text(
+                                          product.market?.name ?? '',
+                                          maxLines: 2,
+                                          style: TextStyle(fontWeight: FontWeight.w500),
+                                        ),
                                       ),
-                                    Box(w: 10),
-                                    Expanded(
-                                      child: Text(
-                                        product.market?.name ?? '',
-                                        maxLines: 2,
-                                        style: TextStyle(fontWeight: FontWeight.w500),
-                                      ),
-                                    ),
-                                    Box(w: 10),
-                                    Container(
-                                      height: 46,
-                                      width: 46,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                      child: Center(child: Svvg.asset("message")),
-                                    ),
-                                  ],
+                                      // Box(w: 10),
+                                      // Container(
+                                      //   height: 46,
+                                      //   width: 46,
+                                      //   decoration: BoxDecoration(
+                                      //     color: Colors.white,
+                                      //     borderRadius: BorderRadius.circular(14),
+                                      //   ),
+                                      //   child: Center(child: Svvg.asset("message")),
+                                      // ),
+                                    ],
+                                  ),
                                 ),
                               ),
 
                               LaterUploadingReel(product: product),
                               Box(h: 20),
 
-                              Text(product.description?.tk ?? '', style: TextStyle(fontSize: 16)),
+                              Text(
+                                product.description?.trans(context) ?? '',
+                                style: TextStyle(fontSize: 16),
+                              ),
                               Box(h: 20),
 
                               // Create review button

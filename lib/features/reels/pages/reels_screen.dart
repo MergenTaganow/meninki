@@ -7,36 +7,49 @@ import 'package:meninki/features/auth/models/user.dart';
 import 'package:meninki/features/comments/pages/comments_page.dart';
 import 'package:meninki/features/global/widgets/images_back_button.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
+import 'package:meninki/features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 import 'package:meninki/features/reels/blocs/like_reels_cubit/liked_reels_cubit.dart';
 import 'package:meninki/features/reels/model/reels.dart';
 import '../../../core/api.dart';
+import '../../../core/go.dart';
+import '../../../core/routes.dart';
 import '../widgets/custom_video_progress.dart';
 import '../widgets/reel_sheet.dart';
 import '../widgets/users_profile.dart';
 
 class ReelPage extends StatefulWidget {
-  final Reel reel;
-  final List<Reel> reels;
-  const ReelPage({required this.reel, required this.reels, super.key});
+  final int initialPosition;
+  final String reelType;
+
+  const ReelPage({required this.initialPosition, required this.reelType, super.key});
 
   @override
   State<ReelPage> createState() => _ReelPageState();
 }
 
 class _ReelPageState extends State<ReelPage> {
+  List<Reel> reels = [];
+
   // late PreloadPageController controller;
   late PageController controller;
 
   @override
   void initState() {
-    var position = widget.reels.indexWhere((e) => e.id == widget.reel.id);
-    // controller = PreloadPageController(initialPage: position);
-    controller = PageController(initialPage: position);
+    controller = PageController(initialPage: widget.initialPosition);
+    var state = context.read<CurrentReelCubit>().state;
+    if (state is CurrentReelSuccess && state.reelType == widget.reelType) {
+      reels = state.reels ?? reels;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // context.read<CurrentReelCubit>().set(widget.reel);
       setState(() {});
     });
     super.initState();
+  }
+
+  @override
+  void deactivate() {
+    context.read<CurrentReelCubit>().clear(widget.reelType);
+    super.deactivate();
   }
 
   @override
@@ -47,18 +60,33 @@ class _ReelPageState extends State<ReelPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView.builder(
-        controller: controller,
-        scrollDirection: Axis.vertical,
-        // preloadPagesCount: 3,
-        itemCount: widget.reels.length,
-        // onPageChanged: (index) {
-        //   context.read<CurrentReelCubit>().set(widget.reels[index]);
-        // },
-        itemBuilder: (context, index) {
-          return ReelWidget(reel: widget.reels[index]);
-        },
+    return BlocListener<CurrentReelCubit, CurrentReelState>(
+      listener: (context, state) {
+        print("screen listener ${state}");
+        if (state is CurrentReelSuccess) {
+          print("screen checker ${state.reelType}--${state.reels?.length}");
+        }
+        if (state is CurrentReelSuccess && state.reelType == widget.reelType) {
+          setState(() {
+            reels = state.reels ?? reels;
+          });
+        }
+      },
+      child: Scaffold(
+        body: PageView.builder(
+          controller: controller,
+          scrollDirection: Axis.vertical,
+          // preloadPagesCount: 3,
+          itemCount: reels.length,
+          onPageChanged: (index) {
+            if (index >= reels.length - 2) {
+              context.read<CurrentReelCubit>().needPagination(widget.reelType);
+            }
+          },
+          itemBuilder: (context, index) {
+            return ReelWidget(reel: reels[index]);
+          },
+        ),
       ),
     );
   }
@@ -79,11 +107,11 @@ class _ReelWidgetState extends State<ReelWidget> {
 
   @override
   void initState() {
-    var masterIndex = (widget.reel.file.playlists ?? []).indexWhere((e) => e.contains('master'));
+    var masterIndex = (widget.reel.file?.playlists ?? []).indexWhere((e) => e.contains('master'));
     var url =
         masterIndex != -1
-            ? widget.reel.file.playlists![masterIndex]
-            : widget.reel.file.original_file;
+            ? widget.reel.file?.playlists![masterIndex]
+            : widget.reel.file?.original_file;
     final dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       "$baseUrl/public/$url",
@@ -163,13 +191,15 @@ class _ReelWidgetState extends State<ReelWidget> {
                     children: [
                       (controller.isVideoInitialized() ?? false)
                           ? BetterPlayer(controller: controller)
-                          : IgnorePointer(
+                          : widget.reel.file != null
+                          ? IgnorePointer(
                             ignoring: true,
                             child: MeninkiNetworkImage(
-                              file: widget.reel.file,
+                              file: widget.reel.file!,
                               networkImageType: NetworkImageType.large,
                             ),
-                          ),
+                          )
+                          : Container(),
                       if (!x2)
                         Align(
                           alignment: Alignment.bottomLeft,
@@ -284,6 +314,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                             child:
                                 widget.reel.product?.cover_image != null
                                     ? MeninkiNetworkImage(
+                                      borderRadius: 4,
                                       file: widget.reel.product!.cover_image!,
                                       networkImageType: NetworkImageType.small,
                                       fit: BoxFit.cover,
@@ -307,7 +338,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                               backgroundColor: Color(0xFFF3F3F3),
                               context: context,
                               builder: (context) {
-                                return ReelsSheet(widget.reel);
+                                return PublicReelsSheet(widget.reel);
                               },
                             );
                           },
@@ -330,7 +361,31 @@ class _ReelWidgetState extends State<ReelWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  UsersProfile(widget.reel.user ?? User()),
+                  if (widget.reel.market != null && widget.reel.market?.cover_image != null)
+                    GestureDetector(
+                      onTap: () {
+                        // context.read<GetProfileCubit>().getPublicProfile(user.id ?? 999);
+                        Go.to(Routes.publicStoreDetail);
+                      },
+                      child: Stack(
+                        alignment: Alignment.bottomCenter,
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                            child: MeninkiNetworkImage(
+                              borderRadius: 100,
+                              file: widget.reel.market!.cover_image!,
+                              networkImageType: NetworkImageType.small,
+                            ),
+                          ),
+                          // Positioned(bottom: -10, child: Icon(Icons.add_circle, color: Color(0xFFC7281F))),
+                        ],
+                      ),
+                    ),
+                  if (widget.reel.market == null) UsersProfile(widget.reel.user ?? User()),
                   BlocBuilder<LikedReelsCubit, LikedReelsState>(
                     builder: (context, state) {
                       if (state is LikedReelsSuccess) {
@@ -401,7 +456,7 @@ class _ReelWidgetState extends State<ReelWidget> {
                         backgroundColor: Color(0xFFF3F3F3),
                         context: context,
                         builder: (context) {
-                          return ReelsSheet(widget.reel);
+                          return PublicReelsSheet(widget.reel);
                         },
                       );
                     },

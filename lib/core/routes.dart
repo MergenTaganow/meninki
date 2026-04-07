@@ -13,6 +13,8 @@ import '../features/address/pages/address_create_page.dart';
 import '../features/address/pages/region_selection_cubit.dart';
 import '../features/adds/pages/add_detail_page.dart';
 import '../features/adds/pages/adds_filter_page.dart';
+import '../features/appeal/pages/appeal_create_page.dart';
+import '../features/auth/pages/update_profile_page.dart';
 import '../features/basket/pages/basket_page.dart';
 import '../features/basket/pages/prepared_basket_page.dart';
 import '../features/categories/pages/categories_selecting_page.dart';
@@ -21,6 +23,7 @@ import '../features/file_download/pages/downloads_page.dart';
 import '../features/home/pages/favorites_page.dart';
 import '../features/home/pages/home_page.dart';
 import '../features/home/pages/my_adds_page.dart';
+import '../features/home/pages/public_profile_page.dart';
 import '../features/orders/pages/market_orders_page.dart';
 import '../features/orders/pages/order_detail_page.dart';
 import '../features/orders/pages/orders_page.dart';
@@ -47,6 +50,7 @@ class Routes {
   static const String reelScreen = '/reelsScreen';
   static const String otpScreen = '/otpScreen';
   static const String registerScreen = '/registerScreen';
+  static const String profileUpdateScreen = '/profileUpdateScreen';
 
   //home
   static const String homePage = '/homePage';
@@ -56,6 +60,7 @@ class Routes {
   static const String basketPage = '/basketPage';
   static const String notificationsPage = '/notificationsPage';
   static const String preparedBasketPage = '/preparedBasketPage';
+  static const String publicProfilePage = '/publicProfilePage';
 
   //store
   static const String storeCreatePage = '/storeCreatePage';
@@ -98,6 +103,9 @@ class Routes {
   static const String marketOrdersPage = '/clientOrdersPage';
   static const String orderDetailPage = '/orderDetailPage';
 
+  //appeal
+  static const String appealPage = '/appealPage';
+
   static Route? onGenerateRoute(RouteSettings settings) {
     final Map? data = settings.arguments as Map?;
     switch (settings.name) {
@@ -105,7 +113,9 @@ class Routes {
         return MaterialPageRoute(builder: (_) => LoginMethodsScreen());
       case reelScreen:
         return MaterialPageRoute(
-          builder: (_) => ReelPage(reel: data?['reel'], reels: data?['reels']),
+          builder:
+              (_) =>
+                  ReelPage(initialPosition: data?['initialPosition'], reelType: data?['reelType']),
         );
       case otpScreen:
         return MaterialPageRoute(builder: (_) => OtpScreen(data?['phoneNumber']));
@@ -184,7 +194,7 @@ class Routes {
               ),
         );
       case settingsPage:
-        return MaterialPageRoute(builder: (_) => SettingsPage());
+        return MaterialPageRoute(builder: (_) => SettingsPage(data?['profile']));
       case colorSchemeSelectingPage:
         return MaterialPageRoute(builder: (_) => MarketColorSelectingPage(data?['market']));
       case marketBannersPage:
@@ -207,6 +217,7 @@ class Routes {
               (_) => RegionSelectingPage(
                 selectionKey: data?['selectionKey'],
                 singleSelection: data?['singleSelection'],
+                provinceId: data?['provinceId'],
               ),
         );
 
@@ -218,8 +229,22 @@ class Routes {
         return MaterialPageRoute(builder: (_) => OrdersPage());
       case orderDetailPage:
         return MaterialPageRoute(builder: (_) => OrderDetailPage());
+      case publicProfilePage:
+        return MaterialPageRoute(builder: (_) => PublicProfilePage());
       case marketOrdersPage:
         return MaterialPageRoute(builder: (_) => MarketOrdersPage(data?['marketId']));
+      case appealPage:
+        return MaterialPageRoute(
+          builder:
+              (_) => AppealPage(
+                type: data?['type'],
+                topic: data?['topic'],
+                typeId: data?['typeId'],
+                typeName: data?['typeName'],
+              ),
+        );
+      case profileUpdateScreen:
+        return MaterialPageRoute(builder: (_) => UpdateProfilePage(profile: data?['profile']));
     }
 
     return null;

@@ -16,3 +16,7 @@ final class RegisterSuccess extends RegisterState {
   final User user;
   RegisterSuccess(this.user);
 }
+
+final class UpdateSuccess extends RegisterState {
+  UpdateSuccess();
+}

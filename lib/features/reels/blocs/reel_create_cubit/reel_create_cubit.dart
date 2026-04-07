@@ -38,7 +38,7 @@ class ReelCreateCubit extends Cubit<ReelCreateState> {
 
   repostReel(Reel reel) async {
     emit.call(ReelCreateLoading());
-    var failOrNot = await ds.repostReel(reel.id);
+    var failOrNot = await ds.repostReel(reel.id ?? 999);
     failOrNot.fold((l) => emit.call(ReelCreateFailed(l)), (r) => emit.call(ReelRepostSuccess()));
   }
 }

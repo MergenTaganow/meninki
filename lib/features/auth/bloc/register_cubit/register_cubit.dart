@@ -16,4 +16,11 @@ class RegisterCubit extends Cubit<RegisterState> {
 
     failOrNot.fold((l) => emit.call(RegisterFailed(l)), (r) => emit.call(RegisterSuccess(r)));
   }
+
+  updateProfile(Map<String, dynamic> data) async {
+    emit.call(RegisterLoading());
+    var failOrNot = await ds.updateUser(data: data);
+
+    failOrNot.fold((l) => emit.call(RegisterFailed(l)), (r) => emit.call(UpdateSuccess()));
+  }
 }

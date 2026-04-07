@@ -6,6 +6,7 @@ import 'package:meninki/features/adds/bloc/add_uuid_cubit/add_uuid_cubit.dart';
 
 import '../../../core/colors.dart';
 import '../../../core/helpers.dart';
+import '../firebase_messaging/life_sycle.dart';
 
 class AddsToCard extends StatelessWidget {
   const AddsToCard({super.key});
@@ -76,7 +77,9 @@ class AddsToCard extends StatelessWidget {
                     ),
                     Box(w: 10),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () async {
+                        await callPhone(state.add.user?.phonenumber);
+                      },
                       child: Container(
                         height: 46,
                         width: 46,

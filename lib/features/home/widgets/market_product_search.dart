@@ -49,11 +49,11 @@ class _MarketProductsSearchState extends State<MarketProductsSearch> {
 
     var filterList = [
       if (filteredProvinces?.isNotEmpty ?? false)
-        filteredProvinces!.map((e) => e.name.tk).toList().join(', '),
+        filteredProvinces!.map((e) => e.name.trans(context)).toList().join(', '),
     ];
     return CustomScrollView(
       controller: marketsScrollController,
-      physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {
@@ -151,6 +151,7 @@ class _MarketProductsSearchState extends State<MarketProductsSearch> {
                                                           ? IgnorePointer(
                                                             ignoring: true,
                                                             child: MeninkiNetworkImage(
+                                                              borderRadius: 100,
                                                               file:
                                                                   storesProducts[index]
                                                                       .cover_image!,

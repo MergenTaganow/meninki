@@ -25,7 +25,7 @@ class ProductCreateCubit extends Cubit<ProductCreateState> {
     var failOrNot = await ds.editProduct(id, data);
     failOrNot.fold(
       (l) => emit.call(ProductCreateFailed(l)),
-      (r) => emit.call(ProductEditSuccess()),
+      (r) => emit.call(ProductEditSuccess(r)),
     );
   }
 }

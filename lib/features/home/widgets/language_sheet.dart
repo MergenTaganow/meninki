@@ -16,7 +16,7 @@ class LanguageSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          singleLine(context: context, title: AppLocalizations.of(context)!.tk, value: 'tk'),
+          singleLine(context: context, title: AppLocalizations.of(context)!.tr, value: 'tk'),
           singleLine(context: context, title: AppLocalizations.of(context)!.ru, value: 'ru'),
           singleLine(context: context, title: AppLocalizations.of(context)!.en, value: 'en'),
         ],

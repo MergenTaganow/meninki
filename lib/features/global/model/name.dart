@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
+import '../../../core/helpers.dart';
+
 class Name {
   String? tk;
   String? en;
@@ -22,7 +24,10 @@ class Name {
   }
 
   String trans(BuildContext context) {
-    return tk ?? ru ?? en ?? '';
+    var languageCode2 = AppLocalizations.of(context)!.localeName;
+    return (toJson()[languageCode2]?.isNotEmpty ?? false)
+        ? (toJson()[languageCode2])!
+        : tk ?? en ?? ru ?? "";
   }
 
   @override

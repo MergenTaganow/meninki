@@ -47,7 +47,7 @@ class _HomeAddState extends State<HomeAdd> with AutomaticKeepAliveClientMixin {
     super.build(context);
     final lg = AppLocalizations.of(context)!;
     return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       controller: addsScrollController,
       slivers: [
         CupertinoSliverRefreshControl(
@@ -255,6 +255,7 @@ class PublicAddsList extends StatelessWidget {
                                     ? IgnorePointer(
                                       ignoring: true,
                                       child: MeninkiNetworkImage(
+                                        borderRadius: 10,
                                         file: add.cover_image!,
                                         networkImageType: NetworkImageType.medium,
                                         fit: BoxFit.cover,

@@ -271,6 +271,18 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                         },
                         child: Row(
                           children: [
+                            // ClipRRect(
+                            //   borderRadius: BorderRadius.circular(100),
+                            //   child: Container(
+                            //     height: 80,
+                            //     width: 80,
+                            //     decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                            //     child: Image.network(
+                            //       '$baseUrl/public/${market.cover_image?.resizedFiles?.small}',
+                            //       fit: BoxFit.cover,
+                            //     ),
+                            //   ),
+                            // ),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(100),
                               child: Container(
@@ -284,19 +296,21 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                                 child:
                                     coverImage?.status == 'ready'
                                         ? MeninkiNetworkImage(
+                                          borderRadius: 100,
                                           file: coverImage!,
                                           networkImageType: NetworkImageType.small,
                                           fit: BoxFit.cover,
                                         )
-                                        : UploadingCoverImage(
-                                          height: 70,
-                                          width: 70,
-                                          coverImage: coverImage,
-                                          loadingProgress:
-                                              state is FileUploadingCoverImage
-                                                  ? state.progress
-                                                  : null,
-                                        ),
+                                        : null,
+                                // : UploadingCoverImage(
+                                //   height: 70,
+                                //   width: 70,
+                                //   coverImage: coverImage,
+                                //   loadingProgress:
+                                //       state is FileUploadingCoverImage
+                                //           ? state.progress
+                                //           : null,
+                                // ),
                               ),
                             ),
                             Box(w: 14),
@@ -651,11 +665,10 @@ class _StoreCreatePageState extends State<StoreCreatePage> {
                     "ru": addressRuController.text.trim(),
                     "en": addressENController.text.trim(),
                   },
-                  "location": {"longitude": 38.7373, "latitude": 52.7373},
+                  "location": {"longitude": 0, "latitude": 0},
                   "cover_image_id": coverImage?.id,
                   if (provinces.isNotEmpty) "province_id": provinces.single.id,
                   "username": usernameController.text.trim(),
-                  "file_ids": [1],
                   "contact_info": {
                     if (email.text.isNotEmpty) "email": email.text,
                     if (numberController.text.isNotEmpty) "phone": numberController.text,

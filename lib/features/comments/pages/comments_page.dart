@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meninki/core/helpers.dart';
 import 'package:meninki/features/comments/bloc/send_comment_cubit/send_comment_cubit.dart';
 import 'package:meninki/features/comments/models/comment.dart';
+import 'package:meninki/features/global/widgets/custom_snack_bar.dart';
 import 'package:meninki/features/reels/model/reels.dart';
+import '../bloc/comment_action/comment_action_cubit.dart';
 import '../bloc/get_comments_bloc/get_comments_bloc.dart';
 import '../widgets/comment_text_field.dart';
 import '../widgets/message_card.dart';
@@ -25,7 +27,7 @@ class _CommentsPageState extends State<CommentsPage> {
   @override
   void initState() {
     super.initState();
-    context.read<GetCommentsBloc>().add(GetComment(widget.reel.id));
+    context.read<GetCommentsBloc>().add(GetComment(widget.reel.id ?? 999));
     widget.scrollController.addListener(_onScroll);
   }
 
@@ -34,8 +36,14 @@ class _CommentsPageState extends State<CommentsPage> {
 
     if (widget.scrollController.position.pixels >=
         widget.scrollController.position.maxScrollExtent - 50) {
-      context.read<GetCommentsBloc>().add(CommentPag(widget.reel.id));
+      context.read<GetCommentsBloc>().add(CommentPag(widget.reel.id ?? 999));
     }
+  }
+
+  @override
+  void deactivate() {
+    context.read<SendCommentCubit>().clear();
+    super.deactivate();
   }
 
   @override
@@ -53,16 +61,26 @@ class _CommentsPageState extends State<CommentsPage> {
       listener: (context, state) {
         if (state is SendCommentSuccess) {
           commentController.clear();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (widget.scrollController.hasClients) {
-              widget.scrollController.animateTo(
-                0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-              );
-            }
-            // FocusManager.instance.primaryFocus?.unfocus();
-          });
+          context.read<CommentActionCubit>().resetEditingComment();
+          if (state.comment.reply_to_comment_id == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (widget.scrollController.hasClients) {
+                widget.scrollController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              }
+              // FocusManager.instance.primaryFocus?.unfocus();
+            });
+          }
+        }
+        if (state is SendCommentFailed) {
+          CustomSnackBar.showTopSnackBar(
+            context: context,
+            title: state.failure.message ?? lg.smthWentWrong,
+            isError: true,
+          );
         }
       },
       child: Column(
@@ -91,7 +109,7 @@ class _CommentsPageState extends State<CommentsPage> {
 
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<GetCommentsBloc>().add(GetComment(widget.reel.id));
+                    context.read<GetCommentsBloc>().add(GetComment(widget.reel.id ?? 999));
                   },
                   child: ListView.separated(
                     controller: widget.scrollController,
@@ -113,7 +131,7 @@ class _CommentsPageState extends State<CommentsPage> {
           /// FIXED INPUT
           SafeArea(
             top: false,
-            child: CommentTextField(controller: commentController, reelId: widget.reel.id),
+            child: CommentTextField(controller: commentController, reelId: widget.reel.id ?? 999),
           ),
         ],
       ),

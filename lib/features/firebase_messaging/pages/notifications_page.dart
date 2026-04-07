@@ -9,6 +9,8 @@ import 'package:meninki/features/firebase_messaging/models/notification_meninki.
 import 'package:meninki/features/firebase_messaging/notif_helper.dart';
 import 'package:meninki/features/global/widgets/meninki_network_image.dart';
 
+import '../widgets/notification_card.dart';
+
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
 
@@ -17,9 +19,18 @@ class NotificationsPage extends StatefulWidget {
 }
 
 class _NotificationsPageState extends State<NotificationsPage> {
+  ScrollController controller = ScrollController();
+
+  List<NotificationMeninki> notifications = [];
+
   @override
   void initState() {
     context.read<GetNotificationsBloc>().add(GetNotifications());
+    controller.addListener(() {
+      if (controller.position.pixels == controller.position.maxScrollExtent) {
+        context.read<GetNotificationsBloc>().add(NotificationsPag());
+      }
+    });
     super.initState();
   }
 
@@ -33,7 +44,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
         hor: 12,
         ver: 20,
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          controller: controller,
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
             CupertinoSliverRefreshControl(
               onRefresh: () async {
@@ -49,78 +61,35 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         return Center(child: CircularProgressIndicator());
                       }
                       if (state is GetNotificationsSuccess) {
-                        return ListView.separated(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return NotificationCard(state.notifications[index]);
-                          },
-                          separatorBuilder: (context, index) => Box(h: 10),
-                          itemCount: state.notifications.length,
-                        );
+                        notifications = state.notifications;
                       }
-                      return Container();
+                      return Column(
+                        children: [
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return NotificationCard(notifications[index]);
+                            },
+                            separatorBuilder: (context, index) => Box(h: 10),
+                            itemCount: notifications.length,
+                          ),
+                          if (state is NotificationsPagLoading)
+                            Padd(
+                              child: SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                        ],
+                      );
                     },
                   ),
                 ],
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class NotificationCard extends StatelessWidget {
-  final NotificationMeninki notif;
-  const NotificationCard(this.notif, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () {
-          NotifHelper.onTap(context: context, notif: notif);
-        },
-        child: Ink(
-          decoration: BoxDecoration(
-            color: Color(0xFFF3F3F3),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      notif.title ?? '123',
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                  if (notif.image_url != null)
-                    SizedBox(
-                      height: 50,
-                      width: 50,
-                      child: CachedNetworkImage(
-                        imageUrl: "$baseUrl/public/${notif.image_url}",
-                        fit: BoxFit.contain,
-                        placeholder: (context, url) => Container(),
-                        errorWidget: (context, url, error) => const Icon(Icons.error),
-                      ),
-                    ),
-                ],
-              ),
-              Text(
-                (notif.description ?? '').trim().replaceAll('  ', ' '),
-                style: TextStyle(color: Colors.black),
-              ),
-            ],
-          ),
         ),
       ),
     );

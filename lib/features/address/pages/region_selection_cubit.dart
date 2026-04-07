@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:meninki/features/reels/model/query.dart';
 
 import '../../../core/colors.dart';
 import '../../../core/go.dart';
@@ -12,8 +13,14 @@ import '../models/region.dart';
 class RegionSelectingPage extends StatefulWidget {
   final String selectionKey;
   final bool singleSelection;
+  final int? provinceId;
 
-  const RegionSelectingPage({super.key, this.singleSelection = false, required this.selectionKey});
+  const RegionSelectingPage({
+    super.key,
+    this.singleSelection = false,
+    required this.selectionKey,
+    this.provinceId,
+  });
 
   @override
   State<RegionSelectingPage> createState() => _RegionSelectingPageState();
@@ -21,16 +28,17 @@ class RegionSelectingPage extends StatefulWidget {
 
 class _RegionSelectingPageState extends State<RegionSelectingPage> {
   ScrollController controller = ScrollController();
+  List<Region> regions = [];
 
   @override
   void initState() {
     super.initState();
     // Fetch regions when page opens
-    context.read<GetRegionsBloc>().add(GetRegion());
+    context.read<GetRegionsBloc>().add(GetRegion(Query(provinceId: widget.provinceId)));
 
     controller.addListener(() {
       if (controller.position.pixels == controller.position.maxScrollExtent) {
-        context.read<GetRegionsBloc>().add(RegionPag());
+        context.read<GetRegionsBloc>().add(RegionPag(query: Query(provinceId: widget.provinceId)));
       }
     });
   }
@@ -40,7 +48,7 @@ class _RegionSelectingPageState extends State<RegionSelectingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "AppLocalizations.of(context)!.region",
+          AppLocalizations.of(context)!.region,
           style: const TextStyle(fontWeight: FontWeight.w500),
         ),
       ),
@@ -57,58 +65,32 @@ class _RegionSelectingPageState extends State<RegionSelectingPage> {
             }
 
             if (state is GetRegionSuccess) {
-              final regions = state.regions;
+              regions = state.regions;
+            }
 
-              return BlocBuilder<RegionSelectingCubit, RegionSelectingState>(
-                builder: (context, selectState) {
-                  List<Region>? selecteds;
+            if (regions.isEmpty) {
+              return Container();
+            }
 
-                  if (selectState is RegionSelectingSuccess) {
-                    selecteds = selectState.selectedMap[widget.selectionKey] ?? [];
-                  }
+            return BlocBuilder<RegionSelectingCubit, RegionSelectingState>(
+              builder: (context, selectState) {
+                List<Region>? selecteds;
 
-                  return Column(
-                    children: [
-                      Expanded(
-                        child: ListView.separated(
-                          controller: controller,
-                          itemCount: regions.length + (widget.singleSelection ? 0 : 1),
-                          separatorBuilder: (_, __) => const SizedBox(height: 6),
-                          itemBuilder: (context, index) {
-                            final isAllItem = !widget.singleSelection && index == 0;
+                if (selectState is RegionSelectingSuccess) {
+                  selecteds = selectState.selectedMap[widget.selectionKey] ?? [];
+                }
 
-                            if (isAllItem) {
-                              return Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  splashColor: Colors.black.withOpacity(0.06),
-                                  highlightColor: Colors.black.withOpacity(0.03),
-                                  onTap: () {
-                                    HapticFeedback.selectionClick();
+                return Column(
+                  children: [
+                    Expanded(
+                      child: ListView.separated(
+                        controller: controller,
+                        itemCount: regions.length + (widget.singleSelection ? 0 : 1),
+                        separatorBuilder: (_, __) => const SizedBox(height: 6),
+                        itemBuilder: (context, index) {
+                          final isAllItem = !widget.singleSelection && index == 0;
 
-                                    context.read<RegionSelectingCubit>().selectList(
-                                      key: widget.selectionKey,
-                                      regions: regions,
-                                    );
-                                  },
-                                  child: Ink(
-                                    padding: const EdgeInsets.all(14),
-                                    child: Text(
-                                      AppLocalizations.of(context)!.all,
-                                      style: const TextStyle(fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-
-                            final region = regions[index - (widget.singleSelection ? 0 : 1)];
-
-                            final selectedIndex =
-                                selecteds?.indexWhere((e) => e.id == region.id) ?? -1;
-
-                            final isSelected = selectedIndex != -1;
-
+                          if (isAllItem) {
                             return Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -117,67 +99,108 @@ class _RegionSelectingPageState extends State<RegionSelectingPage> {
                                 onTap: () {
                                   HapticFeedback.selectionClick();
 
-                                  context.read<RegionSelectingCubit>().selectRegion(
+                                  context.read<RegionSelectingCubit>().selectList(
                                     key: widget.selectionKey,
-                                    region: region,
-                                    singleSelection: widget.singleSelection,
+                                    regions: regions,
                                   );
                                 },
                                 child: Ink(
                                   padding: const EdgeInsets.all(14),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        region.name?.trans(context) ?? '',
-                                        style: const TextStyle(fontWeight: FontWeight.w500),
-                                      ),
-                                      if (isSelected)
-                                        const Icon(Icons.check, color: Color(0xFF969696), size: 20),
-                                    ],
+                                  child: Text(
+                                    AppLocalizations.of(context)!.all,
+                                    style: const TextStyle(fontWeight: FontWeight.w500),
                                   ),
                                 ),
                               ),
                             );
-                          },
-                        ),
-                      ),
-                      Material(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.circular(14),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(14),
-                          splashColor: Colors.white.withOpacity(0.22),
-                          highlightColor: Colors.white.withOpacity(0.10),
-                          onTap: () {
-                            HapticFeedback.mediumImpact();
+                          }
 
-                            Future.delayed(const Duration(milliseconds: 120), () {
-                              Go.pop();
-                            });
-                          },
-                          child: Ink(
-                            height: 45,
-                            decoration: BoxDecoration(
-                              color: Col.primary,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Center(
-                              child: Text(
-                                AppLocalizations.of(context)!.save,
-                                style: const TextStyle(color: Colors.white),
+                          final region = regions[index - (widget.singleSelection ? 0 : 1)];
+
+                          final selectedIndex =
+                              selecteds?.indexWhere((e) => e.id == region.id) ?? -1;
+
+                          final isSelected = selectedIndex != -1;
+
+                          return Column(
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  splashColor: Colors.black.withOpacity(0.06),
+                                  highlightColor: Colors.black.withOpacity(0.03),
+                                  onTap: () {
+                                    HapticFeedback.selectionClick();
+
+                                    context.read<RegionSelectingCubit>().selectRegion(
+                                      key: widget.selectionKey,
+                                      region: region,
+                                      singleSelection: widget.singleSelection,
+                                    );
+                                  },
+                                  child: Ink(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          region.name?.trans(context) ?? '',
+                                          style: const TextStyle(fontWeight: FontWeight.w500),
+                                        ),
+                                        if (isSelected)
+                                          const Icon(
+                                            Icons.check,
+                                            color: Color(0xFF969696),
+                                            size: 20,
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
+                              if (index ==
+                                      (regions.length + (widget.singleSelection ? 0 : 1)) - 1 &&
+                                  state is RegionPagLoading)
+                                CircularProgressIndicator(),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+
+                    Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        splashColor: Colors.white.withOpacity(0.22),
+                        highlightColor: Colors.white.withOpacity(0.10),
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+
+                          Future.delayed(const Duration(milliseconds: 120), () {
+                            Go.pop();
+                          });
+                        },
+                        child: Ink(
+                          height: 45,
+                          decoration: BoxDecoration(
+                            color: Col.primary,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Center(
+                            child: Text(
+                              AppLocalizations.of(context)!.save,
+                              style: const TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  );
-                },
-              );
-            }
-
-            return const SizedBox();
+                    ),
+                  ],
+                );
+              },
+            );
           },
         ),
       ),

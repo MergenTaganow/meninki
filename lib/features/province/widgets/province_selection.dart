@@ -59,7 +59,7 @@ class ProvinceSelection extends StatelessWidget {
                           child: Text(
                             selecteds.isEmpty
                                 ? AppLocalizations.of(context)!.selectProvince
-                                : selecteds.map((e) => e.name.tk).join(', '),
+                                : selecteds.map((e) => e.name.trans(context)).join(', '),
                             style: const TextStyle(color: Color(0xFF969696)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

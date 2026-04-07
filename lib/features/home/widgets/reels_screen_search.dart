@@ -44,11 +44,11 @@ class _ReelsSearchState extends State<ReelsSearch> {
     var filterList = [
       if (filteredSort != null) filteredSort.text ?? '',
       if (filteredCategories?.isNotEmpty ?? false)
-        filteredCategories!.map((e) => e.name?.tk).toList().join(', '),
+        filteredCategories!.map((e) => e.name?.trans(context)).toList().join(', '),
     ];
     return CustomScrollView(
       controller: reelsScrollController,
-      physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       slivers: [
         CupertinoSliverRefreshControl(
           onRefresh: () async {
@@ -81,7 +81,7 @@ class _ReelsSearchState extends State<ReelsSearch> {
               ),
               Box(h: 10),
 
-              SearchedReelsList(),
+              SearchedReelsList(Query(keyword: widget.text, filtered: true)),
             ],
           ),
         ),

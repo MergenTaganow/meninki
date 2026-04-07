@@ -24,6 +24,7 @@ import '../../reels/blocs/get_reels_bloc/get_reels_bloc.dart';
 import '../bloc/get_products_bloc/get_products_bloc.dart';
 import '../widgets/compositions_list.dart';
 import '../widgets/later_uploading_reel.dart';
+import '../widgets/product_sheet.dart';
 import '../widgets/product_to_card.dart';
 
 class MyProductDetailPage extends StatefulWidget {
@@ -123,7 +124,7 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
                 showModalBottomSheet(
                   context: context,
                   builder: (context) {
-                    return ProductSheet(product!);
+                    return MyProductSheet(product!);
                   },
                 );
               },
@@ -147,7 +148,7 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
               enabled: isLoading,
               child: CustomScrollView(
                 controller: scrollController,
-                physics: const BouncingScrollPhysics(),
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                 slivers: [
                   CupertinoSliverRefreshControl(
                     onRefresh: () async {
@@ -172,6 +173,7 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(14),
                                       child: MeninkiNetworkImage(
+                                        borderRadius: 14,
                                         file: product.product_files![index],
                                         networkImageType: NetworkImageType.large,
                                         fit: BoxFit.cover,
@@ -192,7 +194,7 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
                             children: [
                               Box(h: 20),
                               Text(
-                                product.name.tk ?? '',
+                                product.name.trans(context) ?? '',
                                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                               ),
                               Box(h: 10),
@@ -221,6 +223,7 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
                                             border: Border.all(color: Colors.black, width: 2),
                                           ),
                                           child: MeninkiNetworkImage(
+                                            borderRadius: 100,
                                             file: product.market!.cover_image!,
                                             networkImageType: NetworkImageType.small,
                                             fit: BoxFit.cover,
@@ -252,7 +255,10 @@ class _MyProductDetailPageState extends State<MyProductDetailPage> {
                               LaterUploadingReel(product: product),
                               Box(h: 20),
 
-                              Text(product.description?.tk ?? '', style: TextStyle(fontSize: 16)),
+                              Text(
+                                product.description?.trans(context) ?? '',
+                                style: TextStyle(fontSize: 16),
+                              ),
                               Box(h: 20),
                               Material(
                                 color: Colors.transparent,

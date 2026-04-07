@@ -66,6 +66,7 @@ class FavoriteAddsList extends StatelessWidget {
                                 ? IgnorePointer(
                                   ignoring: true,
                                   child: MeninkiNetworkImage(
+                                    borderRadius: 10,
                                     file: add.cover_image!,
                                     networkImageType: NetworkImageType.medium,
                                     fit: BoxFit.cover,

@@ -21,25 +21,26 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
 
   Future<void> _onNewReels(NewReels event, Emitter<ReelsControllersState> emit) async {
     for (final reel in event.reels) {
-      final isImage = (reel.file.mimetype ?? '').contains('image');
+      final isImage = (reel.file?.mimetype ?? '').contains('image');
 
       if (isImage) continue;
 
+      if (reel.id == null) continue;
       if (controllersMap.containsKey(reel.id)) continue;
       if (_initializingIds.contains(reel.id)) continue;
 
-      _initializingIds.add(reel.id);
+      _initializingIds.add(reel.id!);
       _initController(reel);
     }
   }
 
   Future<void> _initController(Reel reel) async {
     try {
-      final previewIndex = (reel.file.playlists ?? []).indexWhere((e) => e.contains('preview'));
+      final previewIndex = (reel.file?.playlists ?? []).indexWhere((e) => e.contains('preview'));
 
       if (previewIndex == -1) return;
 
-      final url = reel.file.playlists![previewIndex];
+      final url = reel.file?.playlists![previewIndex];
 
       final dataSource = BetterPlayerDataSource(
         BetterPlayerDataSourceType.network,
@@ -79,7 +80,7 @@ class ReelsControllersBloc extends Bloc<ReelsControllersEvent, ReelsControllersS
         await controller.play();
       }
 
-      controllersMap[reel.id] = controller;
+      controllersMap[reel.id!] = controller;
 
       // ✅ emit ONCE per controller
       emit(ReelsControllersReady(Map<int, BetterPlayerController>.from(controllersMap)));

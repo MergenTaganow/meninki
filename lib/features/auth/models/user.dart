@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:meninki/features/auth/models/token.dart';
+import 'package:meninki/features/reels/model/meninki_file.dart';
 
 class User {
   Token? token;
@@ -15,6 +16,7 @@ class User {
   bool? is_super_user;
   String? temporaryToken;
   String? lang;
+  MeninkiFile? cover_image;
 
   User({
     this.token,
@@ -29,6 +31,7 @@ class User {
     this.is_super_user,
     this.temporaryToken,
     this.lang,
+    this.cover_image,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -36,6 +39,7 @@ class User {
       token: json["token"] != null ? Token.fromMap(json["token"]) : null,
       id: (json["id"]),
       created_at: json["created_at"] != null ? DateTime.tryParse(json["created_at"]) : null,
+      cover_image: json["cover_image"] != null ? MeninkiFile.fromJson(json["cover_image"]) : null,
       phonenumber:
           (json["phonenumber"] is int)
               ? (json["phonenumber"] as int).toString()
@@ -53,6 +57,7 @@ class User {
   Map<String, dynamic> toMap() {
     return {
       "token": token?.toMap(),
+      "cover_image": cover_image?.toJson(),
       "id": id,
       "created_at": created_at?.toIso8601String(),
       "phonenumber": phonenumber,

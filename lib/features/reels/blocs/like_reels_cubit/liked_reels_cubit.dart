@@ -25,13 +25,13 @@ class LikedReelsCubit extends Cubit<LikedReelsState> {
   likeTapped(Reel reel) async {
     var index = likedReels.indexWhere((e) => e == reel.id);
     if (index == -1) {
-      likedReels.add(reel.id);
+      likedReels.add(reel.id ?? 999);
     } else {
       likedReels.removeAt(index);
     }
 
     emit.call(LikedReelsSuccess(likedReels));
-    await ds.likeReel(reel.id);
+    await ds.likeReel(reel.id ?? 999);
     sl<GetMyReelsBloc>().add(UpdateMyReel(reel));
     sl<GetVerifiedReelsBloc>().add(UpdateReels(reel));
     sl<GetProductReelsBloc>().add(UpdateReels(reel));

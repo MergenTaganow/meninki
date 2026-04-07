@@ -201,6 +201,7 @@ class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTicker
                                     height: 45,
                                     width: 45,
                                     child: MeninkiNetworkImage(
+                                      borderRadius: 100,
                                       file: state.market.cover_image!,
                                       networkImageType: NetworkImageType.small,
                                       fit: BoxFit.cover,
@@ -224,15 +225,15 @@ class _PublicStoreDetailState extends State<PublicStoreDetail> with SingleTicker
                                   ],
                                 ),
                               ),
-                              Container(
-                                height: 45,
-                                width: 45,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(14),
-                                  color: scheme.button,
-                                ),
-                                child: Center(child: Svvg.asset('store_message')),
-                              ),
+                              // Container(
+                              //   height: 45,
+                              //   width: 45,
+                              //   decoration: BoxDecoration(
+                              //     borderRadius: BorderRadius.circular(14),
+                              //     color: scheme.button,
+                              //   ),
+                              //   child: Center(child: Svvg.asset('store_message')),
+                              // ),
                             ],
                           ),
                         ),

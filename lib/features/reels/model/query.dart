@@ -25,6 +25,7 @@ class Query {
   int? market_id;
   int? product_id;
   int? priority;
+  int? provinceId;
   String? current_page;
   bool? filtered;
   String? extraUrl;
@@ -54,6 +55,7 @@ class Query {
     this.current_page,
     this.filtered,
     this.extraUrl,
+    this.provinceId,
   });
 
   Query copyWith({
@@ -106,6 +108,7 @@ class Query {
     int? market_id,
     int? product_id,
     int? priority,
+    int? provinceId,
     String? current_page,
     bool? filtered,
     String? extraUrl,
@@ -135,6 +138,7 @@ class Query {
       current_page: current_page ?? this.current_page,
       filtered: filtered ?? this.filtered,
       extraUrl: extraUrl ?? this.extraUrl,
+      provinceId: provinceId ?? this.provinceId,
     );
   }
 
@@ -162,6 +166,7 @@ class Query {
       if (product_id != null) 'product_id': product_id,
       if (priority != null) 'priority': priority,
       if (current_page != null) 'current_page': current_page,
+      if (provinceId != null) 'province_id': provinceId,
     };
   }
 
@@ -218,6 +223,7 @@ class Query {
         other.dateTo == dateTo &&
         other.user_id == user_id &&
         other.product_ids == product_ids &&
+        other.provinceId == provinceId &&
         other.category_ids == category_ids;
   }
 
@@ -238,6 +244,7 @@ class Query {
         dateTo.hashCode ^
         user_id.hashCode ^
         category_ids.hashCode ^
+        provinceId.hashCode ^
         product_ids.hashCode;
   }
 }

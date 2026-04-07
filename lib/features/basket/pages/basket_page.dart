@@ -186,7 +186,7 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                                     color: Col.primary,
                                     borderRadius: BorderRadius.circular(14),
                                   ),
-                                  child:  Center(
+                                  child: Center(
                                     child: Text(
                                       lg.next,
                                       style: TextStyle(
@@ -224,6 +224,7 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                                             child:
                                                 product.composition?.product?.cover_image != null
                                                     ? MeninkiNetworkImage(
+                                                      borderRadius: 16,
                                                       file:
                                                           product
                                                               .composition!
@@ -236,16 +237,16 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                                           ),
                                         ),
                                         Box(w: 10),
-                                        GestureDetector(
-                                          onTap: () {
-                                            Go.to(
-                                              Routes.publicProductDetailPage,
-                                              argument: {
-                                                "productId": product.composition?.product?.id,
-                                              },
-                                            );
-                                          },
-                                          child: Expanded(
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Go.to(
+                                                Routes.publicProductDetailPage,
+                                                argument: {
+                                                  "productId": product.composition?.product?.id,
+                                                },
+                                              );
+                                            },
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.start,
                                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,6 +254,7 @@ class _BasketWidgetState extends State<BasketWidget> with AutomaticKeepAliveClie
                                                 Text(
                                                   product.composition?.title?.trans(context) ?? '',
                                                   style: TextStyle(fontWeight: FontWeight.w500),
+                                                  maxLines: 2,
                                                 ),
                                                 Box(h: 10),
                                                 Text(

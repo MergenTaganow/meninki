@@ -89,8 +89,8 @@ class NotificationMeninki {
               : null,
       is_read: map['is_read'] != null ? map['is_read'] as bool : null,
       image_url:
-          (map['image_url'] ?? map['android']['imageUrl']) != null
-              ? (map['image_url'] ?? map['android']['imageUrl']) as String
+          (map['imageUrl'] ?? map['image_url'] ?? map['android']['imageUrl']) != null
+              ? (map['imageUrl'] ?? map['image_url'] ?? map['android']['imageUrl']) as String
               : null,
       type:
           (map['type'] ?? map['data']['type']) != null

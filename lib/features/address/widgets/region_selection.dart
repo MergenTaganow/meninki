@@ -11,7 +11,13 @@ import '../../../core/routes.dart';
 class RegionSelection extends StatelessWidget {
   final String selectionKey;
   final bool singleSelection;
-  const RegionSelection({super.key, required this.selectionKey, required this.singleSelection});
+  final int? provinceId;
+  const RegionSelection({
+    super.key,
+    required this.selectionKey,
+    required this.singleSelection,
+    required this.provinceId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +47,7 @@ class RegionSelection extends StatelessWidget {
                         argument: {
                           'selectionKey': selectionKey,
                           'singleSelection': singleSelection,
+                          'provinceId': provinceId,
                         },
                       );
                     });

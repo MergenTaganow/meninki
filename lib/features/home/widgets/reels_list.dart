@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:meninki/features/reels/blocs/current_reel_cubit/current_reel_cubit.dart';
 import 'package:meninki/features/reels/blocs/file_processing_cubit/file_processing_cubit.dart';
 import 'package:meninki/features/reels/blocs/get_my_reels_bloc/get_my_reels_bloc.dart';
 import 'package:meninki/features/reels/model/query.dart';
@@ -29,16 +30,37 @@ class _MyReelsListState extends State<MyReelsList> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<FileProcessingCubit, FileProcessingState>(
-      listener: (context, state) {
-        if (state is FileProcessingUpdated) {
-          var index = reels.indexWhere((element) => element.file.id == state.file.id);
-          if (index != -1) {
-            reels[index] = reels[index].copyWith(file: state.file);
-            setState(() {});
-          }
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<FileProcessingCubit, FileProcessingState>(
+          listener: (context, state) {
+            if (state is FileProcessingUpdated) {
+              var index = reels.indexWhere((element) => element.file?.id == state.file.id);
+              if (index != -1) {
+                reels[index] = reels[index].copyWith(file: state.file);
+                setState(() {});
+              }
+            }
+          },
+        ),
+        BlocListener<CurrentReelCubit, CurrentReelState>(
+          listener: (context, state) {
+            if (state is PaginateReels && state.reelType == ReelTypes.myReels) {
+              context.read<GetMyReelsBloc>().add(MyReelPag());
+            }
+          },
+        ),
+        BlocListener<GetMyReelsBloc, GetMyReelsState>(
+          listener: (context, state) {
+            if (state is GetMyReelSuccess) {
+              context.read<CurrentReelCubit>().paginationCame(
+                type: ReelTypes.myReels,
+                reels: state.reels,
+              );
+            }
+          },
+        ),
+      ],
       child: BlocBuilder<GetMyReelsBloc, GetMyReelsState>(
         builder: (context, state) {
           final isLoading = state is GetMyReelLoading;
@@ -60,19 +82,8 @@ class _MyReelsListState extends State<MyReelsList> {
                   crossAxisSpacing: 8,
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
-                    final reel =
-                        isLoading
-                            ? Reel(
-                              id: index,
-                              type: '',
-                              is_active: false,
-                              is_verified: false,
-                              user_id: 0,
-                              title: 'qwertyuiokjhgfds xhmhdtgsfad acsvdfhywqedsx  stgqd',
-                              file: MeninkiFile(id: 0, name: '', original_file: ''),
-                            )
-                            : reels[index];
-                    return ReelCard(reel: reel, allReels: reels);
+                    final reel = isLoading ? Reel() : reels[index];
+                    return ReelCard(reel: reel, allReels: reels, reelType: ReelTypes.myReels);
                   },
                 ),
                 if (state is MyReelPagLoading)

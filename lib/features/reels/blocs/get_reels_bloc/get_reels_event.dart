@@ -19,3 +19,8 @@ class UpdateReels extends GetReelsEvent {
   final Reel reel;
   UpdateReels(this.reel);
 }
+
+class SetAndGetReel extends GetReelsEvent {
+  final Reel reel;
+  SetAndGetReel(this.reel);
+}
